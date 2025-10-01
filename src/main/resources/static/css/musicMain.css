@@ -1,0 +1,103 @@
+/* === КОНТЕНТ === */
+.container {
+    margin-left: 60px;
+    margin-top: 20px;
+    width: 50%;
+}
+
+/* === СПИСОК ТРЕКОВ === */
+#trackList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.track-card {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.track-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.track-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.track-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.track-duration {
+    font-size: 14px;
+    color: #666;
+}
+
+.play-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(2, 2, 87, 0.37);
+    border: none;
+    border-radius: 50%;
+    color: #000;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.track-card:hover .play-btn {
+    display: flex;
+}
+
+/* === ПЛЕЕР СНИЗУ === */
+#player-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #000;
+    border-top: 1px solid rgba(2, 2, 87, 0.37);
+    padding: 10px;
+    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+}
+
+#player {
+    width: 100%;
+}
+
+/* Контейнер для информации о пользователе */
+.userInfo {
+    display: none;            /* скрыто по умолчанию */
+    color: #fff;
+    font-weight: bold;
+    margin-left: 20px;        /* отступ слева, чтобы не прилипало */
+                              /* чтобы можно было добавлять ещё элементы, напр. кнопку "Выйти" */
+    align-items: center;      /* выравнивание по вертикали */
+    gap: 10px;                /* расстояние между текстом и кнопкой (если добавишь) */
+}
+
+.userInfo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* круглый аватар */
+    object-fit: cover;
+}
+
+

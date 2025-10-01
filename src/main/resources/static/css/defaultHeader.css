@@ -1,0 +1,151 @@
+/* === БАЗОВЫЕ СТИЛИ === */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: rgba(2, 2, 87, 0.37);
+    color: #333;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #2b2b3a;
+    color: #fff;
+    padding: 0 20px;
+    height: 60px; /* фиксированная высота */
+    box-sizing: border-box;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+
+.header-left h1 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 60px;   /* всегда по высоте шапки */
+    height: auto;        /* сбрасываем 80% */
+    display: block;      /* обычный блочный заголовок */
+}
+
+/* кнопка-бургер */
+.menu-btn {
+    cursor: pointer;
+    font-size: 20px;
+    width: 36px;
+    height: 36px; /* фиксированная высота */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 0; /* убираем влияние внутренних отступов */
+}
+
+/* кнопки справа */
+.nav-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-buttons .button {
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.nav-buttons .button:hover {
+    background: #fff;
+    color: #141457;
+}
+
+/* === БОКОВАЯ ПАНЕЛЬ === */
+#side-checkbox {
+    display: none;
+}
+
+/* затемнение */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease;
+    z-index: 900;
+}
+#side-checkbox:checked ~ .overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* панель */
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100vh;
+    background: #2b2b3a;
+    color: #fff;
+    padding: 18px;
+    box-shadow: 6px 0 20px rgba(0,0,0,0.35);
+    transition: left .3s ease, opacity .3s ease, visibility .3s ease;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+}
+#side-checkbox:checked ~ .side-panel {
+    left: 0;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* шапка панели */
+.side-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.side-title {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+/* кнопка назад */
+.side-button-2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+}
+
+/* адаптив */
+@media (max-width: 480px) {
+    .side-panel {
+        width: 220px;
+        left: -220px;
+    }
+    #side-checkbox:checked ~ .side-panel {
+        left: 0;
+    }
+}

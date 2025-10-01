@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="/css/adminStyle.css">
+</head>
+<body>
+
+<header>Панель</header>
+
+<div class="container">
+    <div id="profile"></div>
+
+    <div class="buttons">
+        <button class="btn add" onclick="goTo('/admin/add.html')">Добавить</button>
+    </div>
+</div>
+
+<script>
+    async function loadProfile(){
+        const token = localStorage.getItem("jwt");
+
+        const response = await fetch("http://localhost:8080/admin/main", {
+            method: "GET",
+            headers:{
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        if(response.ok){
+            const admin = await response.json();
+            document.getElementById("profile").innerHTML =
+                `Имя пользователя: ${admin.username}<br>Статус: ${admin.status}`;
+        } else {
+            document.getElementById("profile").textContent = "Ошибка загрузки профиля";
+        }
+    }
+
+    function goTo(page){
+        window.location.href=page;
+    }
+
+    loadProfile();
+</script>
+
+
+</body>
+</html>

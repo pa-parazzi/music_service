@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="/css/defaultHeader.css">
+    <link rel="stylesheet" href="/css/loginForm.css">
+</head>
+<body>
+
+<input type="checkbox" id="side-checkbox">
+
+<header class="header">
+    <div class="header-left">
+        <!-- кнопка открытия -->
+        <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
+        <h1>Вход</h1>
+    </div>
+    <nav class="nav-buttons">
+        <a href="/login.html" class="button">Sign in</a>
+        <a href="/registration.html" class="button">Sign up</a>
+    </nav>
+</header>
+
+<!-- боковая панель -->
+<aside class="side-panel" role="search" aria-label="Боковая панель">
+    <div class="side-header">
+        <!-- стрелка назад -->
+        <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
+        <div class="side-title">Панель</div>
+    </div>
+    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
+</aside>
+
+<!-- затемнение -->
+<label class="overlay" for="side-checkbox" aria-hidden="true"></label>
+
+<div class="form-wrapper">
+    <form id="loginForm">
+        <label for="username">Имя пользователя: </label>
+        <input type="text" name="username" id="username">
+        <div id="usernameError" class="error"></div>
+
+        <label for="password">Пароль: </label>
+        <input type="password" name="password" id="password">
+        <div id="passwordError" class="error"></div>
+
+        <div id="errorMessage" class="message errorMessage"></div>
+        <div id="feedback" class="message successMessage"></div>
+
+        <button type="submit">Вход</button>
+    </form>
+</div>
+
+<script>
+
+    function showFieldError(fieldId, message) {
+        const errorDiv = document.getElementById(fieldId + "Error");
+        errorDiv.textContent = message;
+        errorDiv.style.display="block";
+    }
+
+    function clearMessages() {
+        const usernameMsg = document.getElementById("usernameError");
+        const passwordMsg = document.getElementById("passwordError");
+
+        const errorMsg = document.getElementById("errorMessage");
+        const feedback = document.getElementById("feedback");
+
+        usernameMsg.style.display = "none";
+        usernameMsg.textContent = "";
+        passwordMsg.style.display = "none";
+        passwordMsg.textContent = "";
+
+        errorMsg.style.display = "none";
+        errorMsg.textContent = "";
+        feedback.style.display = "none";
+        feedback.textContent = "";
+    }
+
+    const form = document.getElementById("loginForm");
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearMessages();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                const errorJson = await response.json();
+
+                if (errorJson.username) {
+                    showFieldError("username", errorJson.username);
+                }
+                if (errorJson.password) {
+                    showFieldError("password", errorJson.password);
+                }
+
+                if (errorJson.error || errorJson.message) {
+                    const errorMsg = document.getElementById("errorMessage");
+                    errorMsg.textContent = errorJson.error || errorJson.message;
+                    errorMsg.style.display = "block";
+                }
+            } else if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem("jwt", data.jwt_token);
+
+                const feedback = document.getElementById("feedback");
+                feedback.textContent = "Успешный вход!";
+                feedback.style.display = "block";
+                setTimeout(() =>{
+                    window.location.href="/music.html";
+                }, 2000);
+            }
+        } catch (error) {
+            const errorMsg = document.getElementById("errorMessage");
+            errorMsg.textContent = "Необработанная ошибка";
+            errorMsg.style.display = "block";
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная</title>
+    <link rel="stylesheet" href="/css/defaultHeader.css">
+    <link rel="stylesheet" href="/css/musicMain.css">
+</head>
+<body>
+
+<input type="checkbox" id="side-checkbox">
+
+<header class="header">
+    <div class="header-left">
+        <!-- кнопка открытия -->
+        <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
+        <h1>Моя музыка</h1>
+    </div>
+    <nav id="sign-in/up-buttons" class="nav-buttons">
+        <a href="/login.html" class="button">Sign in</a>
+        <a href="/registration.html" class="button">Sign up</a>
+    </nav>
+    <div class="userInfo" id="userInfo"></div>
+</header>
+
+<!-- боковая панель -->
+<aside class="side-panel" role="search" aria-label="Боковая панель">
+    <div class="side-header">
+        <!-- стрелка назад -->
+        <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
+        <div class="side-title">Панель</div>
+    </div>
+    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
+</aside>
+
+<!-- затемнение -->
+<label class="overlay" for="side-checkbox" aria-hidden="true"></label>
+
+<div class="container">
+    <div id="trackList"></div>
+</div>
+
+<div id="player-bar">
+    <audio id="player" controls>
+        <source id="audioSource" type="audio/mpeg">
+    </audio>
+</div>
+
+
+<script>
+    async function loadProfile(){
+        const token = localStorage.getItem("jwt");
+        const nav = document.getElementById("sign-in/up-buttons");
+        const userInfoDiv = document.getElementById("userInfo");
+
+        if (!token) {
+            // токена нет → оставить кнопки, скрыть userInfo
+            userInfoDiv.style.display = "none";
+            nav.style.display = "flex";
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/lk/profile", {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (response.ok) {
+                const user = await response.json();
+
+                // скрыть кнопки sign in/up
+                nav.style.display = "none";
+
+                // показать данные о пользователе
+                const userInfoDiv = document.getElementById("userInfo");
+                userInfoDiv.innerHTML = `<img src="${user.avatar?.url}" alt="avatar">
+                <span>${user.username}</span>`
+                userInfoDiv.style.display = "block";
+            } else {
+                // токен недействителен → удалить его и показать кнопки
+                localStorage.removeItem("jwt");
+                userInfoDiv.style.display = "none";
+                nav.style.display = "flex";
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки профиля:", error);
+            userInfoDiv.style.display = "none";
+            nav.style.display = "flex";
+        }
+    }
+
+    loadProfile();
+</script>
+
+
+<script>
+    // функция перевода секунд в mm:ss
+    function formatDuration(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+
+    async function loadSounds(){
+        try {
+
+            const response = await fetch(`http://localhost:8080/music`, {
+                method: "GET"
+            });
+
+            if (!response.ok) {
+                document.getElementById("trackList").textContent = "Ошибка загрузки списка";
+                return;
+            }
+
+            const sounds = await response.json(); // массив
+
+            const listDiv = document.getElementById("trackList");
+            listDiv.innerHTML = "";
+
+            sounds.forEach((sound) => {
+                const card = document.createElement("div");
+                card.className = "track-card";
+
+                const info = document.createElement("div");
+                info.className = "track-info";
+
+                const title = document.createElement("div");
+                title.className = "track-title";
+                title.textContent = sound.title;
+
+                const duration = document.createElement("div");
+                duration.className = "track-duration";
+                duration.textContent = formatDuration(sound.duration);
+
+                info.appendChild(title);
+                info.appendChild(duration);
+
+                const playBtn = document.createElement("button");
+                playBtn.className = "play-btn";
+                playBtn.textContent = "▶";
+
+                playBtn.addEventListener("click", (e) => {
+                    e.stopPropagation(); // чтобы клик не шёл дальше
+                    const player = document.getElementById("player");
+                    const source = document.getElementById("audioSource");
+                    source.src = sound.url;
+                    player.load();
+                    player.play();
+                });
+
+                card.appendChild(info);
+                card.appendChild(playBtn);
+
+                listDiv.appendChild(card);
+            });
+
+        } catch (error) {
+            document.getElementById("trackList").textContent = "Необработанная ошибка";
+            console.error(error);
+        }
+    }
+    loadSounds();
+</script>
+</body>
+</html>

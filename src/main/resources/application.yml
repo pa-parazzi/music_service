@@ -1,0 +1,14 @@
+security:
+  login:
+    max-failed-attempts: 3      # Максимальное число неудачных попыток входа
+    lock-duration-minutes: 15   # Время в минутах, на которое блокируется аккаунт при достижении максимального числа попыток входа
+
+
+yandex:
+  access-key: "YCAJEZWueSbh5sYY5pVWj1y2E"
+  secret-key: "YCNjDrXSEl9jH62FRplhdZsiNHpwfH0orTSXhqY5"
+  buckets:
+    music: "mus-app-tracks"
+    img: "mus-app-img"
+  region: "ru-central1"
+  endpoint: "https://storage.yandexcloud.net"

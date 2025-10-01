@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #011549;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: rgba(158, 177, 174, 0.31);
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 22px;
+}
+
+.container {
+    max-width: 300px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(158, 177, 174, 0.31);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+#profile {
+    font-size: 15px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-left: 4px solid #3498db;
+    background: #ecf5fc;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Цвета */
+.btn.add { background: rgba(53, 52, 52, 0.7); color: white; }
+.btn.add:hover { background: #219150; }
