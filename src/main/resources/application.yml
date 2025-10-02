@@ -12,3 +12,4 @@ yandex:
     img: "mus-app-img"
   region: "ru-central1"
   endpoint: "https://storage.yandexcloud.net"
+  default-avatar-key: "default_avatar.jpg"

@@ -34,10 +34,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrfToken-> csrfToken
-                        .csrfTokenRepository(new CookieCsrfTokenRepository())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .sessionAuthenticationStrategy(((authentication, request, response) -> {})))
+                .csrf(csrf -> csrf.disable())
+//                .csrf(csrfToken-> csrfToken
+//                        .csrfTokenRepository(new CookieCsrfTokenRepository())
+//                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+//                        .sessionAuthenticationStrategy(((authentication, request, response) -> {})))
 
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth

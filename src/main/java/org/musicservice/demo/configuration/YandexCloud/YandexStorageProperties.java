@@ -27,4 +27,6 @@ public class YandexStorageProperties {
 
     private Map<String, String> buckets;
 
+    private String defaultAvatarKey;
+
 }

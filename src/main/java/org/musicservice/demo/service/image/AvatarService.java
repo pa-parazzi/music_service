@@ -29,8 +29,6 @@ public class AvatarService {
     private final S3ImgUrlGenerator urlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
     private final S3Client s3Client;
-    private final String defaultAvatarKey = "default_avatar.jpg";
-
 
     @Autowired
     public AvatarService(AvatarRepository avatarRepository, AvatarMapper avatarMapper, S3ImgUrlGenerator urlGenerator, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
@@ -62,8 +60,8 @@ public class AvatarService {
 
     @Transactional
     public void createDefaultAvatar(User user){
-        String url = urlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), defaultAvatarKey);
-        Avatar avatar = setParams(user, defaultAvatarKey, url);
+        String url = urlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
+        Avatar avatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
         avatarRepository.save(avatar);
     }
 
