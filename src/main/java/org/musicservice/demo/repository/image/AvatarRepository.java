@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AvatarRepository extends JpaRepository<Avatar, Long> {
-    Avatar findByOwner_Id(Long ownerId);
+    
 }
