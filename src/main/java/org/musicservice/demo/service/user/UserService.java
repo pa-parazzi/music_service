@@ -74,6 +74,10 @@ public class UserService {
         return userRepository.searchByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
+    public User searchById(Long userId){
+        return userRepository.findById(userId).orElseThrow(()-> new UsernameNotFoundException("Пользователь не найден"));
+    }
+
     public Optional<User> getUserOptional(String username){
         return userRepository.searchByUsername(username);
     }
