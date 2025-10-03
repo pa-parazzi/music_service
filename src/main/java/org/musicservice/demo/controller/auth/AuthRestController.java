@@ -40,11 +40,7 @@ public class AuthRestController {
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Map<String, String> registration(@RequestPart("user") @Valid UserDtoForRegistration user, @RequestPart(required = false) MultipartFile avatar){
-        if(avatar!=null){
-            service.registrationUser(user, avatar);
-        }else {
-            service.registrationUserWithAvatarDefault(user);
-        }
+        service.registrationUser(user, avatar);
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }

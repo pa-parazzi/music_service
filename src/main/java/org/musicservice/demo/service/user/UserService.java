@@ -84,6 +84,10 @@ public class UserService {
 
     @Transactional
     public void registrationUser(UserDtoForRegistration userForRegistration, MultipartFile avatar){
+        if (avatar==null){
+            registrationUserWithAvatarDefault(userForRegistration);
+            return;
+        }
         User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
         user.setRole(Authority.USER);
         user.setEnabled(false);
