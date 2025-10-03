@@ -22,7 +22,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Long id;
 
     @Column(name = "username")
     @NotBlank
@@ -59,6 +59,9 @@ public class User {
     // Токен активации аккаунта
     @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private VerificationToken verificationToken;
+
+    @OneToOne(mappedBy = "user")
+    private RefreshToken refreshToken;
 
     @Enumerated(value = EnumType.STRING)
     private Authority role;
