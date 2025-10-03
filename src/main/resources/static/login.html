@@ -37,6 +37,7 @@
 
 <div class="form-wrapper">
     <form id="loginForm">
+        <input type="hidden" name="_csrf" value="${_csrf.token}">
         <label for="username">Имя пользователя: </label>
         <input type="text" name="username" id="username">
         <div id="usernameError" class="error"></div>
@@ -90,6 +91,7 @@
         try {
             const response = await fetch("http://localhost:8080/api/auth/login", {
                 method: "POST",
+                credentials: 'include', // чтобы получить set_cookie
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
             });

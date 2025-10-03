@@ -26,12 +26,12 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public String createAndPersist(Long userId){
+    public String createAndPersist(String username){
         String token = TokenUtil.generateRefreshToken();
         String hash = TokenUtil.hash(token);
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setTokenHash(hash);
-        refreshToken.setUser(userService.searchById(userId));
+        refreshToken.setUser(userService.searchByUsername(username));
         refreshToken.setRevoked(false);
         refreshToken.setExpiryDate(LocalDateTime.now().plus(duration));
         refreshTokenRepository.save(refreshToken);
