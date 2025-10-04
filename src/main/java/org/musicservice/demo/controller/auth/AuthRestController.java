@@ -10,9 +10,7 @@ import org.musicservice.demo.security.token.JWTUtil;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 
@@ -74,6 +73,11 @@ public class AuthRestController {
             authenticationFailureHandler.onAuthenticationFailure(request, response, e);
             return null;
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response){
+
     }
 
 }
