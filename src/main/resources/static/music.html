@@ -48,39 +48,82 @@
 
 
 <script>
-    async function loadProfile(){
+    // ----- Обёртка для fetch -----
+    async function apiFetch(url, options = {}) {
         const token = localStorage.getItem("jwt");
+        const headers = options.headers || {};
+
+        if (token) {
+            headers["Authorization"] = "Bearer " + token;
+        }
+
+        let response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: "include" // чтобы куки refreshToken шли на сервер
+        });
+
+        // Если accessToken истёк → пробуем обновить
+        if (response.status === 401) {
+            const refreshed = await refreshAccessToken();
+            if (refreshed) {
+                const newToken = localStorage.getItem("jwt");
+                headers["Authorization"] = "Bearer " + newToken;
+
+                response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: "include"
+                });
+            }
+        }
+
+        return response;
+    }
+
+    // ----- Обновление accessToken -----
+    async function refreshAccessToken() {
+        try {
+            const response = await fetch("http://localhost:8080/api/auth/refresh", {
+                method: "POST",
+                credentials: "include" // refreshToken cookie отправляется
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem("jwt", data["jwt-token"]);
+                return true;
+            } else {
+                // refresh тоже невалиден → чистим хранилище
+                localStorage.removeItem("jwt");
+                return false;
+            }
+        } catch (e) {
+            console.error("Ошибка обновления токена:", e);
+            return false;
+        }
+    }
+
+    // ----- Загрузка профиля -----
+    async function loadProfile() {
         const nav = document.getElementById("sign-in/up-buttons");
         const userInfoDiv = document.getElementById("userInfo");
 
-        if (!token) {
-            // токена нет → оставить кнопки, скрыть userInfo
-            userInfoDiv.style.display = "none";
-            nav.style.display = "flex";
-            return;
-        }
-
         try {
-            const response = await fetch("http://localhost:8080/lk/profile", {
-                method: "GET",
-                headers: {
-                    "Authorization": "Bearer " + token
-                }
+            const response = await apiFetch("http://localhost:8080/lk/profile", {
+                method: "GET"
             });
 
             if (response.ok) {
                 const user = await response.json();
 
-                // скрыть кнопки sign in/up
                 nav.style.display = "none";
-
-                // показать данные о пользователе
-                const userInfoDiv = document.getElementById("userInfo");
-                userInfoDiv.innerHTML = `<img src="${user.avatar?.url}" alt="avatar">
-                <span>${user.username}</span>`
+                userInfoDiv.innerHTML = `
+                    <img src="${user.avatar?.url}" alt="avatar">
+                    <span>${user.username}</span>
+                `;
                 userInfoDiv.style.display = "block";
             } else {
-                // токен недействителен → удалить его и показать кнопки
                 localStorage.removeItem("jwt");
                 userInfoDiv.style.display = "none";
                 nav.style.display = "flex";
@@ -92,32 +135,23 @@
         }
     }
 
-    loadProfile();
-</script>
-
-
-<script>
-    // функция перевода секунд в mm:ss
+    // ----- Список музыки -----
     function formatDuration(seconds) {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m}:${s.toString().padStart(2, "0")}`;
     }
 
-    async function loadSounds(){
+    async function loadSounds() {
         try {
-
-            const response = await fetch(`http://localhost:8080/music`, {
-                method: "GET"
-            });
+            const response = await apiFetch("http://localhost:8080/music", { method: "GET" });
 
             if (!response.ok) {
                 document.getElementById("trackList").textContent = "Ошибка загрузки списка";
                 return;
             }
 
-            const sounds = await response.json(); // массив
-
+            const sounds = await response.json();
             const listDiv = document.getElementById("trackList");
             listDiv.innerHTML = "";
 
@@ -144,7 +178,7 @@
                 playBtn.textContent = "▶";
 
                 playBtn.addEventListener("click", (e) => {
-                    e.stopPropagation(); // чтобы клик не шёл дальше
+                    e.stopPropagation();
                     const player = document.getElementById("player");
                     const source = document.getElementById("audioSource");
                     source.src = sound.url;
@@ -154,15 +188,16 @@
 
                 card.appendChild(info);
                 card.appendChild(playBtn);
-
                 listDiv.appendChild(card);
             });
-
         } catch (error) {
             document.getElementById("trackList").textContent = "Необработанная ошибка";
             console.error(error);
         }
     }
+
+    // Запуск при загрузке страницы
+    loadProfile();
     loadSounds();
 </script>
 </body>

@@ -77,7 +77,8 @@ public class AuthRestController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response){
-
+        Map<String, String> jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
+        return ResponseEntity.ok(jwtToken);
     }
 
 }
