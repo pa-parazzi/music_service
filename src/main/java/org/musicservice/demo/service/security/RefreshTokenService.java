@@ -39,6 +39,7 @@ public class RefreshTokenService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional
     public Map<String, String> generateAccessByRefreshToken(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null){
