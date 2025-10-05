@@ -39,6 +39,10 @@ public class RefreshTokenService {
         this.jwtUtil = jwtUtil;
     }
 
+    // Валидация/проверка на null refresh-token'а пришедшего из запроса (request)
+    // Генерация нового jwt-token, старый refresh-token помечается как revoked
+    // Создание нового refresh-token'а, добавление его в заголовок SET_COOKIE
+    // Возвращаем новый jwt-token
     @Transactional
     public Map<String, String> generateAccessByRefreshToken(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
@@ -56,22 +60,35 @@ public class RefreshTokenService {
         User user = userService.searchById(refreshToken.getUser().getId());
         String accessToken = jwtUtil.generateToken(user.getUsername());
 
-        String newRefreshToken = createAndPersist(user.getUsername());
         revoke(refreshToken);
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(Duration.ofDays(30))
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        setResponseCookieAndAddHeader(response, user.getUsername());
         return Map.of("jwt-token", accessToken);
     }
 
     @Transactional
-    public String createAndPersist(String username){
+    public void clearRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response){
+        String refreshToken = CookieUtil.getRefreshTokenByCookie(request);
+        Optional<RefreshToken> opt = refreshTokenRepository.findByTokenHash(TokenUtil.hash(refreshToken));
+        if(opt.isEmpty()){
+            return;
+        }
+        RefreshToken foundToken = opt.get();
+        revoke(foundToken);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    // Создание нового refresh-token по username
+    // Возвращает refresh-token в виде строки String
+    @Transactional
+    public String createNewRefreshTokenByUsername(String username){
         String token = TokenUtil.generateRefreshToken();
         String hash = TokenUtil.hash(token);
         RefreshToken refreshToken = new RefreshToken();
@@ -81,6 +98,20 @@ public class RefreshTokenService {
         refreshToken.setExpiryDate(LocalDateTime.now().plus(duration));
         refreshTokenRepository.save(refreshToken);
         return token;
+    }
+
+    // Создает новый refresh-token по имени пользователя + задает его в заголовок ответа cookie с соответствующими настройками
+    @Transactional
+    public void setResponseCookieAndAddHeader(HttpServletResponse response, String username){
+        String refreshToken = createNewRefreshTokenByUsername(username);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(Duration.ofDays(30))
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     @Transactional

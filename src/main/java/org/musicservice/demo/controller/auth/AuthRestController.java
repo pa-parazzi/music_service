@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.Map;
 
 @RestController
@@ -44,8 +42,11 @@ public class AuthRestController {
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, String> registration(@RequestPart("user") @Valid UserDtoForRegistration user, @RequestPart(required = false) MultipartFile avatar){
+    public Map<String, String> registration(@RequestPart("user") @Valid UserDtoForRegistration user,
+                                            @RequestPart(required = false) MultipartFile avatar,
+                                            HttpServletResponse response){
         service.registrationUser(user, avatar);
+        refreshTokenService.setResponseCookieAndAddHeader(response, user.getUsername());
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }
@@ -53,26 +54,24 @@ public class AuthRestController {
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody @Valid UserDtoForLogin userDtoForLogin,
                                      HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        String refreshToken = refreshTokenService.createAndPersist(userDtoForLogin.getUsername());
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .maxAge(Duration.ofDays(30))
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         try {
             request.setAttribute("LOGIN_USERNAME", userDtoForLogin.getUsername());
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDtoForLogin.getUsername(), userDtoForLogin.getPassword());
             authenticationManager.authenticate(authenticationToken);
+            refreshTokenService.setResponseCookieAndAddHeader(response, userDtoForLogin.getUsername());
             String jwtToken = jwtUtil.generateToken(userDtoForLogin.getUsername());
             return Map.of("jwt_token", jwtToken);
         } catch (AuthenticationException e){
             authenticationFailureHandler.onAuthenticationFailure(request, response, e);
             return null;
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
+        refreshTokenService.clearRefreshTokenCookie(request, response);
+        return ResponseEntity.ok("Вы вышли из аккаутна");
     }
 
     @PostMapping("/refresh")

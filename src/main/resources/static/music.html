@@ -121,7 +121,12 @@
                 userInfoDiv.innerHTML = `
                     <img src="${user.avatar?.url}" alt="avatar">
                     <span>${user.username}</span>
+                    <button id="logoutBtn" class="logout-btn">Выйти</button>
                 `;
+
+                const logoutBtn = document.getElementById("logoutBtn");
+                logoutBtn.addEventListener("click", logout);
+
                 userInfoDiv.style.display = "block";
             } else {
                 localStorage.removeItem("jwt");
@@ -132,6 +137,27 @@
             console.error("Ошибка загрузки профиля:", error);
             userInfoDiv.style.display = "none";
             nav.style.display = "flex";
+        }
+    }
+
+    async function logout(){
+
+        try{
+            const response = await apiFetch("http://localhost:8080/api/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if(response.ok){
+                localStorage.removeItem("jwt");
+                setTimeout(() =>{
+                    window.location.href="/music.html";
+                }, 500);
+            }else{
+                console.error("Ошибка при выходе: ", response.status)
+            }
+        } catch (error){
+            console.error("Ошибка logout: ", error);
         }
     }
 
