@@ -57,36 +57,38 @@
             headers["Authorization"] = "Bearer " + token;
         }
 
-        let response = await fetch(url, {
-            ...options,
-            headers,
-            credentials: "include" // чтобы куки refreshToken шли на сервер
-        });
+        try {
+            let response = await fetch(url, {
+                ...options,
+                headers,
+                credentials: "include"
+            });
 
-        // Если accessToken истёк → пробуем обновить
-        if (response.status === 401) {
-            const refreshed = await refreshAccessToken();
-            if (refreshed) {
-                const newToken = localStorage.getItem("jwt");
-                headers["Authorization"] = "Bearer " + newToken;
-
-                response = await fetch(url, {
-                    ...options,
-                    headers,
-                    credentials: "include"
-                });
+            if (response.status === 401 || response.status === 403) {
+                const refreshed = await refreshAccessToken();
+                if (refreshed) {
+                    const newToken = localStorage.getItem("jwt");
+                    headers["Authorization"] = "Bearer " + newToken;
+                    response = await fetch(url, {
+                        ...options,
+                        headers,
+                        credentials: "include"
+                    });
+                }
             }
-        }
 
-        return response;
+            return response;
+        } catch (err) {
+            console.error("Ошибка при запросе:", err);
+            throw err;
+        }
     }
 
-    // ----- Обновление accessToken -----
     async function refreshAccessToken() {
         try {
             const response = await fetch("http://localhost:8080/api/auth/refresh", {
                 method: "POST",
-                credentials: "include" // refreshToken cookie отправляется
+                credentials: "include"
             });
 
             if (response.ok) {
@@ -94,7 +96,6 @@
                 localStorage.setItem("jwt", data["jwt-token"]);
                 return true;
             } else {
-                // refresh тоже невалиден → чистим хранилище
                 localStorage.removeItem("jwt");
                 return false;
             }
@@ -108,10 +109,12 @@
     async function loadProfile() {
         const nav = document.getElementById("sign-in/up-buttons");
         const userInfoDiv = document.getElementById("userInfo");
+        const jwtToken = localStorage.getItem("jwt");
 
         try {
             const response = await apiFetch("http://localhost:8080/lk/profile", {
-                method: "GET"
+                method: "GET",
+                headers: {"Authorization": "Bearer " + jwtToken}
             });
 
             if (response.ok) {

@@ -31,7 +31,6 @@ public class AuthRestController {
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
 
-
     @Autowired
     public AuthRestController(UserService service, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler) {
         this.service = service;
@@ -77,7 +76,11 @@ public class AuthRestController {
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response){
         Map<String, String> jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
-        return ResponseEntity.ok(jwtToken);
+        if (jwtToken.containsKey("jwt-token")) {
+            return ResponseEntity.ok(jwtToken);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(jwtToken);
+        }
     }
 
 }
