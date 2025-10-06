@@ -43,9 +43,10 @@ public class AuthRestController {
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Map<String, String> registration(@RequestPart("user") @Valid UserDtoForRegistration user,
                                             @RequestPart(required = false) MultipartFile avatar,
+                                            HttpServletRequest request,
                                             HttpServletResponse response){
         service.registrationUser(user, avatar);
-        refreshTokenService.setResponseCookieAndAddHeader(response, user.getUsername());
+        refreshTokenService.setResponseCookieAndAddHeader(request, response, user.getUsername());
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }
@@ -58,7 +59,7 @@ public class AuthRestController {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDtoForLogin.getUsername(), userDtoForLogin.getPassword());
             authenticationManager.authenticate(authenticationToken);
-            refreshTokenService.setResponseCookieAndAddHeader(response, userDtoForLogin.getUsername());
+            refreshTokenService.setResponseCookieAndAddHeader(request, response, userDtoForLogin.getUsername());
             String jwtToken = jwtUtil.generateToken(userDtoForLogin.getUsername());
             return Map.of("jwt_token", jwtToken);
         } catch (AuthenticationException e){
@@ -74,13 +75,9 @@ public class AuthRestController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Map<String, String> jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
-        if (jwtToken.containsKey("jwt-token")) {
-            return ResponseEntity.ok(jwtToken);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(jwtToken);
-        }
+    public Map<String, String> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        String jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
+        return Map.of("jwt_token", jwtToken);
     }
 
 }
