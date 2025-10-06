@@ -60,7 +60,7 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private VerificationToken verificationToken;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private RefreshToken refreshToken;
 
     @Enumerated(value = EnumType.STRING)

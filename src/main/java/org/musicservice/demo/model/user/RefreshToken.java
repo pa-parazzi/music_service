@@ -27,7 +27,7 @@ public class RefreshToken {
     private Boolean revoked;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
     public RefreshToken(){}

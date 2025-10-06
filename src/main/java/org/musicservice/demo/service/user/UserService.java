@@ -60,6 +60,7 @@ public class UserService {
         return adminMapper.convertToAdmin(user);
     }
 
+    @Transactional
     public UserDtoForView viewSingle(String username){
         User user = searchByUsername(username);
         AvatarDto avatarDto = avatarMapper.convertToDto(user.getAvatar());
