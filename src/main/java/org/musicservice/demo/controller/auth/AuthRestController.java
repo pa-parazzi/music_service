@@ -74,7 +74,7 @@ public class AuthRestController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response){
+    public ResponseEntity<Map<String, String>> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Map<String, String> jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
         if (jwtToken.containsKey("jwt-token")) {
             return ResponseEntity.ok(jwtToken);

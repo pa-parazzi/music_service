@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.sasl.AuthenticationException;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -44,18 +45,21 @@ public class RefreshTokenService {
     // Создание нового refresh-token'а, добавление его в заголовок SET_COOKIE
     // Возвращаем новый jwt-token
     @Transactional
-    public Map<String, String> generateAccessByRefreshToken(HttpServletRequest request, HttpServletResponse response){
+    public Map<String, String> generateAccessByRefreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null){
-            return Map.of("401 status code", "refresh-token is null");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return Map.of("error", "cookie is not valid");
         }
         Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByTokenHash(TokenUtil.hash(refreshTokenByCookie));
         if(tokenOptional.isEmpty()){
-            return Map.of("401 status code", "refresh-token is not present");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return Map.of("error", "refresh-token is not should be empty");
         }
         RefreshToken refreshToken = tokenOptional.get();
         if(refreshToken.getRevoked() || refreshToken.getExpiryDate().isBefore(LocalDateTime.now())){
-            return Map.of("401 status code", "refresh-token is not valid");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return Map.of("error", "refresh-token is not valid");
         }
         User user = userService.searchById(refreshToken.getUser().getId());
         String accessToken = jwtUtil.generateToken(user.getUsername());
