@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,82 +41,97 @@ public class RefreshTokenService {
         this.jwtUtil = jwtUtil;
     }
 
-    // TODO: кастыль, переделать исключение
-    public RefreshToken searchByTokenHash(String hash){
-        return refreshTokenRepository.findByTokenHash(hash).orElseThrow(()-> new RuntimeException("refresh-token не найден в базе данных"));
+    public Optional<RefreshToken> searchByTokenHash(String hash){
+        return refreshTokenRepository.findByTokenHash(hash);
     }
 
-    // Генерация нового jwt-token, старый refresh-token помечается как revoked
-    // Создание нового refresh-token'а, добавление его в заголовок SET_COOKIE
-    // Возвращаем новый jwt-token
-    @Transactional
-    public String generateAccessByRefreshToken(HttpServletRequest request, HttpServletResponse response){
-
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        System.out.println("Берем токен из cookie: " + refreshTokenByCookie);
-
-        RefreshToken foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
-        System.out.println("Ищем токен в БД " + foundToken);
-
-        System.out.println("Находим пользоваля по refresh_token.user_id из БД ");
-        User user = userService.searchById(foundToken.getUser().getId());
-
-        System.out.println("Генерируем новый jwt-token для пользователя");
-        String accessToken = jwtUtil.generateToken(user.getUsername());
-
-        System.out.println("Старый refreshToken помечается revoked");
-        revoke(foundToken);
-
-        System.out.println("Создаю новый refreshToken, перед этим почистив cookie от старых записей ");
-        setResponseCookieAndAddHeader(request, response, user.getUsername());
-        return accessToken;
-    }
-
-    @Transactional
-    public void clearRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response){
-        String refreshToken = CookieUtil.getRefreshTokenByCookie(request);
-        Optional<RefreshToken> opt = refreshTokenRepository.findByTokenHash(TokenUtil.hash(refreshToken));
-        if(opt.isEmpty()){
-            return;
+    public String generateNewJwtToken(RefreshToken refreshToken){
+        String username = refreshToken.getUser().getUsername();
+        Optional<User> foundUser = userService.getUserOptional(username);
+        if(foundUser.isEmpty()){
+            throw new UsernameNotFoundException("пользователь не найден");
         }
-        RefreshToken foundToken = opt.get();
-        revoke(foundToken);
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+        User user = foundUser.get();
+        return jwtUtil.generateToken(user.getUsername());
+    }
+
+    // Создает новый refreshToken для пользователя по его username, заранее задает токен в cookie
+    @Transactional
+    public RefreshToken createRefreshTokenFromUser(HttpServletResponse response, String username){
+        String refreshTokenByGenerate = TokenUtil.generateRefreshToken();
+        setCookie(response, refreshTokenByGenerate);
+        String hash = TokenUtil.hash(refreshTokenByGenerate);
+
+        RefreshToken newRefreshToken = new RefreshToken();
+        newRefreshToken.setTokenHash(hash);
+        newRefreshToken.setRevoked(false);
+        newRefreshToken.setExpiryDate(LocalDateTime.now().plus(duration));
+        User user = userService.searchByUsername(username);
+        newRefreshToken.setUser(user);
+        user.setRefreshToken(newRefreshToken);
+        return refreshTokenRepository.save(newRefreshToken);
+    }
+
+    @Transactional
+    public String refreshJwtToken(HttpServletRequest request, HttpServletResponse response){
+        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenByCookie==null){
+            throw new RuntimeException("refreshToken не был найден в cookie");
+        }
+        Optional<RefreshToken> foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
+        if(foundToken.isEmpty()){
+            throw new RuntimeException("refreshToken не найден в БД");
+        }
+        RefreshToken refreshToken = foundToken.get();
+        refreshToken.setRevoked(true);
+        refreshTokenRepository.save(refreshToken);
+
+        return generateNewJwtToken(refreshToken);
+    }
+
+    // Проверяем есть ли refreshToken в cookie, если нет - выдаем новый refreshToken и задаем его в cookie
+    @Transactional
+    public boolean checkCookie(HttpServletRequest request, HttpServletResponse response, String username){
+        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenByCookie==null){
+            User user = userService.searchByUsername(username);
+            refreshTokenRepository.delete(user.getRefreshToken());
+            user.setRefreshToken(null);
+            createRefreshTokenFromUser(response, user.getUsername());
+            return true;
+        }
+        return false;
+    }
+
+    // Удаление токена, отвязка от связанной сущности User
+    @Transactional
+    public void delete(HttpServletRequest request){
+        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenByCookie!=null){
+            Optional<RefreshToken> foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
+            if(foundToken.isPresent()){
+                RefreshToken refreshToken = foundToken.get();
+                refreshTokenRepository.delete(refreshToken);
+                refreshToken.getUser().setRefreshToken(null);
+                refreshTokenRepository.save(refreshToken);
+            }
+        }
+    }
+
+    // Задает refreshToken в cookie в браузере
+    public void setCookie(HttpServletResponse response, String refreshToken){
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(0)
+                .maxAge(duration)
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    // Создание нового refresh-token по username
-    // Возвращает refresh-token в виде строки String
-    @Transactional
-    public RefreshToken createNewRefreshTokenByUsername(String username){
-
-        String token = TokenUtil.generateRefreshToken();
-        String hash = TokenUtil.hash(token);
-        RefreshToken refreshToken = new RefreshToken();
-
-        Optional<User> optionalUser = userService.getUserOptional(username);
-        if(optionalUser.isPresent()){
-            User user = optionalUser.get();
-            refreshToken.setUser(user);
-            user.setRefreshToken(refreshToken);
-        }
-        refreshToken.setTokenHash(hash);
-        refreshToken.setRevoked(false);
-        refreshToken.setExpiryDate(LocalDateTime.now().plus(duration));
-        refreshTokenRepository.save(refreshToken);
-        return refreshToken;
-    }
-
-    // Создает новый refresh-token по имени пользователя + задает его в заголовок ответа cookie с соответствующими настройками
-    @Transactional
-    public void setResponseCookieAndAddHeader(HttpServletRequest request, HttpServletResponse response, String username){
-        // Чистим cookie перед запросом
+    // Очистка cookie
+    public void clearCookie(HttpServletResponse response){
         ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
@@ -124,24 +140,6 @@ public class RefreshTokenService {
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
-
-        // TODO: вернись сюда, здесь ошибка срабатывает catch 
-        User user = userService.searchByUsername(username);
-        try {
-            RefreshToken refreshTokenByUsername = refreshTokenRepository.findByUserId(user.getId());
-            System.out.println("refreshToken - " + refreshTokenByUsername);
-            revoke(refreshTokenByUsername);
-            refreshTokenRepository.delete(refreshTokenByUsername);
-            user.setRefreshToken(null);
-        } catch (RuntimeException e){
-            throw new RuntimeException("Ошибка удаления refreshToken");
-        }
-
     }
 
-    @Transactional
-    public void revoke(RefreshToken token){
-        token.setRevoked(true);
-        refreshTokenRepository.save(token);
-    }
 }

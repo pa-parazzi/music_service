@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.exception.AuthenticationHundler.AuthenticationFailureHandlerForUser;
+import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.security.token.JWTUtil;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.user.UserService;
@@ -46,7 +47,7 @@ public class AuthRestController {
                                             HttpServletRequest request,
                                             HttpServletResponse response){
         service.registrationUser(user, avatar);
-        refreshTokenService.setResponseCookieAndAddHeader(request, response, user.getUsername());
+        refreshTokenService.createRefreshTokenFromUser(response, user.getUsername());
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }
@@ -59,8 +60,8 @@ public class AuthRestController {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDtoForLogin.getUsername(), userDtoForLogin.getPassword());
             authenticationManager.authenticate(authenticationToken);
-            refreshTokenService.setResponseCookieAndAddHeader(request, response, userDtoForLogin.getUsername());
-            String jwtToken = jwtUtil.generateToken(userDtoForLogin.getUsername());
+            RefreshToken refreshToken = refreshTokenService.createRefreshTokenFromUser(response, userDtoForLogin.getUsername());
+            String jwtToken = refreshTokenService.generateNewJwtToken(refreshToken);
             return Map.of("jwt_token", jwtToken);
         } catch (AuthenticationException e){
             authenticationFailureHandler.onAuthenticationFailure(request, response, e);
@@ -70,13 +71,14 @@ public class AuthRestController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
-        refreshTokenService.clearRefreshTokenCookie(request, response);
+        refreshTokenService.delete(request);
+        refreshTokenService.clearCookie(response);
         return ResponseEntity.ok("Вы вышли из аккаутна");
     }
 
     @PostMapping("/refresh")
-    public Map<String, String> generateNewAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String jwtToken = refreshTokenService.generateAccessByRefreshToken(request, response);
+    public Map<String, String> generateNewAccessToken(HttpServletRequest request) {
+        String jwtToken = refreshTokenService.refreshJwtToken(request);
         return Map.of("jwt_token", jwtToken);
     }
 
