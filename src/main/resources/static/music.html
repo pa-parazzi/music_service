@@ -117,12 +117,17 @@
         options = { ...options };
         const headers = { ...(options.headers || {}) };
 
-        // ждем, если идёт refresh
+        // ждём, если в данный момент выполняется refresh
         if (refreshInProgress) await refreshInProgress;
 
         const token = localStorage.getItem("jwt");
-        if (token) headers["Authorization"] = "Bearer " + token;
-        else delete headers["Authorization"];
+
+        // Добавляем Authorization только если токен есть
+        if (token) {
+            headers["Authorization"] = "Bearer " + token;
+        } else {
+            delete headers["Authorization"];
+        }
 
         options.headers = headers;
         options.credentials = "include";
@@ -136,14 +141,23 @@
             throw e;
         }
 
-        // Если токен истёк — пробуем обновить и повторить
+        // Если токена нет, то просто возвращаем ответ без попытки refresh
+        if (!token) {
+            return response;
+        }
+
+        // Если токен истёк — пробуем обновить и повторить запрос
         if (response.status === 401 || response.status === 403) {
             const refreshed = await refreshAccessToken();
             if (refreshed) {
                 const newToken = localStorage.getItem("jwt");
                 const retryHeaders = { ...headers };
-                if (newToken) retryHeaders["Authorization"] = "Bearer " + newToken;
-                else delete retryHeaders["Authorization"];
+
+                if (newToken) {
+                    retryHeaders["Authorization"] = "Bearer " + newToken;
+                } else {
+                    delete retryHeaders["Authorization"];
+                }
 
                 try {
                     response = await fetch(url, {
@@ -160,6 +174,7 @@
 
         return response;
     }
+
 
     /* --- Загрузка профиля --- */
     async function loadProfile() {

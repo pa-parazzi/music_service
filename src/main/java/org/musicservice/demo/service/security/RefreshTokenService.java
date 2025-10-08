@@ -18,11 +18,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.sasl.AuthenticationException;
-import java.io.IOException;
+import java.sql.Ref;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -45,19 +43,16 @@ public class RefreshTokenService {
         return refreshTokenRepository.findByTokenHash(hash);
     }
 
-    public String generateNewJwtToken(RefreshToken refreshToken){
-        String username = refreshToken.getUser().getUsername();
-        Optional<User> foundUser = userService.getUserOptional(username);
-        if(foundUser.isEmpty()){
-            throw new UsernameNotFoundException("пользователь не найден");
-        }
-        User user = foundUser.get();
-        return jwtUtil.generateToken(user.getUsername());
-    }
-
     // Создает новый refreshToken для пользователя по его username, заранее задает токен в cookie
     @Transactional
-    public RefreshToken createRefreshTokenFromUser(HttpServletResponse response, String username){
+    public RefreshToken createRefreshTokenFromUser(HttpServletRequest request, HttpServletResponse response, String username){
+        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenByCookie!=null){
+            Optional<RefreshToken> foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
+            if(foundToken.isPresent()){
+                return foundToken.get();
+            }
+        }
         String refreshTokenByGenerate = TokenUtil.generateRefreshToken();
         setCookie(response, refreshTokenByGenerate);
         String hash = TokenUtil.hash(refreshTokenByGenerate);
@@ -73,34 +68,27 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public String refreshJwtToken(HttpServletRequest request, HttpServletResponse response){
+    public String generateJwtFromLogin(RefreshToken refreshToken){
+        Optional<RefreshToken> foundToken = searchByTokenHash(refreshToken.getTokenHash());
+        if(foundToken.isEmpty()){
+            return null;
+        }
+        User user = foundToken.get().getUser();
+        return jwtUtil.generateToken(user.getUsername());
+    }
+
+    @Transactional
+    public String refreshJwtToken(HttpServletRequest request){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null){
-            throw new RuntimeException("refreshToken не был найден в cookie");
+            return null;
         }
         Optional<RefreshToken> foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
         if(foundToken.isEmpty()){
-            throw new RuntimeException("refreshToken не найден в БД");
+            return null;
         }
-        RefreshToken refreshToken = foundToken.get();
-        refreshToken.setRevoked(true);
-        refreshTokenRepository.save(refreshToken);
-
-        return generateNewJwtToken(refreshToken);
-    }
-
-    // Проверяем есть ли refreshToken в cookie, если нет - выдаем новый refreshToken и задаем его в cookie
-    @Transactional
-    public boolean checkCookie(HttpServletRequest request, HttpServletResponse response, String username){
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie==null){
-            User user = userService.searchByUsername(username);
-            refreshTokenRepository.delete(user.getRefreshToken());
-            user.setRefreshToken(null);
-            createRefreshTokenFromUser(response, user.getUsername());
-            return true;
-        }
-        return false;
+        User user = foundToken.get().getUser();
+        return jwtUtil.generateToken(user.getUsername());
     }
 
     // Удаление токена, отвязка от связанной сущности User
@@ -111,9 +99,8 @@ public class RefreshTokenService {
             Optional<RefreshToken> foundToken = searchByTokenHash(TokenUtil.hash(refreshTokenByCookie));
             if(foundToken.isPresent()){
                 RefreshToken refreshToken = foundToken.get();
-                refreshTokenRepository.delete(refreshToken);
                 refreshToken.getUser().setRefreshToken(null);
-                refreshTokenRepository.save(refreshToken);
+                refreshTokenRepository.delete(refreshToken);
             }
         }
     }
