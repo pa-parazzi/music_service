@@ -2,6 +2,7 @@ package org.musicservice.demo.service.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.musicservice.demo.configuration.security.RefreshTokenProperties;
 import org.musicservice.demo.cookie.CookieUtil;
 import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.model.user.User;
@@ -11,14 +12,10 @@ import org.musicservice.demo.security.token.TokenUtil;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Ref;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -28,14 +25,17 @@ import java.util.Optional;
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final CookieManager cookieManager;
     private final UserService userService;
-    private final Duration duration = Duration.ofDays(30);
+    private final RefreshTokenProperties refreshTokenProperties;
     private final JWTUtil jwtUtil;
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, UserService userService, JWTUtil jwtUtil) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, UserService userService, RefreshTokenProperties refreshTokenProperties, JWTUtil jwtUtil) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.cookieManager = cookieManager;
         this.userService = userService;
+        this.refreshTokenProperties = refreshTokenProperties;
         this.jwtUtil = jwtUtil;
     }
 
@@ -54,13 +54,13 @@ public class RefreshTokenService {
             }
         }
         String refreshTokenByGenerate = TokenUtil.generateRefreshToken();
-        setCookie(response, refreshTokenByGenerate);
+        cookieManager.setCookie(response, refreshTokenByGenerate);
         String hash = TokenUtil.hash(refreshTokenByGenerate);
 
         RefreshToken newRefreshToken = new RefreshToken();
         newRefreshToken.setTokenHash(hash);
         newRefreshToken.setRevoked(false);
-        newRefreshToken.setExpiryDate(LocalDateTime.now().plus(duration));
+        newRefreshToken.setExpiryDate(LocalDateTime.now().plus(refreshTokenProperties.getDuration()));
         User user = userService.searchByUsername(username);
         newRefreshToken.setUser(user);
         user.setRefreshToken(newRefreshToken);
@@ -103,30 +103,6 @@ public class RefreshTokenService {
                 refreshTokenRepository.delete(refreshToken);
             }
         }
-    }
-
-    // Задает refreshToken в cookie в браузере
-    public void setCookie(HttpServletResponse response, String refreshToken){
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(duration)
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    }
-
-    // Очистка cookie
-    public void clearCookie(HttpServletResponse response){
-        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
     }
 
 }

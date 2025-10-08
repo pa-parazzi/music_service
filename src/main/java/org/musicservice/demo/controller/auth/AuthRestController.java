@@ -8,6 +8,7 @@ import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.exception.AuthenticationHundler.AuthenticationFailureHandlerForUser;
 import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.security.token.JWTUtil;
+import org.musicservice.demo.service.security.CookieManager;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +32,16 @@ public class AuthRestController {
     private final JWTUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
+    private final CookieManager cookieManager;
 
     @Autowired
-    public AuthRestController(UserService service, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler) {
+    public AuthRestController(UserService service, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, CookieManager cookieManager) {
         this.service = service;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.cookieManager = cookieManager;
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -72,7 +75,7 @@ public class AuthRestController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
         refreshTokenService.delete(request);
-        refreshTokenService.clearCookie(response);
+        cookieManager.clearCookie(response);
         return ResponseEntity.ok("Вы вышли из аккаутна");
     }
 

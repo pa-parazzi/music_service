@@ -13,3 +13,6 @@ yandex:
   region: "ru-central1"
   endpoint: "https://storage.yandexcloud.net"
   default-avatar-key: "default_avatar.jpg"
+
+refresh-token:
+  duration: 30d
