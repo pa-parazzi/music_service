@@ -33,9 +33,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if(authHeader!=null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")){
             String jwtToken = authHeader.substring(7);
-            if(jwtToken.isBlank()){
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не верный формат JWT-токена");
-            }else{
+            if(!jwtToken.isBlank()){
                 try{
                     String username = jwt.validateToken(jwtToken);
                     UserDetails userDetails = service.loadUserByUsername(username);
@@ -45,8 +43,7 @@ public class JWTFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                     }
                 }catch (JWTVerificationException e){
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Не валидный формат токена");
-                    return;
+                    logger.debug("Jwt token is invalid or expired: {}");
                 }
             }
         }

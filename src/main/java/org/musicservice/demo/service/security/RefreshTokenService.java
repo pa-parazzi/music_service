@@ -3,6 +3,7 @@ package org.musicservice.demo.service.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.configuration.security.RefreshTokenProperties;
+import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.exception.refreshTokenError.RefreshTokenNotFoundException;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieManager;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
@@ -27,15 +28,13 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieManager cookieManager;
-    private final UserService userService;
     private final RefreshTokenProperties refreshTokenProperties;
     private final JWTUtil jwtUtil;
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, UserService userService, RefreshTokenProperties refreshTokenProperties, JWTUtil jwtUtil) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties, JWTUtil jwtUtil) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.cookieManager = cookieManager;
-        this.userService = userService;
         this.refreshTokenProperties = refreshTokenProperties;
         this.jwtUtil = jwtUtil;
     }
@@ -59,7 +58,7 @@ public class RefreshTokenService {
     // Создает новый refreshToken для пользователя по его username, заранее задает токен в cookie
     // если refreshToken был найден в Cookie и он совпал с тем что есть в БД, тогда из метода возвращется старый токен
     @Transactional
-    public RefreshToken createRefreshTokenFromUser(HttpServletRequest request, HttpServletResponse response, String username){
+    public RefreshToken createRefreshTokenFromUser(HttpServletResponse response, UserDtoForLogin userDtoForLogin){
         // TODO: доделать
 //        if(checkCookieRequest(request).isPresent()){
 //            RefreshToken refreshToken = checkCookieRequest(request).get();
@@ -73,9 +72,7 @@ public class RefreshTokenService {
         newRefreshToken.setTokenHash(hash);
         newRefreshToken.setRevoked(false);
         newRefreshToken.setExpiryDate(LocalDateTime.now().plus(refreshTokenProperties.getDuration()));
-        User user = userService.searchByUsername(username);
-        newRefreshToken.setUser(user);
-        user.setRefreshToken(newRefreshToken);
+        newRefreshToken.setUser();
         return refreshTokenRepository.save(newRefreshToken);
     }
 

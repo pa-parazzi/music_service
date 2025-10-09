@@ -1,6 +1,7 @@
 package org.musicservice.demo.configuration.security;
 
 import org.musicservice.demo.configuration.jwt.JWTFilter;
+import org.musicservice.demo.configuration.jwt.RefreshTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +27,12 @@ public class SecurityConfig {
 
 
     private final JWTFilter jwtFilter;
+    private final RefreshTokenFilter refreshTokenFilter;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter) {
+    public SecurityConfig(JWTFilter jwtFilter, RefreshTokenFilter refreshTokenFilter) {
         this.jwtFilter = jwtFilter;
+        this.refreshTokenFilter = refreshTokenFilter;
     }
 
     @Bean
@@ -46,7 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/admin/**").hasRole("ADMIN")
                         .requestMatchers("/lk/profile").authenticated()
                         .anyRequest().denyAll())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtFilter, RefreshTokenFilter.class);
         return http.build();
     }
 

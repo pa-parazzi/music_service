@@ -1,5 +1,6 @@
 package org.musicservice.demo.service.user;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.configuration.security.LoginSecurityProperties;
@@ -11,10 +12,12 @@ import org.musicservice.demo.mapper.AdminMapper;
 import org.musicservice.demo.mapper.AvatarMapper;
 import org.musicservice.demo.mapper.UserMapper;
 import org.musicservice.demo.model.image.Avatar;
+import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.image.AvatarService;
 import org.musicservice.demo.service.image.S3ImgUrlGenerator;
+import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -40,9 +43,10 @@ public class UserService {
     private final AvatarMapper avatarMapper;
     private final S3ImgUrlGenerator s3ImgUrlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
+    private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AdminMapper adminMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AdminMapper adminMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
@@ -53,6 +57,7 @@ public class UserService {
         this.avatarMapper = avatarMapper;
         this.s3ImgUrlGenerator = s3ImgUrlGenerator;
         this.yandexStorageProperties = yandexStorageProperties;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AdminDto viewInfoAdmin(String username){
@@ -84,7 +89,7 @@ public class UserService {
     }
 
     @Transactional
-    public void registrationUser(UserDtoForRegistration userForRegistration, MultipartFile avatar){
+    public void registrationUser(HttpServletResponse response, UserDtoForRegistration userForRegistration, MultipartFile avatar){
         if (avatar==null){
             registrationUserWithAvatarDefault(userForRegistration);
             return;
@@ -96,6 +101,8 @@ public class UserService {
         userRepository.save(user);
         avatarService.create(avatar, user);
         verificationTokenService.createToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshTokenFromUser(response);
+        user.setRefreshToken(refreshToken);
     }
 
     @Transactional
