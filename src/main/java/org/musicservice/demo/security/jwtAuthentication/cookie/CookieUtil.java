@@ -1,4 +1,4 @@
-package org.musicservice.demo.cookie;
+package org.musicservice.demo.security.jwtAuthentication.cookie;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

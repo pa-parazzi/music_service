@@ -5,8 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.musicservice.demo.security.token.JWTUtil;
-import org.musicservice.demo.service.security.DetailsServiceForUser;
+import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
+import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,10 +20,10 @@ import java.io.IOException;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwt;
-    private final DetailsServiceForUser service;
+    private final UserDetailsServiceImpl service;
 
     @Autowired
-    public JWTFilter(JWTUtil jwt, DetailsServiceForUser service) {
+    public JWTFilter(JWTUtil jwt, UserDetailsServiceImpl service) {
         this.jwt = jwt;
         this.service = service;
     }

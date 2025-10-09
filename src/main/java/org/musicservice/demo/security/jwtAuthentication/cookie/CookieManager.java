@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.security;
+package org.musicservice.demo.security.jwtAuthentication.cookie;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.configuration.security.RefreshTokenProperties;
@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
 
 @Component
 public class CookieManager {

@@ -1,4 +1,4 @@
-package org.musicservice.demo.security;
+package org.musicservice.demo.security.authListener;
 
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

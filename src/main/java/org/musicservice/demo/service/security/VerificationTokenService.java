@@ -48,8 +48,8 @@ public class VerificationTokenService {
 
     @Transactional
     public void delete(VerificationToken verificationToken){
-        repository.delete(verificationToken);
         verificationToken.getUser().setVerificationToken(null);
+        repository.delete(verificationToken);
     }
 
     public boolean isExpiryDate(VerificationToken verificationToken){

@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.security;
 
-import org.musicservice.demo.security.DetailsForUser;
+import org.musicservice.demo.security.UserDetailsImpl;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class DetailsServiceForUser implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository repository;
 
     @Autowired
-    public DetailsServiceForUser(UserRepository repository) {
+    public UserDetailsServiceImpl(UserRepository repository) {
         this.repository = repository;
     }
 
@@ -27,7 +27,7 @@ public class DetailsServiceForUser implements UserDetailsService {
         if(user.isEmpty()){
             throw new UsernameNotFoundException("Пользователя с таким логином не существует");
         }
-        return new DetailsForUser(user.get());
+        return new UserDetailsImpl(user.get());
     }
 
 }

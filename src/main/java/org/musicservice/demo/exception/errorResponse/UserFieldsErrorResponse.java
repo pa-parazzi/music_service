@@ -1,4 +1,4 @@
-package org.musicservice.demo.exception;
+package org.musicservice.demo.exception.errorResponse;
 
 import lombok.Getter;
 import lombok.Setter;

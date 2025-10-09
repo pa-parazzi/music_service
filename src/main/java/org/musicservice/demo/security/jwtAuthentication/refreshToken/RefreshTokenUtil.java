@@ -1,4 +1,4 @@
-package org.musicservice.demo.security.token;
+package org.musicservice.demo.security.jwtAuthentication.refreshToken;
 
 
 import java.nio.charset.StandardCharsets;
@@ -6,7 +6,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-public final class TokenUtil {
+public final class RefreshTokenUtil {
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
