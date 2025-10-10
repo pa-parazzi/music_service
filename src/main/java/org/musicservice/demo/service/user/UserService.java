@@ -1,11 +1,13 @@
 package org.musicservice.demo.service.user;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.configuration.security.LoginSecurityProperties;
 import org.musicservice.demo.dto.admin.AdminDto;
 import org.musicservice.demo.dto.image.AvatarDto;
+import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.dto.user.UserDtoForView;
 import org.musicservice.demo.mapper.AdminMapper;
@@ -15,6 +17,8 @@ import org.musicservice.demo.model.image.Avatar;
 import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
+import org.musicservice.demo.security.jwtAuthentication.cookie.CookieManager;
+import org.musicservice.demo.security.jwtAuthentication.refreshToken.RefreshTokenUtil;
 import org.musicservice.demo.service.image.AvatarService;
 import org.musicservice.demo.service.image.S3ImgUrlGenerator;
 import org.musicservice.demo.service.security.RefreshTokenService;
@@ -43,9 +47,11 @@ public class UserService {
     private final S3ImgUrlGenerator s3ImgUrlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
     private final RefreshTokenService refreshTokenService;
+    private final CookieManager cookieManager;
+
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, CookieManager cookieManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
@@ -56,6 +62,7 @@ public class UserService {
         this.s3ImgUrlGenerator = s3ImgUrlGenerator;
         this.yandexStorageProperties = yandexStorageProperties;
         this.refreshTokenService = refreshTokenService;
+        this.cookieManager = cookieManager;
     }
 
     @Transactional
@@ -82,9 +89,9 @@ public class UserService {
     }
 
     @Transactional
-    public void registrationUser(HttpServletResponse response, UserDtoForRegistration userForRegistration, MultipartFile file){
+    public void registrationUser(HttpServletResponse response, HttpServletRequest request, UserDtoForRegistration userForRegistration, MultipartFile file){
         if (file==null){
-            registrationUserWithAvatarDefault(response, userForRegistration);
+            registrationUserWithAvatarDefault(response, request, userForRegistration);
             return;
         }
         User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
@@ -93,15 +100,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         avatarService.create(file, user);
         verificationTokenService.createToken(user);
-        RefreshToken refreshToken = refreshTokenService.createWithoutUser(response);
-        refreshToken.setUser(user);
-        user.setRefreshToken(refreshToken);
+        RefreshToken refreshToken = refreshTokenService.createOrGetCurrent(request, user);
         userRepository.save(user);
+        String refreshTokenByGenerate = RefreshTokenUtil.generateRefreshToken();
+        String hash = RefreshTokenUtil.hash(refreshTokenByGenerate);
+        refreshToken.setTokenHash(hash);
         refreshTokenService.save(refreshToken);
+        cookieManager.setCookie(response, refreshTokenByGenerate);
     }
 
     @Transactional
-    public void registrationUserWithAvatarDefault(HttpServletResponse response, UserDtoForRegistration userForRegistration){
+    public void registrationUserWithAvatarDefault(HttpServletResponse response , HttpServletRequest request, UserDtoForRegistration userForRegistration){
         User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
         user.setRole(Authority.USER);
         user.setEnabled(false);
@@ -109,11 +118,24 @@ public class UserService {
         userRepository.save(user);
         avatarService.createDefaultAvatar(user);
         verificationTokenService.createToken(user);
-        RefreshToken refreshToken = refreshTokenService.createWithoutUserFromRegistration(response);
-        refreshToken.setUser(user);
-        user.setRefreshToken(refreshToken);
+        RefreshToken refreshToken = refreshTokenService.createOrGetCurrent(request, user);
         userRepository.save(user);
+        String refreshTokenByGenerate = RefreshTokenUtil.generateRefreshToken();
+        String hash = RefreshTokenUtil.hash(refreshTokenByGenerate);
+        refreshToken.setTokenHash(hash);
         refreshTokenService.save(refreshToken);
+        cookieManager.setCookie(response, refreshTokenByGenerate);
+    }
+
+    public RefreshToken processLogin(HttpServletRequest request, HttpServletResponse response, UserDtoForLogin userDtoForLogin){
+        User user = userMapper.convertFromUserForLogin(userDtoForLogin);
+        RefreshToken refreshToken = refreshTokenService.createOrGetCurrent(request, user);
+        userRepository.save(user);
+        String refreshTokenByGenerate = RefreshTokenUtil.generateRefreshToken();
+        String hash = RefreshTokenUtil.hash(refreshTokenByGenerate);
+        refreshToken.setTokenHash(hash);
+        cookieManager.setCookie(response, refreshTokenByGenerate);
+        return refreshTokenService.save(refreshToken);
     }
 
     @Transactional

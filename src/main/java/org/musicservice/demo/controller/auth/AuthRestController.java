@@ -49,7 +49,7 @@ public class AuthRestController {
                                             @RequestPart(required = false) MultipartFile avatar,
                                             HttpServletRequest request,
                                             HttpServletResponse response){
-        service.registrationUser(response, user, avatar);
+        service.registrationUser(response, request, user, avatar);
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }
@@ -62,7 +62,7 @@ public class AuthRestController {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDtoForLogin.getUsername(), userDtoForLogin.getPassword());
             authenticationManager.authenticate(authenticationToken);
-            RefreshToken refreshToken = refreshTokenService.createRefreshTokenFromUser(response);
+            RefreshToken refreshToken = refreshTokenService.createOrGetCurrent(request, userDtoForLogin);
             String jwtToken = refreshTokenService.generateJwtFromLogin(refreshToken);
             return Map.of("jwt_token", jwtToken);
         } catch (AuthenticationException e){

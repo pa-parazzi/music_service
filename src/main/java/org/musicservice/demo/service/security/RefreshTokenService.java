@@ -49,8 +49,10 @@ public class RefreshTokenService {
 
     // Создает новый refreshToken для пользователя по его username, заранее задает токен в cookie
     // если refreshToken был найден в Cookie и он совпал с тем что есть в БД, тогда из метода возвращется старый токен
+    // Метод для логина в контроллере
     @Transactional
-    public RefreshToken createWithoutUserFromRegistration(HttpServletResponse response, HttpServletRequest request){
+    public RefreshToken createOrGetCurrent(HttpServletRequest request, User user){
+        // Берем токен из cookie, если в куки есть токен - ищем в бд и выдаем старый
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie!=null){
             Optional<RefreshToken> foundToken = refreshTokenRepository.findByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
@@ -59,13 +61,14 @@ public class RefreshTokenService {
             }
         }
         String refreshTokenByGenerate = RefreshTokenUtil.generateRefreshToken();
-        cookieManager.setCookie(response, refreshTokenByGenerate);
         String hash = RefreshTokenUtil.hash(refreshTokenByGenerate);
 
         RefreshToken newRefreshToken = new RefreshToken();
-        newRefreshToken.setTokenHash(hash);
         newRefreshToken.setExpiryDate(LocalDateTime.now().plus(refreshTokenProperties.getDuration()));
         newRefreshToken.setRevoked(false);
+        newRefreshToken.setTokenHash(hash);
+        newRefreshToken.setUser(user);
+        user.setRefreshToken(newRefreshToken);
         return newRefreshToken;
     }
 
@@ -89,8 +92,8 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public void save(RefreshToken refreshToken){
-        refreshTokenRepository.save(refreshToken);
+    public RefreshToken save(RefreshToken refreshToken){
+        return refreshTokenRepository.save(refreshToken);
     }
 
     // Удаление токена, отвязка от связанной сущности User
