@@ -38,7 +38,6 @@ public class UserService {
     private final LoginSecurityProperties securityProperties;
     private final VerificationTokenService verificationTokenService;
     private final UserMapper userMapper;
-    private final AdminMapper adminMapper;
     private final AvatarService avatarService;
     private final AvatarMapper avatarMapper;
     private final S3ImgUrlGenerator s3ImgUrlGenerator;
@@ -46,23 +45,17 @@ public class UserService {
     private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AdminMapper adminMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
         this.verificationTokenService = verificationTokenService;
         this.userMapper = userMapper;
-        this.adminMapper = adminMapper;
         this.avatarService = avatarService;
         this.avatarMapper = avatarMapper;
         this.s3ImgUrlGenerator = s3ImgUrlGenerator;
         this.yandexStorageProperties = yandexStorageProperties;
         this.refreshTokenService = refreshTokenService;
-    }
-
-    public AdminDto viewInfoAdmin(String username){
-        User user = searchByUsername(username);
-        return adminMapper.convertToAdmin(user);
     }
 
     @Transactional
@@ -89,24 +82,26 @@ public class UserService {
     }
 
     @Transactional
-    public void registrationUser(HttpServletResponse response, UserDtoForRegistration userForRegistration, MultipartFile avatar){
-        if (avatar==null){
-            registrationUserWithAvatarDefault(userForRegistration);
+    public void registrationUser(HttpServletResponse response, UserDtoForRegistration userForRegistration, MultipartFile file){
+        if (file==null){
+            registrationUserWithAvatarDefault(response, userForRegistration);
             return;
         }
         User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
         user.setRole(Authority.USER);
         user.setEnabled(false);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        avatarService.create(avatar, user);
+        avatarService.create(file, user);
         verificationTokenService.createToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshTokenFromUser(response);
+        RefreshToken refreshToken = refreshTokenService.createWithoutUser(response);
+        refreshToken.setUser(user);
         user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+        refreshTokenService.save(refreshToken);
     }
 
     @Transactional
-    public void registrationUserWithAvatarDefault(UserDtoForRegistration userForRegistration){
+    public void registrationUserWithAvatarDefault(HttpServletResponse response, UserDtoForRegistration userForRegistration){
         User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
         user.setRole(Authority.USER);
         user.setEnabled(false);
@@ -114,6 +109,11 @@ public class UserService {
         userRepository.save(user);
         avatarService.createDefaultAvatar(user);
         verificationTokenService.createToken(user);
+        RefreshToken refreshToken = refreshTokenService.createWithoutUserFromRegistration(response);
+        refreshToken.setUser(user);
+        user.setRefreshToken(refreshToken);
+        userRepository.save(user);
+        refreshTokenService.save(refreshToken);
     }
 
     @Transactional
@@ -131,16 +131,5 @@ public class UserService {
         user.setLockTime(null);
         userRepository.save(user);
     }
-
-//    @Transactional
-//    public void createAdmin(AdminDto adminDto){
-//        User user = adminMapper.convertToUser(adminDto);
-//        user.setEmail("igor.bocharov.88@gmail.com");
-//        user.setDateOfBirth(LocalDate.of(2003, 05, 11));
-//        user.setRole(Authority.ADMIN);
-//        user.setEnabled(true);
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        userRepository.save(user);
-//    }
 
 }

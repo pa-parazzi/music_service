@@ -48,6 +48,7 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
         }
         String username = foundToken.get().getUser().getUsername();
         String jwtToken = jwtUtil.generateToken(username);
+        System.out.println(jwtToken);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         UsernamePasswordAuthenticationToken authenticationToken =
