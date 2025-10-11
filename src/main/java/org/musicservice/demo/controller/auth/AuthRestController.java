@@ -1,5 +1,6 @@
 package org.musicservice.demo.controller.auth;
 
+import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -7,6 +8,7 @@ import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.exception.AuthenticationHundler.AuthenticationFailureHandlerForUser;
 import org.musicservice.demo.model.user.RefreshToken;
+import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieManager;
 import org.musicservice.demo.service.security.RefreshTokenService;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 import org.springframework.web.bind.annotation.*;
@@ -27,21 +30,19 @@ import java.util.Map;
 @RequestMapping("api/auth")
 public class AuthRestController {
 
-    private final UserService service;
+    private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
-    private final CookieManager cookieManager;
 
     @Autowired
-    public AuthRestController(UserService service, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, CookieManager cookieManager) {
-        this.service = service;
+    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler) {
+        this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
-        this.cookieManager = cookieManager;
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -49,7 +50,8 @@ public class AuthRestController {
                                             @RequestPart(required = false) MultipartFile avatar,
                                             HttpServletRequest request,
                                             HttpServletResponse response){
-        service.registrationUser(response, request, user, avatar);
+        User regUser = userService.registrationUser(user, avatar);
+        refreshTokenService.createRefreshToken(response, regUser);
         String jwtToken = jwtUtil.generateToken(user.getUsername());
         return Map.of("jwt_token", jwtToken);
     }
@@ -61,9 +63,8 @@ public class AuthRestController {
             request.setAttribute("LOGIN_USERNAME", userDtoForLogin.getUsername());
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDtoForLogin.getUsername(), userDtoForLogin.getPassword());
-            authenticationManager.authenticate(authenticationToken);
-            RefreshToken refreshToken = refreshTokenService.createOrGetCurrent(request, userDtoForLogin);
-            String jwtToken = refreshTokenService.generateJwtFromLogin(refreshToken);
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            String jwtToken = userService.processLogin(request, response, authentication.getName());
             return Map.of("jwt_token", jwtToken);
         } catch (AuthenticationException e){
             authenticationFailureHandler.onAuthenticationFailure(request, response, e);
@@ -73,8 +74,7 @@ public class AuthRestController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
-        refreshTokenService.delete(request);
-        cookieManager.clearCookie(response);
+        refreshTokenService.delete(request, response);
         return ResponseEntity.ok("Вы вышли из аккаутна");
     }
 

@@ -26,7 +26,7 @@ public class RefreshToken {
     @Column(name = "revoked")
     private Boolean revoked;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
