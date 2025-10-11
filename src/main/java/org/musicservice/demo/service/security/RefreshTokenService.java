@@ -66,6 +66,7 @@ public class RefreshTokenService {
     public String refreshJwtToken(HttpServletRequest request){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null){
+            System.out.println("Log refreshJwtToken");
             return null;
         }
         RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
@@ -78,6 +79,7 @@ public class RefreshTokenService {
     public void delete(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie!=null){
+            System.out.println("Log delete");
             RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
             foundToken.getUser().setRefreshToken(null);
             refreshTokenRepository.delete(foundToken);

@@ -49,8 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,"/admin/**").hasRole("ADMIN")
                         .requestMatchers("/lk/profile").authenticated()
                         .anyRequest().denyAll())
-                .addFilterBefore(refreshTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtFilter, RefreshTokenFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(refreshTokenFilter, JWTFilter.class);
         return http.build();
     }
 
