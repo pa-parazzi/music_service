@@ -24,8 +24,10 @@ import org.musicservice.demo.security.jwtAuthentication.refreshToken.RefreshToke
 import org.musicservice.demo.service.image.AvatarService;
 import org.musicservice.demo.service.image.S3ImgUrlGenerator;
 import org.musicservice.demo.service.security.RefreshTokenService;
+import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.musicservice.demo.service.security.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final LoginSecurityProperties securityProperties;
     private final VerificationTokenService verificationTokenService;
@@ -53,8 +56,9 @@ public class UserService {
 
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
+    public UserService(UserRepository userRepository, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
         this.verificationTokenService = verificationTokenService;
@@ -108,14 +112,13 @@ public class UserService {
     @Transactional
     public String processLogin(HttpServletRequest request , HttpServletResponse response, String username){
         User user = searchByUsername(username);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null && user.getRefreshToken()==null){
             refreshTokenService.createRefreshToken(response, user);
-            return jwtUtil.generateToken(username);
+            return jwtUtil.generateToken(userDetails);
         }
-        RefreshToken refreshToken = refreshTokenService.searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
-        User userByRefreshToken = refreshToken.getUser();
-        return jwtUtil.generateToken(userByRefreshToken.getUsername());
+        return jwtUtil.generateToken(userDetails);
     }
 
     @Transactional

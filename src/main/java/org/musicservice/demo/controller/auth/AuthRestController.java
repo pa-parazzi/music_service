@@ -11,7 +11,9 @@ import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieManager;
+import org.musicservice.demo.service.security.JwtTokenService;
 import org.musicservice.demo.service.security.RefreshTokenService;
+import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -20,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,14 +38,16 @@ public class AuthRestController {
     private final JWTUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler) {
+    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.jwtTokenService = jwtTokenService;
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -52,7 +57,7 @@ public class AuthRestController {
                                             HttpServletResponse response){
         User regUser = userService.registrationUser(user, avatar);
         refreshTokenService.createRefreshToken(response, regUser);
-        String jwtToken = jwtUtil.generateToken();
+        String jwtToken = jwtTokenService.generateAccessForUser(regUser);
         return Map.of("jwt_token", jwtToken);
     }
 
