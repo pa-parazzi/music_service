@@ -37,40 +37,33 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        if(authHeader!=null && authHeader.startsWith("Bearer ")){
-            String jwtToken = authHeader.substring(7);
-            try{
-                jwtUtil.validateToken(jwtToken);
-                filterChain.doFilter(request, response);
-                return;
-            }catch (JWTVerificationException e){
-                logger.warn("jwt-token не прошел валидацию");
-            }
-        }
+        if(request.getRequestURI().equals("/api/auth/refresh")){
+            String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
+            if(refreshTokenByCookie!=null){
+                String hash = RefreshTokenUtil.hash(refreshTokenByCookie);
+                Optional<RefreshToken> foundToken = refreshTokenService.getOptTokenByHash(hash);
+                if(foundToken.isPresent()){
+                    String username = foundToken.get().getUser().getUsername();
 
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie!=null){
-            String hash = RefreshTokenUtil.hash(refreshTokenByCookie);
-            Optional<RefreshToken> foundToken = refreshTokenService.getOptTokenByHash(hash);
-            if(foundToken.isPresent()){
-                String username = foundToken.get().getUser().getUsername();
-                String jwtToken = jwtUtil.generateToken(username);
-                System.out.println(jwtToken);
-
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                if(SecurityContextHolder.getContext().getAuthentication()==null){
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    String jwtToken = jwtUtil.generateToken(userDetails);
+                    System.out.println(jwtToken);
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    if(SecurityContextHolder.getContext().getAuthentication()==null){
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"accessToken\": \"" + jwtToken + "\"}");
+                    response.getWriter().flush();
+                    return;
                 }
-                response.setHeader("Authorization", "Bearer " + jwtToken);
-                response.setHeader("Access-Control-Expose-Headers", "Authorization");
-                filterChain.doFilter(request, response);
-                return;
             }
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"invalid refresh token\"}");
+            response.getWriter().flush();
         }
-
         filterChain.doFilter(request, response);
     }
 }

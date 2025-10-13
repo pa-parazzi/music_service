@@ -112,7 +112,6 @@ public class UserService {
         if(refreshTokenByCookie==null && user.getRefreshToken()==null){
             refreshTokenService.createRefreshToken(response, user);
             return jwtUtil.generateToken(username);
-
         }
         RefreshToken refreshToken = refreshTokenService.searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
         User userByRefreshToken = refreshToken.getUser();

@@ -29,14 +29,12 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieManager cookieManager;
     private final RefreshTokenProperties refreshTokenProperties;
-    private final JWTUtil jwtUtil;
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties, JWTUtil jwtUtil) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.cookieManager = cookieManager;
         this.refreshTokenProperties = refreshTokenProperties;
-        this.jwtUtil = jwtUtil;
     }
 
     public RefreshToken searchByTokenHash(String hash){
@@ -62,29 +60,14 @@ public class RefreshTokenService {
         refreshTokenRepository.save(refreshToken);
     }
 
-    @Transactional
-    public String refreshJwtToken(HttpServletRequest request){
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie==null){
-            System.out.println("Log refreshJwtToken");
-            return null;
-        }
-        RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
-        User user = foundToken.getUser();
-        return jwtUtil.generateToken(user.getUsername());
-    }
-
     // Удаление токена, отвязка от связанной сущности User
     @Transactional
     public void delete(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie!=null){
-            System.out.println("Log delete");
-            RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
-            foundToken.getUser().setRefreshToken(null);
-            refreshTokenRepository.delete(foundToken);
-            cookieManager.clearCookie(response);
-        }
+        RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
+        foundToken.getUser().setRefreshToken(null);
+        refreshTokenRepository.delete(foundToken);
+        cookieManager.clearCookie(response);
     }
 
 }

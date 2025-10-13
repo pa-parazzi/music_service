@@ -21,10 +21,10 @@ public class CookieManager {
     public void setCookie(HttpServletResponse response, String refreshToken){
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(refreshTokenProperties.getDuration())
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
@@ -33,10 +33,10 @@ public class CookieManager {
     public void clearCookie(HttpServletResponse response){
         ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
     }

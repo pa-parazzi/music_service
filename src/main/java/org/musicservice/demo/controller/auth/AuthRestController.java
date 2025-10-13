@@ -52,7 +52,7 @@ public class AuthRestController {
                                             HttpServletResponse response){
         User regUser = userService.registrationUser(user, avatar);
         refreshTokenService.createRefreshToken(response, regUser);
-        String jwtToken = jwtUtil.generateToken(user.getUsername());
+        String jwtToken = jwtUtil.generateToken();
         return Map.of("jwt_token", jwtToken);
     }
 
@@ -76,12 +76,6 @@ public class AuthRestController {
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response){
         refreshTokenService.delete(request, response);
         return ResponseEntity.ok("Вы вышли из аккаутна");
-    }
-
-    @PostMapping("/refresh")
-    public Map<String, String> generateNewAccessToken(HttpServletRequest request) {
-        String jwtToken = refreshTokenService.refreshJwtToken(request);
-        return Map.of("jwt_token", jwtToken);
     }
 
 }
