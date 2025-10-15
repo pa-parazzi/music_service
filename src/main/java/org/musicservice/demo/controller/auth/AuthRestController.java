@@ -35,16 +35,14 @@ public class AuthRestController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
-    private final JWTUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
     private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
+    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.jwtTokenService = jwtTokenService;

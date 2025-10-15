@@ -40,14 +40,13 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
         if(request.getRequestURI().equals("/api/auth/refresh")){
             String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
             if(refreshTokenByCookie!=null){
-                String hash = refreshTokenService.getHash(refreshTokenByCookie);
+                String hash = RefreshTokenUtil.hash(refreshTokenByCookie);
                 Optional<RefreshToken> foundToken = refreshTokenService.getOptTokenByHash(hash);
                 if(foundToken.isPresent()){
                     String username = foundToken.get().getUser().getUsername();
 
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     String jwtToken = jwtUtil.generateToken(userDetails);
-                    System.out.println(jwtToken);
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     if(SecurityContextHolder.getContext().getAuthentication()==null){

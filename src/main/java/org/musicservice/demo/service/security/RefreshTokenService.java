@@ -29,22 +29,16 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieManager cookieManager;
     private final RefreshTokenProperties refreshTokenProperties;
-    private final RefreshTokenUtil refreshTokenUtil;
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties, RefreshTokenUtil refreshTokenUtil) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.cookieManager = cookieManager;
         this.refreshTokenProperties = refreshTokenProperties;
-        this.refreshTokenUtil = refreshTokenUtil;
-    }
-
-    public String getHash(String token){
-        return refreshTokenUtil.hash(token);
     }
 
     public RefreshToken searchByTokenHash(String hash) {
-        return refreshTokenRepository.findByTokenHash(hash).orElseThrow(() -> new RefreshTokenNotFoundException("refreshToken is not a found"));
+        return refreshTokenRepository.findByTokenHash(hash).orElseThrow(()-> new RefreshTokenNotFoundException("refreshToken с таким hash не найден в БД"));
     }
 
     public Optional<RefreshToken> getOptTokenByHash(String hash){
@@ -54,7 +48,7 @@ public class RefreshTokenService {
     @Transactional
     public void createRefreshToken(HttpServletResponse response, User user){
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
-        String hash = refreshTokenUtil.hash(generatedRefreshToken);
+        String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
 
         RefreshToken refreshToken = new RefreshToken();
@@ -71,7 +65,7 @@ public class RefreshTokenService {
     public void delete(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie!=null){
-            RefreshToken foundToken = searchByTokenHash(refreshTokenUtil.hash(refreshTokenByCookie));
+            RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
             foundToken.getUser().setRefreshToken(null);
             refreshTokenRepository.delete(foundToken);
         }

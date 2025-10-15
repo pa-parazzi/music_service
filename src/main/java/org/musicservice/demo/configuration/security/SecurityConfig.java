@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**").permitAll()
+                        .requestMatchers("/api/auth/refresh").permitAll()
                         .requestMatchers("/admin/add.html", "/admin/login.html", "/admin/main.html","/login.html", "/music.html", "/registration.html", "/profile.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**", "/music", "/sound/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**", "/music", "/sound/**").permitAll()
