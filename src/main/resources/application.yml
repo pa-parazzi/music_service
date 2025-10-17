@@ -15,4 +15,4 @@ yandex:
   default-avatar-key: "default_avatar.jpg"
 
 refresh-token:
-  duration: 30d
+  duration: PT2M

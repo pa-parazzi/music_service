@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +52,9 @@ public class RefreshTokenService {
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setTokenHash(hash);
-        refreshToken.setUser(user);
+        Instant expiryDate = Instant.now().plus(refreshTokenProperties.getDuration());
+        RefreshToken refreshToken = new RefreshToken(hash, expiryDate, false, user);
         user.setRefreshToken(refreshToken);
-        refreshToken.setExpiryDate(LocalDateTime.now().plus(refreshTokenProperties.getDuration()));
-        refreshToken.setRevoked(false); // TODO: на стадии разработки false, реализовать отзыв токена
         refreshTokenRepository.save(refreshToken);
     }
 
@@ -71,5 +69,17 @@ public class RefreshTokenService {
         }
         cookieManager.clearCookie(response);
     }
+
+    @Transactional
+    public void dropToken(RefreshToken refreshToken, HttpServletResponse response){
+        refreshToken.getUser().setRefreshToken(null);
+        refreshTokenRepository.delete(refreshToken);
+        cookieManager.clearCookie(response);
+    }
+
+    public boolean isExpired(RefreshToken refreshToken){
+        return refreshToken.getExpiryDate().isBefore(Instant.now());
+    }
+
 
 }

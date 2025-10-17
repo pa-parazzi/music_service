@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class VerificationTokenService {
     @Transactional
     public void createToken(User user){
         String token = UUID.randomUUID().toString();
-        LocalDateTime expiryDate = LocalDateTime.now().plus(expirationHours);
+        Instant expiryDate = Instant.now().plus(expirationHours);
         VerificationToken newVerificationToken = new VerificationToken(user, token, expiryDate);
         user.setVerificationToken(newVerificationToken);
         repository.save(newVerificationToken);
@@ -53,7 +54,7 @@ public class VerificationTokenService {
     }
 
     public boolean isExpiryDate(VerificationToken verificationToken){
-        return verificationToken.getExpiryDate().isBefore(LocalDateTime.now());
+        return verificationToken.getExpiryDate().isBefore(Instant.now());
     }
 
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,18 +22,18 @@ public class RefreshToken {
     private String tokenHash;
 
     @Column(name = "expiry_date")
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
     @Column(name = "revoked")
     private Boolean revoked;
 
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
     public RefreshToken(){}
 
-    public RefreshToken(String tokenHash, LocalDateTime expiryDate, Boolean revoked, User user) {
+    public RefreshToken(String tokenHash, Instant expiryDate, Boolean revoked, User user) {
         this.tokenHash = tokenHash;
         this.expiryDate = expiryDate;
         this.revoked = revoked;

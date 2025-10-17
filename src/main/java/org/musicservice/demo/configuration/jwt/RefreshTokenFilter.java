@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.model.user.RefreshToken;
+import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.security.jwtAuthentication.refreshToken.RefreshTokenUtil;
@@ -43,9 +44,16 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
                 String hash = RefreshTokenUtil.hash(refreshTokenByCookie);
                 Optional<RefreshToken> foundToken = refreshTokenService.getOptTokenByHash(hash);
                 if(foundToken.isPresent()){
-                    String username = foundToken.get().getUser().getUsername();
+                    RefreshToken refreshToken = foundToken.get();
+                    User user = refreshToken.getUser();
+                    if(refreshTokenService.isExpired(refreshToken)){
+                        // TODO: ошибка контекста Spring, доработать методы удаления и создания refreshToken
+                        System.out.println("Зашли в блок isExpired");
+                        refreshTokenService.dropToken(refreshToken, response);
+                        refreshTokenService.createRefreshToken(response, user);
+                    }
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
                     String jwtToken = jwtUtil.generateToken(userDetails);
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

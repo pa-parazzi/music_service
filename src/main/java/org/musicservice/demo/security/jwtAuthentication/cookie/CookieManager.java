@@ -7,6 +7,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+
 @Component
 public class CookieManager {
 
@@ -23,7 +27,7 @@ public class CookieManager {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(refreshTokenProperties.getDuration())
+                .maxAge(refreshTokenProperties.getDuration().plusMinutes(1).getSeconds())
                 .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

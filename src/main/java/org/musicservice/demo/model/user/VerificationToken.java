@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -25,11 +26,11 @@ public class VerificationToken {
     private String token;
 
     @Column(name = "expiry_date")
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
     public VerificationToken(){}
 
-    public VerificationToken(User user, String token, LocalDateTime expiryDate) {
+    public VerificationToken(User user, String token, Instant expiryDate) {
         this.user = user;
         this.token = token;
         this.expiryDate = expiryDate;
