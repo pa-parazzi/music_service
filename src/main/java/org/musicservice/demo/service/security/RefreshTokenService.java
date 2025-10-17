@@ -1,7 +1,9 @@
 package org.musicservice.demo.service.security;
 
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.Session;
 import org.musicservice.demo.configuration.security.RefreshTokenProperties;
 import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.exception.refreshTokenError.RefreshTokenNotFoundException;
@@ -64,17 +66,16 @@ public class RefreshTokenService {
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie!=null){
             RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
-            foundToken.getUser().setRefreshToken(null);
+            User user = foundToken.getUser();
+            user.setRefreshToken(null);
             refreshTokenRepository.delete(foundToken);
         }
         cookieManager.clearCookie(response);
     }
 
     @Transactional
-    public void dropToken(RefreshToken refreshToken, HttpServletResponse response){
-        refreshToken.getUser().setRefreshToken(null);
-        refreshTokenRepository.delete(refreshToken);
-        cookieManager.clearCookie(response);
+    public void deleteAllByExpiredSince(Instant now){
+        refreshTokenRepository.deleteAllByExpiryDateBefore(now);
     }
 
     public boolean isExpired(RefreshToken refreshToken){

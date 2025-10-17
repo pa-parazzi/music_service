@@ -27,7 +27,7 @@ public class CookieManager {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(refreshTokenProperties.getDuration().plusMinutes(1).getSeconds())
+                .maxAge(refreshTokenProperties.getDuration().plusMinutes(10).getSeconds())
                 .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

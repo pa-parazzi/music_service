@@ -47,9 +47,7 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
                     RefreshToken refreshToken = foundToken.get();
                     User user = refreshToken.getUser();
                     if(refreshTokenService.isExpired(refreshToken)){
-                        // TODO: ошибка контекста Spring, доработать методы удаления и создания refreshToken
-                        System.out.println("Зашли в блок isExpired");
-                        refreshTokenService.dropToken(refreshToken, response);
+                        refreshTokenService.delete(request, response);
                         refreshTokenService.createRefreshToken(response, user);
                     }
 

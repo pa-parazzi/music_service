@@ -3,6 +3,8 @@ package org.musicservice.demo.model.user;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Fetch;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -27,7 +29,7 @@ public class RefreshToken {
     @Column(name = "revoked")
     private Boolean revoked;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
