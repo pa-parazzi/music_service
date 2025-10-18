@@ -14,5 +14,6 @@ yandex:
   endpoint: "https://storage.yandexcloud.net"
   default-avatar-key: "default_avatar.jpg"
 
-refresh-token:
-  duration: PT2M
+auth-token:
+  refresh-token-duration: P30D
+  access-token-duration: PT15M

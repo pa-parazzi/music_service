@@ -5,11 +5,15 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.musicservice.demo.configuration.security.AuthenticationTokenProperties;
 import org.musicservice.demo.service.security.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -21,8 +25,16 @@ public class JWTUtil {
     @Value("${jwt_secret_key}")
     private String secret;
 
+    private final AuthenticationTokenProperties authenticationTokenProperties;
+
+    @Autowired
+    public JWTUtil(AuthenticationTokenProperties authenticationTokenProperties) {
+        this.authenticationTokenProperties = authenticationTokenProperties;
+    }
+
     public String generateToken(UserDetails userDetails){
-        Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(1).toInstant());
+        Date expirationDate = Date.from(Instant.now().plus(authenticationTokenProperties.getAccessTokenDuration()));
+        System.out.println("Expiration date: " + expirationDate);
         return JWT.create()
                 .withSubject("User details")
                 .withClaim("username", userDetails.getUsername())

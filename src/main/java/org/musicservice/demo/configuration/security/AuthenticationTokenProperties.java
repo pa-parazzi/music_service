@@ -6,13 +6,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "refresh-token")
-public class RefreshTokenProperties {
+@ConfigurationProperties(prefix = "auth-token")
+public class AuthenticationTokenProperties {
 
-    private Duration duration;
+    private Duration refreshTokenDuration;
+    private Duration accessTokenDuration;
 }
