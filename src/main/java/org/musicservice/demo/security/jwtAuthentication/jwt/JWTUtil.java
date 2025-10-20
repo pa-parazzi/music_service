@@ -34,7 +34,6 @@ public class JWTUtil {
 
     public String generateToken(UserDetails userDetails){
         Date expirationDate = Date.from(Instant.now().plus(authenticationTokenProperties.getAccessTokenDuration()));
-        System.out.println("Expiration date: " + expirationDate);
         return JWT.create()
                 .withSubject("User details")
                 .withClaim("username", userDetails.getUsername())
