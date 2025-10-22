@@ -3,45 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Panel</title>
+    <link rel="stylesheet" href="/css/defaultHeader.css">
     <link rel="stylesheet" href="/css/adminStyle.css">
 </head>
 <body>
 
-<header>Панель</header>
+<header class="header">
+    <h1>Админ панель</h1>
+    <nav id="sign-in/up-buttons" class="nav-buttons">
+        <a href="/login.html" class="button">Sign in</a>
+        <a href="/registration.html" class="button">Sign up</a>
+    </nav>
+    <div class="userInfo" id="userInfo"></div>
+</header>
 
-<div class="container">
-    <div id="profile"></div>
+<main class="main-content">
+    <section class="upload-section">
+        <h2>Импорт музыкальных данных</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="musicFile">Выберите JSON-файл:</label>
+            <input type="file" id="musicFile" name="file" accept=".json" required>
+            <button type="submit" class="button">Загрузить</button>
+        </form>
+        <div id="uploadStatus" class="upload-status"></div>
+    </section>
+</main>
 
-    <div class="buttons">
-        <button class="btn add" onclick="goTo('/admin/add.html')">Добавить</button>
-    </div>
-</div>
+
 
 <script>
-    async function loadProfile(){
-        const token = localStorage.getItem("jwt");
 
-        const response = await fetch("http://localhost:8080/admin/main", {
-            method: "GET",
-            headers:{
-                "Authorization": "Bearer " + token
-            }
-        });
+    /* --- централизованные утилиты и замок --- */
+    let refreshInProgress = null;
 
-        if(response.ok){
-            const admin = await response.json();
-            document.getElementById("profile").innerHTML =
-                `Имя пользователя: ${admin.username}<br>Статус: ${admin.status}`;
-        } else {
-            document.getElementById("profile").textContent = "Ошибка загрузки профиля";
+    function clearAuth() {
+        localStorage.removeItem("jwt");
+    }
+
+    /* --- безопасный парсер JSON --- */
+    async function safeParseJson(response) {
+        const contentType = response.headers.get("Content-Type") || "";
+        if (!response.ok) return null;
+        if (response.status === 204) return null;
+        if (!contentType.includes("application/json")) {
+            try { return await response.json(); } catch (e) { return null; }
+        }
+        try {
+            return await response.json();
+        } catch (e) {
+            console.warn("safeParseJson: no JSON body", e);
+            return null;
         }
     }
 
-    function goTo(page){
-        window.location.href=page;
+    /* --- refreshAccessToken с "замком" --- */
+    async function refreshAccessToken() {
+        if (refreshInProgress) return refreshInProgress;
+
+        refreshInProgress = (async () => {
+            try {
+                const res = await fetch('/api/auth/refresh', {
+                    method: "POST",
+                    credentials: "include"
+                });
+
+                if (!res.ok) {
+                    console.warn("refreshAccessToken: refresh не удался");
+                    clearAuth();
+                    return false;
+                }
+
+                const data = await safeParseJson(res);
+                const token = data && (data["jwt-token"] || data["jwt_token"] || data.accessToken || data.token);
+
+                if (!token) {
+                    console.warn("refreshAccessToken: ответ не содержит jwt");
+                    clearAuth();
+                    return false;
+                }
+
+                localStorage.setItem("jwt", token);
+                console.log("Access token обновлён");
+                return true;
+            } catch (e) {
+                console.error("refreshAccessToken error:", e);
+                clearAuth();
+                return false;
+            } finally {
+                refreshInProgress = null;
+            }
+        })();
+
+        return refreshInProgress;
     }
 
-    loadProfile();
+    /* --- Обёртка для запросов с авторизацией и auto-refresh --- */
+    async function apiFetch(url, options = {}) {
+        options = { ...options };
+        const headers = { ...(options.headers || {}) };
+
+        // ждём, если в данный момент выполняется refresh
+        if (refreshInProgress) await refreshInProgress;
+
+        const token = localStorage.getItem("jwt");
+
+        // Добавляем Authorization только если токен есть
+        if (token) {
+            headers["Authorization"] = "Bearer " + token;
+        } else {
+            delete headers["Authorization"];
+        }
+
+        options.headers = headers;
+        options.credentials = "include";
+
+        let response;
+
+        try {
+            response = await fetch(url, options);
+        } catch (e) {
+            console.error("apiFetch network error:", e);
+            throw e;
+        }
+
+        // Если токена нет, то просто возвращаем ответ без попытки refresh
+        if (!token) {
+            return response;
+        }
+
+        // Если токен истёк — пробуем обновить и повторить запрос
+        if (response.status === 401 || response.status === 403) {
+            const refreshed = await refreshAccessToken();
+            if (refreshed) {
+                const newToken = localStorage.getItem("jwt");
+                const retryHeaders = { ...headers };
+
+                if (newToken) {
+                    retryHeaders["Authorization"] = "Bearer " + newToken;
+                } else {
+                    delete retryHeaders["Authorization"];
+                }
+
+                try {
+                    response = await fetch(url, {
+                        ...options,
+                        headers: retryHeaders,
+                        credentials: "include"
+                    });
+                } catch (e) {
+                    console.error("apiFetch retry error:", e);
+                    throw e;
+                }
+            }
+        }
+
+        return response;
+    }
+
+
+    /* --- Загрузка профиля --- */
+    async function loadProfile() {
+        const nav = document.getElementById("sign-in/up-buttons");
+        const userInfoDiv = document.getElementById("userInfo");
+
+        try {
+            const response = await apiFetch("http://localhost:8080/lk/profile", {
+                method: "GET"
+            });
+
+            if (response.ok) {
+                const user = await response.json();
+
+                nav.style.display = "none";
+                userInfoDiv.innerHTML = `
+                    <img src="${user.avatar?.url}" alt="avatar">
+                    <span>${user.username}</span>
+                    <button id="logoutBtn" class="logout-btn">Выйти</button>
+                `;
+
+                const logoutBtn = document.getElementById("logoutBtn");
+                logoutBtn.addEventListener("click", logout);
+
+                userInfoDiv.style.display = "block";
+            } else {
+                clearAuth();
+                userInfoDiv.style.display = "none";
+                nav.style.display = "flex";
+                console.warn("Сессия истекла или токен недействителен");
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки профиля:", error);
+            userInfoDiv.style.display = "none";
+            nav.style.display = "flex";
+        }
+    }
+
+    /* --- Logout --- */
+    async function logout() {
+        try {
+            const response = await apiFetch("http://localhost:8080/api/auth/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            clearAuth();
+            if (response.ok) {
+                console.log("Выход выполнен успешно");
+                window.location.href = "/music.html";
+            } else {
+                console.warn("Ошибка при выходе:", response.status);
+            }
+        } catch (error) {
+            console.error("Ошибка logout:", error);
+        }
+    }
+
+    /* --- Инициализация при загрузке страницы --- */
+    document.addEventListener("DOMContentLoaded", async () => {
+        await loadProfile();
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        await loadProfile();
+
+        const uploadForm = document.getElementById("uploadForm");
+        const statusDiv = document.getElementById("uploadStatus");
+
+        uploadForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById("musicFile");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                statusDiv.textContent = "Пожалуйста, выберите файл.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            statusDiv.textContent = "Загрузка...";
+
+            try {
+                const response = await apiFetch("/admin/upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    statusDiv.textContent = "✅ Файл успешно загружен и импортирован!";
+                    fileInput.value = "";
+                } else {
+                    const errorText = await response.text();
+                    statusDiv.textContent = "❌ Ошибка при загрузке: " + (errorText || response.status);
+                }
+            } catch (error) {
+                console.error("Ошибка при отправке файла:", error);
+                statusDiv.textContent = "❌ Произошла ошибка при загрузке файла.";
+            }
+        });
+    });
 </script>
 
 

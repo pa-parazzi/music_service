@@ -12,4 +12,5 @@ import java.util.Optional;
 @Repository
 public interface SoundRepository extends JpaRepository<Sound, Long> {
 
+    Optional<Sound> findByTitle(String title);
 }

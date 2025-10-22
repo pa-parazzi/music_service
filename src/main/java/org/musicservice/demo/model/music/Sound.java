@@ -2,6 +2,8 @@ package org.musicservice.demo.model.music;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "sound")
 public class Sound {
@@ -84,5 +86,18 @@ public class Sound {
 
     public void setAlbum(Album album) {
         this.album = album;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Sound sound = (Sound) o;
+        return Objects.equals(key, sound.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(key);
     }
 }

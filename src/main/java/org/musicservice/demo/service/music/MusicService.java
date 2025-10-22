@@ -3,6 +3,7 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.music.AlbumDto;
 import org.musicservice.demo.dto.music.MusicDto;
+import org.musicservice.demo.dto.music.MusicInsertDto;
 import org.musicservice.demo.dto.music.SoundDto;
 import org.musicservice.demo.mapper.AlbumMapper;
 import org.musicservice.demo.mapper.ArtistMapper;
@@ -13,10 +14,14 @@ import org.musicservice.demo.model.music.Sound;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
+import org.musicservice.demo.service.readFile.MusicReaderManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.*;
 
 
 @Service
@@ -81,6 +86,65 @@ public class MusicService {
             }
         }
 
+    }
+
+    public Artist getArtist(MusicInsertDto musicDto){
+        return artistRepository.findByName(musicDto.getArtist())
+                .orElseGet(()-> {
+                    Artist newArtist = new Artist();
+                    newArtist.setName(musicDto.getArtist());
+                    return newArtist;
+                });
+    }
+
+    public Album getAlbum(MusicInsertDto musicDto){
+        return albumRepository.findByTitle(musicDto.getAlbum())
+                .orElseGet(() -> {
+                    Album newAlbum = new Album();
+                    newAlbum.setTitle(musicDto.getAlbum());
+                    return newAlbum;
+                });
+    }
+
+    public Sound getSound(MusicInsertDto musicDto){
+        return soundRepository.findByTitle(musicDto.getTitle())
+                .orElseGet(()-> {
+                    Sound newSound = new Sound();
+                    newSound.setTitle(musicDto.getTitle());
+                    newSound.setDuration(musicDto.getDuration());
+                    newSound.setKey(musicDto.getS3_key());
+                    return newSound;
+                });
+    }
+
+    @Transactional
+    public void importFile(MultipartFile file) throws IOException {
+        List<MusicInsertDto> musicDtoList = MusicReaderManager.readToInsert(file);
+        for(MusicInsertDto musicDto: musicDtoList){
+            Artist artist = getArtist(musicDto);
+            artistRepository.save(artist);
+
+            Album album = getAlbum(musicDto);
+            album.setArtist(artist);
+
+            Sound sound = getSound(musicDto);
+            sound.setArtist(artist);
+            sound.setAlbum(album);
+
+            if(!artist.getAlbums().contains(album)){
+                artist.getAlbums().add(album);
+            }
+
+            if(!album.getSoundList().contains(sound)){
+                album.getSoundList().add(sound);
+            }
+
+            if(!artist.getSoundList().contains(sound)){
+                artist.getSoundList().add(sound);
+            }
+
+            artistRepository.save(artist);
+        }
     }
 
 }
