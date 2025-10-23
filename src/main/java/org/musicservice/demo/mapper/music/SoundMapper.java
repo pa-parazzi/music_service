@@ -1,4 +1,4 @@
-package org.musicservice.demo.mapper;
+package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Mapper;
 import org.musicservice.demo.dto.music.SoundDto;

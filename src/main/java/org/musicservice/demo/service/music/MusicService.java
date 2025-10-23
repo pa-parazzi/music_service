@@ -1,13 +1,12 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
-import org.musicservice.demo.dto.music.AlbumDto;
-import org.musicservice.demo.dto.music.MusicDto;
-import org.musicservice.demo.dto.music.MusicInsertDto;
-import org.musicservice.demo.dto.music.SoundDto;
-import org.musicservice.demo.mapper.AlbumMapper;
-import org.musicservice.demo.mapper.ArtistMapper;
-import org.musicservice.demo.mapper.SoundMapper;
+import org.musicservice.demo.dto.music.*;
+import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.dto.music.mainResponse.MainResponse;
+import org.musicservice.demo.mapper.music.AlbumMapper;
+import org.musicservice.demo.mapper.music.ArtistMapper;
+import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
@@ -64,6 +63,21 @@ public class MusicService {
         SoundDto soundDto = soundMapper.convertToDto(sound);
         soundDto.setUrl(url);
         return soundDto;
+    }
+
+    public MainResponse viewMusic(){
+        MainResponse mainResponse = new MainResponse();
+        List<AlbumResponse> albums = albumRepository.findAll().stream().map(albumMapper::convertToAlbumResponse).toList();
+        for(AlbumResponse album: albums){
+            List<SoundDto> soundList = album.getSoundList();
+            for(SoundDto soundDto: soundList){
+                Sound sound = soundMapper.convertToSound(soundDto);
+                String url = s3TrackUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("music"), sound.getKey());
+                soundDto.setUrl(url);
+            }
+        }
+        mainResponse.setAlbums(albums);
+        return mainResponse;
     }
 
     @Transactional

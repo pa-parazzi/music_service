@@ -1,6 +1,7 @@
 package org.musicservice.demo.model.music;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.musicservice.demo.mapper;
+package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Mapper;
 import org.musicservice.demo.dto.music.ArtistDto;
@@ -8,4 +8,5 @@ import org.musicservice.demo.model.music.Artist;
 public interface ArtistMapper {
 
     Artist convertToArtist(ArtistDto artistDto);
+
 }

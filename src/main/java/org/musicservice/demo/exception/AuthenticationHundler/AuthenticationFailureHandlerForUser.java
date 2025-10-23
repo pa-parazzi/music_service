@@ -50,7 +50,7 @@ public class AuthenticationFailureHandlerForUser implements AuthenticationFailur
             if (userOptional.isPresent() && !userOptional.get().isAccountNonLocked()) {
                 long secondsLeft = userOptional.get().getRemainingLockSeconds();
                 error = new HashMap<>();
-                error.put("error", "Вы превысили количество попыток входа, попробуйте снова через " + STR."\{secondsLeft} минут");
+                error.put("error", "Вы превысили количество попыток входа, попробуйте снова через " + secondsLeft + " минут");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write(new ObjectMapper().writeValueAsString(error));
                 return;

@@ -37,7 +37,8 @@
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
 <div class="container">
-    <div id="trackList"></div>
+    <!-- Контейнер для альбомов -->
+    <div id="albumList" class="album-list"></div>
 </div>
 
 <div id="player-bar">
@@ -233,71 +234,125 @@
         }
     }
 
-    /* --- Список музыки --- */
-    function formatDuration(seconds) {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    }
-
-    async function loadSounds() {
+    // Список альбомов
+    async function loadAlbums() {
         try {
+            // Выполняем запрос к API
             const response = await apiFetch("http://localhost:8080/music", { method: "GET" });
 
+            // Если ошибка при запросе, выводим сообщение
             if (!response.ok) {
-                document.getElementById("trackList").textContent = "Ошибка загрузки списка";
+                document.getElementById("albumList").textContent = "Ошибка загрузки списка альбомов";
                 return;
             }
 
-            const sounds = await response.json();
-            const listDiv = document.getElementById("trackList");
+            // Получаем данные о альбомах
+            const data = await response.json();
+
+            // Получаем список альбомов из ответа
+            const albums = data.albums;
+
+            // Получаем контейнер для альбомов
+            const listDiv = document.getElementById("albumList");
             listDiv.innerHTML = "";
 
-            sounds.forEach((sound) => {
-                const card = document.createElement("div");
-                card.className = "track-card";
+            // Перебираем каждый альбом и создаём карточку
+            albums.forEach((album) => {
+                const albumCard = document.createElement("div");
+                albumCard.className = "album-card";
 
-                const info = document.createElement("div");
-                info.className = "track-info";
+                const albumInfo = document.createElement("div");
+                albumInfo.className = "album-info";
 
-                const title = document.createElement("div");
-                title.className = "track-title";
-                title.textContent = sound.title;
+                // Название альбома
+                const albumTitle = document.createElement("div");
+                albumTitle.className = "album-title";
+                albumTitle.textContent = album.title;
 
-                const duration = document.createElement("div");
-                duration.className = "track-duration";
-                duration.textContent = formatDuration(sound.duration);
+                // Имя артиста
+                const artistName = document.createElement("div");
+                artistName.className = "artist-name";
+                artistName.textContent = album.artist.name;
 
-                info.appendChild(title);
-                info.appendChild(duration);
+                // Добавляем информацию в карточку
+                albumInfo.appendChild(albumTitle);
+                albumInfo.appendChild(artistName);
+                albumCard.appendChild(albumInfo);
 
-                const playBtn = document.createElement("button");
-                playBtn.className = "play-btn";
-                playBtn.textContent = "▶";
-
-                playBtn.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const player = document.getElementById("player");
-                    const source = document.getElementById("audioSource");
-                    source.src = sound.url;
-                    player.load();
-                    player.play();
-                });
-
-                card.appendChild(info);
-                card.appendChild(playBtn);
-                listDiv.appendChild(card);
+                // Добавляем карточку в контейнер
+                listDiv.appendChild(albumCard);
             });
         } catch (error) {
-            document.getElementById("trackList").textContent = "Необработанная ошибка";
-            console.error(error);
+            document.getElementById("albumList").textContent = "Необработанная ошибка";
+            console.error("Ошибка при загрузке альбомов:", error);
         }
     }
+
+    // /* --- Список музыки --- */
+    // function formatDuration(seconds) {
+    //     const m = Math.floor(seconds / 60);
+    //     const s = seconds % 60;
+    //     return `${m}:${s.toString().padStart(2, "0")}`;
+    // }
+    //
+    // async function loadSounds() {
+    //     try {
+    //         const response = await apiFetch("http://localhost:8080/music", { method: "GET" });
+    //
+    //         if (!response.ok) {
+    //             document.getElementById("trackList").textContent = "Ошибка загрузки списка";
+    //             return;
+    //         }
+    //
+    //         const sounds = await response.json();
+    //         const listDiv = document.getElementById("trackList");
+    //         listDiv.innerHTML = "";
+    //
+    //         sounds.forEach((sound) => {
+    //             const card = document.createElement("div");
+    //             card.className = "track-card";
+    //
+    //             const info = document.createElement("div");
+    //             info.className = "track-info";
+    //
+    //             const title = document.createElement("div");
+    //             title.className = "track-title";
+    //             title.textContent = sound.title;
+    //
+    //             const duration = document.createElement("div");
+    //             duration.className = "track-duration";
+    //             duration.textContent = formatDuration(sound.duration);
+    //
+    //             info.appendChild(title);
+    //             info.appendChild(duration);
+    //
+    //             const playBtn = document.createElement("button");
+    //             playBtn.className = "play-btn";
+    //             playBtn.textContent = "▶";
+    //
+    //             playBtn.addEventListener("click", (e) => {
+    //                 e.stopPropagation();
+    //                 const player = document.getElementById("player");
+    //                 const source = document.getElementById("audioSource");
+    //                 source.src = sound.url;
+    //                 player.load();
+    //                 player.play();
+    //             });
+    //
+    //             card.appendChild(info);
+    //             card.appendChild(playBtn);
+    //             listDiv.appendChild(card);
+    //         });
+    //     } catch (error) {
+    //         document.getElementById("trackList").textContent = "Необработанная ошибка";
+    //         console.error(error);
+    //     }
+    // }
 
     /* --- Инициализация при загрузке страницы --- */
     document.addEventListener("DOMContentLoaded", async () => {
         await loadProfile();
-        await loadSounds();
+        await loadAlbums();
     });
 </script>
 </body>

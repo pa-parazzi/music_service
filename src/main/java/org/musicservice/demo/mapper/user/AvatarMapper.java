@@ -1,4 +1,4 @@
-package org.musicservice.demo.mapper;
+package org.musicservice.demo.mapper.user;
 
 import org.mapstruct.Mapper;
 import org.musicservice.demo.dto.image.AvatarDto;

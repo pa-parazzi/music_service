@@ -1,7 +1,9 @@
 package org.musicservice.demo.controller.rest.music;
 
 import org.apache.coyote.Response;
+import org.musicservice.demo.dto.music.AlbumDto;
 import org.musicservice.demo.dto.music.SoundDto;
+import org.musicservice.demo.dto.music.mainResponse.MainResponse;
 import org.musicservice.demo.service.music.MusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +27,8 @@ public class MusicController {
     }
 
     @GetMapping("/music")
-    public ResponseEntity<List<SoundDto>> showAllSound(){
-        return ResponseEntity.ok(musicService.soundList());
+    public ResponseEntity<MainResponse> view(){
+        return ResponseEntity.ok(musicService.viewMusic());
     }
 
     @GetMapping("/sound/{id}")
