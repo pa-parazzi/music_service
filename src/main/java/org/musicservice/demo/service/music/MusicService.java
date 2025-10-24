@@ -13,6 +13,8 @@ import org.musicservice.demo.model.music.Sound;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
+import org.musicservice.demo.service.image.AlbumImageService;
+import org.musicservice.demo.service.image.SoundImageService;
 import org.musicservice.demo.service.readFile.MusicReaderManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,9 +37,11 @@ public class MusicService {
     private final SoundMapper soundMapper;
     private final YandexStorageProperties yandexStorageProperties;
     private final S3TrackUrlGenerator s3TrackUrlGenerator;
+    private final AlbumImageService albumImageService;
+    private final SoundImageService soundImageService;
 
     @Autowired
-    public MusicService(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, ArtistMapper artistMapper, AlbumMapper albumMapper, SoundMapper soundMapper, YandexStorageProperties yandexStorageProperties, S3TrackUrlGenerator s3TrackUrlGenerator) {
+    public MusicService(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, ArtistMapper artistMapper, AlbumMapper albumMapper, SoundMapper soundMapper, YandexStorageProperties yandexStorageProperties, S3TrackUrlGenerator s3TrackUrlGenerator, AlbumImageService albumImageService, SoundImageService soundImageService) {
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
         this.soundRepository = soundRepository;
@@ -46,6 +50,8 @@ public class MusicService {
         this.soundMapper = soundMapper;
         this.yandexStorageProperties = yandexStorageProperties;
         this.s3TrackUrlGenerator = s3TrackUrlGenerator;
+        this.albumImageService = albumImageService;
+        this.soundImageService = soundImageService;
     }
 
     public List<SoundDto> soundList(){
@@ -78,28 +84,6 @@ public class MusicService {
         }
         mainResponse.setAlbums(albums);
         return mainResponse;
-    }
-
-    @Transactional
-    public void create(MusicDto musicDto){
-        Artist artist = artistMapper.convertToArtist(musicDto.getArtist());
-        artistRepository.save(artist);
-
-        List<AlbumDto> albums = musicDto.getAlbums();
-        for(AlbumDto album: albums){
-            Album newAlbum = albumMapper.convertToAlbum(album);
-            newAlbum.setArtist(artist);
-            albumRepository.save(newAlbum);
-
-            List<SoundDto> soundList = musicDto.getSoundList();
-            for(SoundDto sound: soundList){
-                Sound newSound = soundMapper.convertToSound(sound);
-                newSound.setAlbum(newAlbum);
-                newSound.setArtist(artist);
-                soundRepository.save(newSound);
-            }
-        }
-
     }
 
     public Artist getArtist(MusicInsertDto musicDto){
@@ -140,10 +124,12 @@ public class MusicService {
 
             Album album = getAlbum(musicDto);
             album.setArtist(artist);
+            albumImageService.create(file, album);
 
             Sound sound = getSound(musicDto);
             sound.setArtist(artist);
             sound.setAlbum(album);
+            soundImageService.create(file, sound);
 
             if(!artist.getAlbums().contains(album)){
                 artist.getAlbums().add(album);

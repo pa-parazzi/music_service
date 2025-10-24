@@ -1,7 +1,10 @@
 package org.musicservice.demo.model.music;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
+import org.musicservice.demo.model.image.AlbumImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +12,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "album")
+@Getter
+@Setter
 public class Album {
 
     @Id
@@ -26,44 +31,16 @@ public class Album {
     @OneToMany(mappedBy = "album")
     private List<Sound> soundList = new ArrayList<>();
 
+    @OneToOne(mappedBy = "album", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private AlbumImage image;
+
     public Album(){}
 
-    public Album(String title, Artist artist, List<Sound> soundList) {
+    public Album(String title, Artist artist, List<Sound> soundList, AlbumImage image) {
         this.title = title;
         this.artist = artist;
         this.soundList = soundList;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Artist getArtist() {
-        return artist;
-    }
-
-    public void setArtist(Artist artist) {
-        this.artist = artist;
-    }
-
-    public List<Sound> getSoundList() {
-        return soundList;
-    }
-
-    public void setSoundList(List<Sound> soundList) {
-        this.soundList = soundList;
+        this.image = image;
     }
 
     @Override

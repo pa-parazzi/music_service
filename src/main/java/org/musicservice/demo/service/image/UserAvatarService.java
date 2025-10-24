@@ -3,9 +3,9 @@ package org.musicservice.demo.service.image;
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.image.AvatarDto;
 import org.musicservice.demo.mapper.user.AvatarMapper;
-import org.musicservice.demo.model.image.Avatar;
+import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
-import org.musicservice.demo.repository.image.AvatarRepository;
+import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +20,17 @@ import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
-public class AvatarService {
+public class UserAvatarService {
 
-    private final AvatarRepository avatarRepository;
+    private final UserAvatarRepository userAvatarRepository;
     private final AvatarMapper avatarMapper;
     private final S3ImgUrlGenerator urlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
     private final S3Client s3Client;
 
     @Autowired
-    public AvatarService(AvatarRepository avatarRepository, AvatarMapper avatarMapper, S3ImgUrlGenerator urlGenerator, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
-        this.avatarRepository = avatarRepository;
+    public UserAvatarService(UserAvatarRepository userAvatarRepository, AvatarMapper avatarMapper, S3ImgUrlGenerator urlGenerator, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
+        this.userAvatarRepository = userAvatarRepository;
         this.avatarMapper = avatarMapper;
         this.urlGenerator = urlGenerator;
         this.yandexStorageProperties = yandexStorageProperties;
@@ -49,29 +49,29 @@ public class AvatarService {
                             .build(),
                     RequestBody.fromInputStream(inputStream, file.getSize()));
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка загрузки файла в S3", e);
+            throw new RuntimeException("Ошибка загрузки аватара в S3", e);
         }
         String url = urlGenerator.generatePresignedUploadUrlImg(yandexStorageProperties.getBuckets().get("img"), key, file);
-        Avatar avatar = setParams(user, key, url);
-        avatarRepository.save(avatar);
+        UserAvatar userAvatar = setParams(user, key, url);
+        userAvatarRepository.save(userAvatar);
     }
 
     @Transactional
     public void createDefaultAvatar(User user){
         String url = urlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
-        Avatar avatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
-        avatarRepository.save(avatar);
+        UserAvatar userAvatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
+        userAvatarRepository.save(userAvatar);
     }
 
-    private Avatar setParams(User owner, String key, String url){
-        Avatar avatar = new Avatar();
-        avatar.setOwner(owner);
-        avatar.setKey(key);
-        owner.setAvatar(avatar);
-        AvatarDto avatarDto = avatarMapper.convertToDto(avatar);
+    private UserAvatar setParams(User owner, String key, String url){
+        UserAvatar userAvatar = new UserAvatar();
+        userAvatar.setOwner(owner);
+        userAvatar.setKey(key);
+        owner.setUserAvatar(userAvatar);
+        AvatarDto avatarDto = avatarMapper.convertToDto(userAvatar);
         avatarDto.setUrl(url);
         avatarDto.setKey(key);
-        return avatar;
+        return userAvatar;
     }
 
 }

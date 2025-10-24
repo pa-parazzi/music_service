@@ -1,11 +1,17 @@
 package org.musicservice.demo.model.music;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.musicservice.demo.model.image.SoundImage;
 
 import java.util.Objects;
 
 @Entity
 @Table(name = "sound")
+@Getter
+@Setter
 public class Sound {
 
     @Id
@@ -22,6 +28,9 @@ public class Sound {
     @Column(name = "s3_key")
     private String key;
 
+    @OneToOne(mappedBy = "sound", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private SoundImage image;
+
     @ManyToOne
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist;
@@ -32,60 +41,13 @@ public class Sound {
 
     public Sound(){}
 
-    public Sound(String title, int duration, Artist artist, Album album, String key) {
+    public Sound(String title, int duration, Artist artist, Album album, String key, SoundImage image) {
         this.title = title;
         this.duration = duration;
         this.artist = artist;
         this.album = album;
         this.key = key;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public Artist getArtist() {
-        return artist;
-    }
-
-    public void setArtist(Artist artist) {
-        this.artist = artist;
-    }
-
-    public Album getAlbum() {
-        return album;
-    }
-
-    public void setAlbum(Album album) {
-        this.album = album;
+        this.image = image;
     }
 
     @Override

@@ -9,7 +9,7 @@ import org.musicservice.demo.model.user.User;
 @Table(name="images_avatar")
 @Getter
 @Setter
-public class Avatar {
+public class UserAvatar {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +23,9 @@ public class Avatar {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User owner;
 
-    public Avatar(){}
+    public UserAvatar(){}
 
-    public Avatar(String key, User owner) {
+    public UserAvatar(String key, User owner) {
         this.key = key;
         this.owner = owner;
     }

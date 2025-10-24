@@ -6,7 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
-import org.musicservice.demo.model.image.Avatar;
+import org.musicservice.demo.model.image.UserAvatar;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.Duration;
@@ -67,18 +67,18 @@ public class User {
     private Authority role;
 
     @OneToOne(mappedBy = "owner")
-    private Avatar avatar;
+    private UserAvatar userAvatar;
 
     public User(){}
 
-    public User(String username, String password, String email, LocalDate dateOfBirth, Boolean enabled, Authority role, Avatar avatar) {
+    public User(String username, String password, String email, LocalDate dateOfBirth, Boolean enabled, Authority role, UserAvatar userAvatar) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.dateOfBirth = dateOfBirth;
         this.enabled = enabled;
         this.role = role;
-        this.avatar = avatar;
+        this.userAvatar = userAvatar;
     }
 
     // Блокировка аккаунта Spring Security при 3 неудачных логинах

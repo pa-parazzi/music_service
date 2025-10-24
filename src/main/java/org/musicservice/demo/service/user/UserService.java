@@ -14,7 +14,7 @@ import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
-import org.musicservice.demo.service.image.AvatarService;
+import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.image.S3ImgUrlGenerator;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.UserDetailsServiceImpl;
@@ -40,7 +40,7 @@ public class UserService {
     private final LoginSecurityProperties securityProperties;
     private final VerificationTokenService verificationTokenService;
     private final UserMapper userMapper;
-    private final AvatarService avatarService;
+    private final UserAvatarService userAvatarService;
     private final AvatarMapper avatarMapper;
     private final S3ImgUrlGenerator s3ImgUrlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
@@ -49,14 +49,14 @@ public class UserService {
 
 
     @Autowired
-    public UserService(UserRepository userRepository, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, AvatarService avatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
+    public UserService(UserRepository userRepository, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, UserAvatarService userAvatarService, AvatarMapper avatarMapper, S3ImgUrlGenerator s3ImgUrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
         this.userRepository = userRepository;
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
         this.verificationTokenService = verificationTokenService;
         this.userMapper = userMapper;
-        this.avatarService = avatarService;
+        this.userAvatarService = userAvatarService;
         this.avatarMapper = avatarMapper;
         this.s3ImgUrlGenerator = s3ImgUrlGenerator;
         this.yandexStorageProperties = yandexStorageProperties;
@@ -67,8 +67,8 @@ public class UserService {
     @Transactional
     public UserDtoForView viewSingle(String username){
         User user = searchByUsername(username);
-        AvatarDto avatarDto = avatarMapper.convertToDto(user.getAvatar());
-        String url = s3ImgUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), user.getAvatar().getKey());
+        AvatarDto avatarDto = avatarMapper.convertToDto(user.getUserAvatar());
+        String url = s3ImgUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), user.getUserAvatar().getKey());
         avatarDto.setUrl(url);
         UserDtoForView userDto = userMapper.getUserDtoForView(user);
         userDto.setAvatar(avatarDto);
@@ -95,10 +95,10 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         verificationTokenService.createToken(user);
         if(file==null){
-            avatarService.createDefaultAvatar(user);
+            userAvatarService.createDefaultAvatar(user);
             return userRepository.save(user);
         }
-        avatarService.create(file, user);
+        userAvatarService.create(file, user);
         return userRepository.save(user);
     }
 

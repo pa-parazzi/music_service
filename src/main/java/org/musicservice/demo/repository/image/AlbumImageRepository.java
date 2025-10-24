@@ -1,12 +1,9 @@
 package org.musicservice.demo.repository.image;
 
-import org.musicservice.demo.model.image.Avatar;
+import org.musicservice.demo.model.image.AlbumImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface AvatarRepository extends JpaRepository<Avatar, Long> {
-
+public interface AlbumImageRepository extends JpaRepository<AlbumImage, Long> {
 }

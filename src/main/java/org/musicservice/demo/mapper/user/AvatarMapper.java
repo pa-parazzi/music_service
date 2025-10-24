@@ -2,12 +2,12 @@ package org.musicservice.demo.mapper.user;
 
 import org.mapstruct.Mapper;
 import org.musicservice.demo.dto.image.AvatarDto;
-import org.musicservice.demo.model.image.Avatar;
+import org.musicservice.demo.model.image.UserAvatar;
 
 @Mapper(componentModel = "spring")
 public interface AvatarMapper {
 
-    Avatar convertToObj(AvatarDto avatarDto);
+    UserAvatar convertToObj(AvatarDto avatarDto);
 
-    AvatarDto convertToDto(Avatar avatar);
+    AvatarDto convertToDto(UserAvatar userAvatar);
 }
