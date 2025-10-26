@@ -19,7 +19,7 @@ public class SoundImage {
     @Column(name = "s3_key")
     private String s3Key;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "sound_id", referencedColumnName = "id")
     private Sound sound;
 

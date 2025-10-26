@@ -31,7 +31,7 @@ public class Album {
     @OneToMany(mappedBy = "album")
     private List<Sound> soundList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "album", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToOne(mappedBy = "album")
     private AlbumImage image;
 
     public Album(){}

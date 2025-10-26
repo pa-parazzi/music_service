@@ -124,12 +124,10 @@ public class MusicService {
 
             Album album = getAlbum(musicDto);
             album.setArtist(artist);
-            albumImageService.create(file, album);
 
             Sound sound = getSound(musicDto);
             sound.setArtist(artist);
             sound.setAlbum(album);
-            soundImageService.create(file, sound);
 
             if(!artist.getAlbums().contains(album)){
                 artist.getAlbums().add(album);
@@ -144,6 +142,8 @@ public class MusicService {
             }
 
             artistRepository.save(artist);
+            albumImageService.create(file, album);
+            soundImageService.create(file, sound);
         }
     }
 

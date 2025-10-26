@@ -28,7 +28,7 @@ public class Sound {
     @Column(name = "s3_key")
     private String key;
 
-    @OneToOne(mappedBy = "sound", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToOne(mappedBy = "sound")
     private SoundImage image;
 
     @ManyToOne
