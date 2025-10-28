@@ -6,6 +6,7 @@ import org.musicservice.demo.mapper.user.AvatarMapper;
 import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
+import org.musicservice.demo.service.s3.S3ImgUrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,7 @@ public class UserAvatarService {
 
     @Transactional
     public void createDefaultAvatar(User user){
-        String url = urlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
+        String url = urlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
         UserAvatar userAvatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
         userAvatarRepository.save(userAvatar);
     }

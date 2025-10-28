@@ -8,4 +8,6 @@ import org.musicservice.demo.model.image.AlbumImage;
 public interface AlbumImageMapper {
 
     AlbumImageDto convertToDto(AlbumImage albumImage);
+
+    AlbumImage convertToObj (AlbumImageDto albumImageDto);
 }

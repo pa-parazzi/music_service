@@ -4,9 +4,11 @@ import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.music.*;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
 import org.musicservice.demo.dto.music.mainResponse.MainResponse;
+import org.musicservice.demo.mapper.image.AlbumImageMapper;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.mapper.music.ArtistMapper;
 import org.musicservice.demo.mapper.music.SoundMapper;
+import org.musicservice.demo.model.image.AlbumImage;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
@@ -14,8 +16,10 @@ import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.service.image.AlbumImageService;
+import org.musicservice.demo.service.s3.S3ImgUrlGenerator;
 import org.musicservice.demo.service.image.SoundImageService;
 import org.musicservice.demo.service.readFile.MusicReaderManager;
+import org.musicservice.demo.service.s3.S3TrackUrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,57 +36,27 @@ public class MusicService {
     private final ArtistRepository artistRepository;
     private final AlbumRepository albumRepository;
     private final SoundRepository soundRepository;
-    private final ArtistMapper artistMapper;
-    private final AlbumMapper albumMapper;
-    private final SoundMapper soundMapper;
-    private final YandexStorageProperties yandexStorageProperties;
-    private final S3TrackUrlGenerator s3TrackUrlGenerator;
     private final AlbumImageService albumImageService;
     private final SoundImageService soundImageService;
+    private final AlbumService albumService;
+    private final SoundService soundService;
 
     @Autowired
-    public MusicService(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, ArtistMapper artistMapper, AlbumMapper albumMapper, SoundMapper soundMapper, YandexStorageProperties yandexStorageProperties, S3TrackUrlGenerator s3TrackUrlGenerator, AlbumImageService albumImageService, SoundImageService soundImageService) {
+    public MusicService(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, AlbumImageService albumImageService, SoundImageService soundImageService, AlbumService albumService, SoundService soundService) {
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
         this.soundRepository = soundRepository;
-        this.artistMapper = artistMapper;
-        this.albumMapper = albumMapper;
-        this.soundMapper = soundMapper;
-        this.yandexStorageProperties = yandexStorageProperties;
-        this.s3TrackUrlGenerator = s3TrackUrlGenerator;
         this.albumImageService = albumImageService;
         this.soundImageService = soundImageService;
-    }
-
-    public List<SoundDto> soundList(){
-        return soundRepository.findAll().stream().map(sound -> {
-            String url = s3TrackUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("music"), sound.getKey());
-            SoundDto soundDto = soundMapper.convertToDto(sound);
-            soundDto.setUrl(url);
-            return soundDto;
-        }).toList();
-    }
-
-    public SoundDto getSound(Long id){
-        Sound sound = soundRepository.findById(id).orElseThrow(()->new RuntimeException("Песня не найдена"));
-        String url = s3TrackUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("music"), sound.getKey());
-        SoundDto soundDto = soundMapper.convertToDto(sound);
-        soundDto.setUrl(url);
-        return soundDto;
+        this.albumService = albumService;
+        this.soundService = soundService;
     }
 
     public MainResponse viewMusic(){
         MainResponse mainResponse = new MainResponse();
-        List<AlbumResponse> albums = albumRepository.findAll().stream().map(albumMapper::convertToAlbumResponse).toList();
-        for(AlbumResponse album: albums){
-            List<SoundDto> soundList = album.getSoundList();
-            for(SoundDto soundDto: soundList){
-                Sound sound = soundMapper.convertToSound(soundDto);
-                String url = s3TrackUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("music"), sound.getKey());
-                soundDto.setUrl(url);
-            }
-        }
-        mainResponse.setAlbums(albums);
+        List<SoundDto> soundDtoList = soundService.soundList();
+        List<AlbumResponse> albumResponse = albumService.getAlbums(soundDtoList);
+        mainResponse.setAlbums(albumResponse);
         return mainResponse;
     }
 
@@ -120,7 +94,7 @@ public class MusicService {
         List<MusicInsertDto> musicDtoList = MusicReaderManager.readToInsert(file);
         for(MusicInsertDto musicDto: musicDtoList){
             Artist artist = getArtist(musicDto);
-            artistRepository.save(artist);
+            //artistRepository.save(artist);
 
             Album album = getAlbum(musicDto);
             album.setArtist(artist);

@@ -15,7 +15,7 @@ import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.service.image.UserAvatarService;
-import org.musicservice.demo.service.image.S3ImgUrlGenerator;
+import org.musicservice.demo.service.s3.S3ImgUrlGenerator;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.musicservice.demo.service.security.VerificationTokenService;
@@ -68,7 +68,7 @@ public class UserService {
     public UserDtoForView viewSingle(String username){
         User user = searchByUsername(username);
         AvatarDto avatarDto = avatarMapper.convertToDto(user.getUserAvatar());
-        String url = s3ImgUrlGenerator.generatePresignedUrl(yandexStorageProperties.getBuckets().get("img"), user.getUserAvatar().getKey());
+        String url = s3ImgUrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), user.getUserAvatar().getKey());
         avatarDto.setUrl(url);
         UserDtoForView userDto = userMapper.getUserDtoForView(user);
         userDto.setAvatar(avatarDto);

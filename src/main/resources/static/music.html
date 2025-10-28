@@ -261,25 +261,37 @@
                 const albumCard = document.createElement("div");
                 albumCard.className = "album-card";
 
+                // Обложка альбома
+                const albumImage = document.createElement("img");
+                albumImage.className = "album-image";
+                albumImage.src = album.albumImage?.url;
+                albumImage.alt = album.title;
+
+                // Информация об альбоме
                 const albumInfo = document.createElement("div");
                 albumInfo.className = "album-info";
 
-                // Название альбома
                 const albumTitle = document.createElement("div");
                 albumTitle.className = "album-title";
                 albumTitle.textContent = album.title;
 
-                // Имя артиста
                 const artistName = document.createElement("div");
                 artistName.className = "artist-name";
                 artistName.textContent = album.artist.name;
 
-                // Добавляем информацию в карточку
                 albumInfo.appendChild(albumTitle);
                 albumInfo.appendChild(artistName);
+
+                // Добавляем всё в карточку
+                albumCard.appendChild(albumImage);
                 albumCard.appendChild(albumInfo);
 
-                // Добавляем карточку в контейнер
+                // Делаем карточку кликабельной
+                albumCard.addEventListener("click", () => {
+                    // позже можно заменить на router или SPA переход
+                    window.location.href = `/album.html?title=${encodeURIComponent(album.title)}`;
+                });
+
                 listDiv.appendChild(albumCard);
             });
         } catch (error) {
@@ -287,67 +299,6 @@
             console.error("Ошибка при загрузке альбомов:", error);
         }
     }
-
-    // /* --- Список музыки --- */
-    // function formatDuration(seconds) {
-    //     const m = Math.floor(seconds / 60);
-    //     const s = seconds % 60;
-    //     return `${m}:${s.toString().padStart(2, "0")}`;
-    // }
-    //
-    // async function loadSounds() {
-    //     try {
-    //         const response = await apiFetch("http://localhost:8080/music", { method: "GET" });
-    //
-    //         if (!response.ok) {
-    //             document.getElementById("trackList").textContent = "Ошибка загрузки списка";
-    //             return;
-    //         }
-    //
-    //         const sounds = await response.json();
-    //         const listDiv = document.getElementById("trackList");
-    //         listDiv.innerHTML = "";
-    //
-    //         sounds.forEach((sound) => {
-    //             const card = document.createElement("div");
-    //             card.className = "track-card";
-    //
-    //             const info = document.createElement("div");
-    //             info.className = "track-info";
-    //
-    //             const title = document.createElement("div");
-    //             title.className = "track-title";
-    //             title.textContent = sound.title;
-    //
-    //             const duration = document.createElement("div");
-    //             duration.className = "track-duration";
-    //             duration.textContent = formatDuration(sound.duration);
-    //
-    //             info.appendChild(title);
-    //             info.appendChild(duration);
-    //
-    //             const playBtn = document.createElement("button");
-    //             playBtn.className = "play-btn";
-    //             playBtn.textContent = "▶";
-    //
-    //             playBtn.addEventListener("click", (e) => {
-    //                 e.stopPropagation();
-    //                 const player = document.getElementById("player");
-    //                 const source = document.getElementById("audioSource");
-    //                 source.src = sound.url;
-    //                 player.load();
-    //                 player.play();
-    //             });
-    //
-    //             card.appendChild(info);
-    //             card.appendChild(playBtn);
-    //             listDiv.appendChild(card);
-    //         });
-    //     } catch (error) {
-    //         document.getElementById("trackList").textContent = "Необработанная ошибка";
-    //         console.error(error);
-    //     }
-    // }
 
     /* --- Инициализация при загрузке страницы --- */
     document.addEventListener("DOMContentLoaded", async () => {

@@ -30,9 +30,4 @@ public class MusicController {
     public ResponseEntity<MainResponse> view(){
         return ResponseEntity.ok(musicService.viewMusic());
     }
-
-    @GetMapping("/sound/{id}")
-    public SoundDto soundDto(@PathVariable ("id") Long id){
-        return musicService.getSound(id);
-    }
 }

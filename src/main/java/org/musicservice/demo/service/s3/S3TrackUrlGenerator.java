@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.music;
+package org.musicservice.demo.service.s3;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.springframework.context.annotation.Configuration;

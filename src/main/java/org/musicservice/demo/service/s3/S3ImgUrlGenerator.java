@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.image;
+package org.musicservice.demo.service.s3;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.springframework.context.annotation.Configuration;
@@ -6,10 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.net.URL;
@@ -34,19 +32,8 @@ public class S3ImgUrlGenerator {
         this.bucketName = properties.getBuckets().get("img");
     }
 
-    public String generatePresignedUrl(String bucket, String key) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(15)) // 15 минут
-                .getObjectRequest(getObjectRequest)
-                .build();
-
-        URL presignedUrl = presigner.presignGetObject(presignRequest).url();
-        return presignedUrl.toString();
+    public String generatePublicUrl(String bucket, String key) {
+        return String.format("https://%s.storage.yandexcloud.net/%s", bucket, key);
     }
 
     public String generatePresignedUploadUrlImg(String bucketName, String key, MultipartFile file){
