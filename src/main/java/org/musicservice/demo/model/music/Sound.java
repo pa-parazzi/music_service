@@ -3,8 +3,6 @@ package org.musicservice.demo.model.music;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.musicservice.demo.model.image.SoundImage;
 
 import java.util.Objects;
 
@@ -28,9 +26,6 @@ public class Sound {
     @Column(name = "s3_key")
     private String key;
 
-    @OneToOne(mappedBy = "sound")
-    private SoundImage image;
-
     @ManyToOne
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist;
@@ -41,13 +36,12 @@ public class Sound {
 
     public Sound(){}
 
-    public Sound(String title, int duration, Artist artist, Album album, String key, SoundImage image) {
+    public Sound(String title, int duration, Artist artist, Album album, String key) {
         this.title = title;
         this.duration = duration;
         this.artist = artist;
         this.album = album;
         this.key = key;
-        this.image = image;
     }
 
     @Override

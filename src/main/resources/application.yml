@@ -14,6 +14,9 @@ yandex:
   endpoint: "https://storage.yandexcloud.net"
   default-avatar-key: "default_avatar.jpg"
 
+jamendo:
+  client-id: 9dc3f71a
+
 auth-token:
   refresh-token-duration: P30D
   access-token-duration: PT15M

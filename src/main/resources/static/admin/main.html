@@ -18,16 +18,13 @@
 </header>
 
 <main class="main-content">
-    <section class="upload-section">
+    <section class="import-section">
         <h2>Импорт музыкальных данных</h2>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <label for="musicFile">Выберите JSON-файл:</label>
-            <input type="file" id="musicFile" name="file" accept=".json" required>
-            <button type="submit" class="button">Загрузить</button>
-        </form>
-        <div id="uploadStatus" class="upload-status"></div>
+        <button id="importBtn" class="button">🚀 Запустить импорт</button>
+        <div id="importStatus" class="upload-status"></div>
     </section>
 </main>
+
 
 
 
@@ -224,45 +221,32 @@
     });
 
     document.addEventListener("DOMContentLoaded", async () => {
-        await loadProfile();
+        await loadProfile(); // если у тебя есть авторизация
 
-        const uploadForm = document.getElementById("uploadForm");
-        const statusDiv = document.getElementById("uploadStatus");
+        const importBtn = document.getElementById("importBtn");
+        const statusDiv = document.getElementById("importStatus");
 
-        uploadForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById("musicFile");
-            const file = fileInput.files[0];
-
-            if (!file) {
-                statusDiv.textContent = "Пожалуйста, выберите файл.";
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append("file", file);
-
-            statusDiv.textContent = "Загрузка...";
+        importBtn.addEventListener("click", async () => {
+            statusDiv.textContent = "⏳ Импорт начался...";
 
             try {
                 const response = await apiFetch("/admin/upload", {
                     method: "POST",
-                    body: formData
                 });
 
                 if (response.ok) {
-                    statusDiv.textContent = "✅ Файл успешно загружен и импортирован!";
-                    fileInput.value = "";
+                    statusDiv.textContent = "✅ Импорт успешно завершён!";
                 } else {
-                    const errorText = await response.text();
-                    statusDiv.textContent = "❌ Ошибка при загрузке: " + (errorText || response.status);
+                    const errText = await response.text();
+                    statusDiv.textContent = "❌ Ошибка при импорте: " + (errText || response.status);
                 }
             } catch (error) {
-                console.error("Ошибка при отправке файла:", error);
-                statusDiv.textContent = "❌ Произошла ошибка при загрузке файла.";
+                console.error("Ошибка при запуске импорта:", error);
+                statusDiv.textContent = "❌ Не удалось запустить импорт.";
             }
         });
     });
+
 </script>
 
 
