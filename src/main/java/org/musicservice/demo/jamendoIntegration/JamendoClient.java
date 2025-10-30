@@ -30,7 +30,7 @@ public class JamendoClient {
                                 .path("/tracks/")
                                 .queryParam("client_id", jamendoProperties.getClientId())
                                 .queryParam("format", "json")
-                                .queryParam("limit", 10)
+                                .queryParam("limit", 100)
                                 .queryParam("imagesize", 600)
                                 .build())
                         .retrieve()

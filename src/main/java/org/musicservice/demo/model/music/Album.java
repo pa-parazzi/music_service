@@ -28,10 +28,10 @@ public class Album {
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist ;
 
-    @OneToMany(mappedBy = "album")
+    @OneToMany(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH},orphanRemoval = true)
     private List<Sound> soundList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "album")
+    @OneToOne(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}, orphanRemoval = true)
     private AlbumImage image;
 
     public Album(){}
@@ -48,11 +48,15 @@ public class Album {
         if (o == null || getClass() != o.getClass()) return false;
 
         Album album = (Album) o;
-        return Objects.equals(title, album.title);
+        return Objects.equals(title, album.title) && Objects.equals(artist, album.artist) && Objects.equals(soundList, album.soundList) && Objects.equals(image, album.image);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(title);
+        int result = Objects.hashCode(title);
+        result = 31 * result + Objects.hashCode(artist);
+        result = 31 * result + Objects.hashCode(soundList);
+        result = 31 * result + Objects.hashCode(image);
+        return result;
     }
 }

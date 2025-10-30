@@ -20,7 +20,7 @@ public class AlbumImage {
     @Column(name = "s3_key")
     private String s3Key;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @OneToOne
     @JoinColumn(name = "album_id", referencedColumnName = "id")
     private Album album;
 
@@ -30,4 +30,5 @@ public class AlbumImage {
         this.s3Key = s3Key;
         this.album = album;
     }
+
 }

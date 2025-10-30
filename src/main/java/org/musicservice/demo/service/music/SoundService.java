@@ -18,15 +18,13 @@ public class SoundService {
 
 
     private final YandexStorageProperties yandexStorageProperties;
-    private final S3ImgUrlGenerator s3ImgUrlGenerator;
     private final S3TrackUrlGenerator s3TrackUrlGenerator;
     private final SoundRepository soundRepository;
     private final SoundMapper soundMapper;
 
     @Autowired
-    public SoundService(YandexStorageProperties yandexStorageProperties, S3ImgUrlGenerator s3ImgUrlGenerator, S3TrackUrlGenerator s3TrackUrlGenerator, SoundRepository soundRepository, SoundMapper soundMapper) {
+    public SoundService(YandexStorageProperties yandexStorageProperties, S3TrackUrlGenerator s3TrackUrlGenerator, SoundRepository soundRepository, SoundMapper soundMapper) {
         this.yandexStorageProperties = yandexStorageProperties;
-        this.s3ImgUrlGenerator = s3ImgUrlGenerator;
         this.s3TrackUrlGenerator = s3TrackUrlGenerator;
         this.soundRepository = soundRepository;
         this.soundMapper = soundMapper;

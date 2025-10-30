@@ -1,23 +1,26 @@
-package org.musicservice.demo.service.readFile;
+package org.musicservice.demo.service.yandex;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.music.UploadMusicResponse;
 import org.musicservice.demo.jamendoIntegration.JamendoClient;
+import org.musicservice.demo.service.music.MusicService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class MusicImportService {
+public class MusicImportInYandexCloud {
 
     private final JamendoClient jamendoClient;
     private final YandexUploadMusic yandexUploadMusic;
     private final YandexStorageProperties yandexStorageProperties;
+    private final MusicService musicService;
 
-    public MusicImportService(JamendoClient jamendoClient, YandexUploadMusic yandexUploadMusic, YandexStorageProperties yandexStorageProperties) {
+    public MusicImportInYandexCloud(JamendoClient jamendoClient, YandexUploadMusic yandexUploadMusic, YandexStorageProperties yandexStorageProperties, MusicService musicService) {
         this.jamendoClient = jamendoClient;
         this.yandexUploadMusic = yandexUploadMusic;
         this.yandexStorageProperties = yandexStorageProperties;
+        this.musicService = musicService;
     }
 
     public void importMusic() throws Exception {
@@ -26,11 +29,14 @@ public class MusicImportService {
             for(UploadMusicResponse response: uploadMusicResponses){
 
                 String mp3Key = String.format("%s/", response.getAlbum_name()) + response.getName() + ".mp3";
-                yandexUploadMusic.uploadMusicForBucket(yandexStorageProperties.getBuckets().get("music"), mp3Key, response.getAudio());
+                yandexUploadMusic.uploadMusicForBucket(yandexStorageProperties.getBuckets().get("music"), mp3Key, response.getAudiodownload());
+                response.setMp3Key(mp3Key);
 
                 String imgKey = "albums/" + response.getAlbum_name() + ".jpg";
+                response.setImgKey(imgKey);
                 yandexUploadMusic.uploadMusicForBucket(yandexStorageProperties.getBuckets().get("img"), imgKey, response.getAlbum_image());
 
+                musicService.insertMusicData(response);
             }
         } catch (Exception e){
             throw new Exception("Ошибка загрузки данных в yandexcloud: " + e.getMessage());
