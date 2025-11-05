@@ -36,10 +36,7 @@
 <!-- затемнение -->
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
-<div class="container">
-    <!-- Контейнер для альбомов -->
-    <div id="albumList" class="album-list"></div>
-</div>
+<div id="albums" class="albums"></div>
 
 <div id="player-bar">
     <audio id="player" controls>
@@ -234,70 +231,101 @@
         }
     }
 
-    // Список альбомов
+    function escapeHtml(str = '') {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     async function loadAlbums() {
         try {
-            // Выполняем запрос к API
-            const response = await apiFetch("http://localhost:8080/music", { method: "GET" });
+            const res = await fetch('http://localhost:8080/music');
+            const data = await res.json();
 
-            // Если ошибка при запросе, выводим сообщение
-            if (!response.ok) {
-                document.getElementById("albumList").textContent = "Ошибка загрузки списка альбомов";
-                return;
-            }
+            console.log("Загруженные альбомы:", data);
 
-            // Получаем данные о альбомах
-            const data = await response.json();
+            const albumsContainer = document.getElementById('albums');
+            albumsContainer.innerHTML = '';
 
-            // Получаем список альбомов из ответа
-            const albums = data.albums;
+            data.albums.forEach(album => {
+                const card = document.createElement('div');
+                card.className = 'album-card';
+                card.innerHTML = `
+                    <div class="cover-wrapper">
+                        <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
+                        <button class="play-btn" aria-label="Play ${escapeHtml(album.title)}">▶</button>
+                    </div>
+                    <div class="album-meta">
+                        <div class="album-title">${escapeHtml(album.title)}</div>
+                        <div class="artist-name">${escapeHtml(album.artist.name)}</div>
+                    </div>
+                `;
 
-            // Получаем контейнер для альбомов
-            const listDiv = document.getElementById("albumList");
-            listDiv.innerHTML = "";
-
-            // Перебираем каждый альбом и создаём карточку
-            albums.forEach((album) => {
-                const albumCard = document.createElement("div");
-                albumCard.className = "album-card";
-
-                // Обложка альбома
-                const albumImage = document.createElement("img");
-                albumImage.className = "album-image";
-                albumImage.src = album.albumImage?.url;
-                albumImage.alt = album.title;
-
-                // Информация об альбоме
-                const albumInfo = document.createElement("div");
-                albumInfo.className = "album-info";
-
-                const albumTitle = document.createElement("div");
-                albumTitle.className = "album-title";
-                albumTitle.textContent = album.title;
-
-                const artistName = document.createElement("div");
-                artistName.className = "artist-name";
-                artistName.textContent = album.artist.name;
-
-                albumInfo.appendChild(albumTitle);
-                albumInfo.appendChild(artistName);
-
-                // Добавляем всё в карточку
-                albumCard.appendChild(albumImage);
-                albumCard.appendChild(albumInfo);
-
-                // Делаем карточку кликабельной
-                albumCard.addEventListener("click", () => {
-                    // позже можно заменить на router или SPA переход
-                    window.location.href = `/album.html?title=${encodeURIComponent(album.title)}`;
+                card.querySelector('.play-btn').addEventListener('click', e => {
+                    e.stopPropagation();
+                    playAlbum(album);
                 });
 
-                listDiv.appendChild(albumCard);
+                albumsContainer.appendChild(card);
             });
-        } catch (error) {
-            document.getElementById("albumList").textContent = "Необработанная ошибка";
-            console.error("Ошибка при загрузке альбомов:", error);
+
+        } catch (err) {
+            console.error('Ошибка загрузки альбомов:', err);
         }
+    }
+
+    /* ==============================
+       === Логика плеера ===
+    =============================== */
+
+    const player = document.getElementById('player');
+    const audioSource = document.getElementById('audioSource');
+
+    let currentAlbum = null;
+    let currentTrack = 0;
+
+    function playAlbum(album) {
+        if (!album || !album.soundList || album.soundList.length === 0) {
+            console.warn('Альбом пуст или не найден');
+            return;
+        }
+
+        // остановим предыдущее проигрывание
+        try {
+            player.pause();
+            player.currentTime = 0;
+        } catch {}
+
+        currentAlbum = album;
+        currentTrack = 0;
+
+        console.log(`▶️ Запущен альбом: ${album.title}`);
+        playTrack(currentAlbum.soundList[currentTrack]);
+
+        // обработчик завершения трека
+        player.onended = () => {
+            currentTrack++;
+            if (currentTrack < currentAlbum.soundList.length) {
+                playTrack(currentAlbum.soundList[currentTrack]);
+            } else {
+                console.log('Альбом закончился');
+            }
+        };
+    }
+
+    function playTrack(track) {
+        if (!track?.url) {
+            console.warn('❌ Трек не содержит URL');
+            return;
+        }
+        console.log(`🎵 Воспроизводится трек: ${track.title}`);
+
+        audioSource.src = track.url;
+        player.load();
+        player.play().catch(err => console.warn('Ошибка play():', err));
     }
 
     /* --- Инициализация при загрузке страницы --- */

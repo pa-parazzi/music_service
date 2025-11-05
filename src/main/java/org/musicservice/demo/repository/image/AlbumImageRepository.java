@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface AlbumImageRepository extends JpaRepository<AlbumImage, Long> {
 
     Optional<AlbumImage> findByS3Key(String s3Key);
+
+    AlbumImage findByAlbumId(Long albumId);
 }

@@ -1,16 +1,17 @@
 package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Mapper;
-import org.musicservice.demo.dto.music.AlbumDto;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
 import org.musicservice.demo.model.music.Album;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface AlbumMapper {
 
-    Album convertToAlbum(AlbumDto albumDto);
+    List<AlbumResponse> toAlbumResponses(List<Album> albums);
 
-    AlbumDto convertToDto(Album album);
+    List<Album> toAlbums(List<AlbumResponse> albumResponses);
 
-    AlbumResponse convertToAlbumResponse(Album album);
+    AlbumResponse toAlbumResponse(Album album);
 }

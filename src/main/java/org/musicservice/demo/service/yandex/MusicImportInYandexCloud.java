@@ -3,7 +3,7 @@ package org.musicservice.demo.service.yandex;
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.music.UploadMusicResponse;
 import org.musicservice.demo.jamendoIntegration.JamendoClient;
-import org.musicservice.demo.service.music.MusicService;
+import org.musicservice.demo.service.music.UploadMusic;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,13 +14,13 @@ public class MusicImportInYandexCloud {
     private final JamendoClient jamendoClient;
     private final YandexUploadMusic yandexUploadMusic;
     private final YandexStorageProperties yandexStorageProperties;
-    private final MusicService musicService;
+    private final UploadMusic uploadMusic;
 
-    public MusicImportInYandexCloud(JamendoClient jamendoClient, YandexUploadMusic yandexUploadMusic, YandexStorageProperties yandexStorageProperties, MusicService musicService) {
+    public MusicImportInYandexCloud(JamendoClient jamendoClient, YandexUploadMusic yandexUploadMusic, YandexStorageProperties yandexStorageProperties, UploadMusic uploadMusic) {
         this.jamendoClient = jamendoClient;
         this.yandexUploadMusic = yandexUploadMusic;
         this.yandexStorageProperties = yandexStorageProperties;
-        this.musicService = musicService;
+        this.uploadMusic = uploadMusic;
     }
 
     public void importMusic() throws Exception {
@@ -36,7 +36,7 @@ public class MusicImportInYandexCloud {
                 response.setImgKey(imgKey);
                 yandexUploadMusic.uploadMusicForBucket(yandexStorageProperties.getBuckets().get("img"), imgKey, response.getAlbum_image());
 
-                musicService.insertMusicData(response);
+                uploadMusic.insertMusicData(response);
             }
         } catch (Exception e){
             throw new Exception("Ошибка загрузки данных в yandexcloud: " + e.getMessage());

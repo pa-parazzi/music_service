@@ -9,9 +9,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SoundMapper {
 
-    Sound convertToSound(SoundDto soundDto);
+    List<SoundDto> toDtoList(List<Sound> soundList);
 
-    SoundDto convertToDto(Sound sound);
-
-    List<SoundDto> convertToListObj(List<Sound> soundList);
+    SoundDto toDto(Sound sound);
 }

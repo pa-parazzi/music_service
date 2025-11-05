@@ -41,9 +41,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**").permitAll()
+                        .requestMatchers("/css/**", "/image/**", "/js/**").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "/registration.html", "/profile.html").permitAll()
+                        .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "musicIndex.html", "/registration.html", "/profile.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**", "/music", "/sound/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**", "/music", "/sound/**").permitAll()
                         .requestMatchers("/admin/**").permitAll()// TODO: Поставить обратно hasRole()

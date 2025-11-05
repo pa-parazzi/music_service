@@ -6,7 +6,7 @@ import org.musicservice.demo.mapper.user.AvatarMapper;
 import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
-import org.musicservice.demo.service.s3.S3ImgUrlGenerator;
+import org.musicservice.demo.service.s3.S3UrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +25,12 @@ public class UserAvatarService {
 
     private final UserAvatarRepository userAvatarRepository;
     private final AvatarMapper avatarMapper;
-    private final S3ImgUrlGenerator urlGenerator;
+    private final S3UrlGenerator urlGenerator;
     private final YandexStorageProperties yandexStorageProperties;
     private final S3Client s3Client;
 
     @Autowired
-    public UserAvatarService(UserAvatarRepository userAvatarRepository, AvatarMapper avatarMapper, S3ImgUrlGenerator urlGenerator, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
+    public UserAvatarService(UserAvatarRepository userAvatarRepository, AvatarMapper avatarMapper, S3UrlGenerator urlGenerator, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
         this.userAvatarRepository = userAvatarRepository;
         this.avatarMapper = avatarMapper;
         this.urlGenerator = urlGenerator;

@@ -1,11 +1,9 @@
 package org.musicservice.demo.jamendoIntegration;
 
-import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
-import org.musicservice.demo.configuration.security.JamendoProperties;
+import org.musicservice.demo.configuration.jamendo.JamendoProperties;
 import org.musicservice.demo.dto.music.JamendoResponse;
 import org.musicservice.demo.dto.music.UploadMusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 

@@ -7,6 +7,5 @@ import org.musicservice.demo.model.music.Artist;
 @Mapper(componentModel = "spring")
 public interface ArtistMapper {
 
-    Artist convertToArtist(ArtistDto artistDto);
-
+    ArtistDto toDto(Artist artist);
 }

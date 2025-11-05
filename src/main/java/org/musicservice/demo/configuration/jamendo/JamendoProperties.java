@@ -1,4 +1,4 @@
-package org.musicservice.demo.configuration.security;
+package org.musicservice.demo.configuration.jamendo;
 
 import lombok.Getter;
 import lombok.Setter;
