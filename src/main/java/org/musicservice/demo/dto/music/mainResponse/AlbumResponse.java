@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 public class AlbumResponse {
 
+    private Long albumId;
     private AlbumImageDto albumImage;
     private ArtistDto artist;
     private String title;

@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Optional<Album> findByTitle(String title);
+
+    Album searchById(Long id);
+
 }

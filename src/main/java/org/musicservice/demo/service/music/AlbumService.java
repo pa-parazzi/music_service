@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,12 +34,29 @@ public class AlbumService {
     public List<AlbumResponse> getAllAlbumResponse(){
         List<Album> albums = albumRepository.findAll();
         return albums.stream().map(album -> {
-            AlbumImageDto albumImageDto = albumImageService.getAlbumImageByAlbumId(album.getId());
-            List<SoundDto> soundDtoList = soundService.getSoundListByAlbumId(album.getId());
+            Long albumId = album.getId();
+            AlbumImageDto albumImageDto = albumImageService.getAlbumImageByAlbumId(albumId);
+            List<SoundDto> soundDtoList = soundService.getSoundListByAlbumId(albumId);
             AlbumResponse albumResponse = albumMapper.toAlbumResponse(album);
+            albumResponse.setAlbumId(albumId);
             albumResponse.setAlbumImage(albumImageDto);
             albumResponse.setSoundList(soundDtoList);
             return albumResponse;
         }).toList();
+    }
+
+    private Album searchById(Long albumId){
+        return albumRepository.searchById(albumId);
+    }
+
+    public AlbumResponse getAlbumById(Long albumId){
+        Album album = searchById(albumId);
+        AlbumResponse albumResponse = albumMapper.toAlbumResponse(album);
+        AlbumImageDto albumImageDto = albumImageService.getAlbumImageByAlbumId(albumId);
+        List<SoundDto> soundDtoList = soundService.getSoundListByAlbumId(albumId);
+        albumResponse.setAlbumId(albumId);
+        albumResponse.setAlbumImage(albumImageDto);
+        albumResponse.setSoundList(soundDtoList);
+        return albumResponse;
     }
 }

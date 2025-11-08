@@ -25,4 +25,8 @@ public class MusicService {
         mainResponse.setAlbums(albumResponses);
         return mainResponse;
     }
+
+    public AlbumResponse getById(Long albumId){
+        return albumService.getAlbumById(albumId);
+    }
 }

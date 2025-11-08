@@ -242,7 +242,7 @@
 
     async function loadAlbums() {
         try {
-            const res = await fetch('http://localhost:8080/music');
+            const res = await fetch('http://localhost:8080/api/album');
             const data = await res.json();
 
             console.log("Загруженные альбомы:", data);
@@ -253,7 +253,7 @@
             data.albums.forEach(album => {
                 const card = document.createElement('div');
                 card.className = 'album-card';
-                card.innerHTML = `
+                card.innerHTML = `<a href="/album/${album.albumId}" class="album-card-link">
                     <div class="cover-wrapper">
                         <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
                         <button class="play-btn" aria-label="Play ${escapeHtml(album.title)}">▶</button>
@@ -262,7 +262,12 @@
                         <div class="album-title">${escapeHtml(album.title)}</div>
                         <div class="artist-name">${escapeHtml(album.artist.name)}</div>
                     </div>
+                    </a>
                 `;
+
+                card.querySelector('.album-cover').addEventListener('click', () =>{
+                    window.location.href = `/album/${album.albumId}`;
+                });
 
                 card.querySelector('.play-btn').addEventListener('click', e => {
                     e.stopPropagation();

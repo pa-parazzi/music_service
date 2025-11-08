@@ -21,6 +21,17 @@
     color: #fff;
 }
 
+/* кликабельная карточка альбома */
+.album-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.album-card-link:hover {
+    transform: scale(1.02);
+    transition: 0.2s;
+}
+
 .cover-wrapper {
     position: relative;
     width: 200px;

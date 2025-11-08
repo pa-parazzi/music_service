@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Альбом</title>
+    <link rel="stylesheet" href="/css/album.css">
+</head>
+<body>
+<div class="album-page">
+    <div class="album-header">
+        <div class="album-cover">
+            <img id="album-image" src="" alt="Обложка альбома" class="album-image">
+            <button id="play-album" class="play-btn" aria-label="Play album">▶</button>
+        </div>
+        <div class="album-details">
+            <h1 id="album-title" class="album-title"></h1>
+            <p id="album-artist" class="album-artist"></p>
+        </div>
+    </div>
+
+    <div class="tracklist" id="tracklist"></div>
+</div>
+
+<audio id="player" controls></audio>
+
+<script>
+    const player = document.getElementById('player');
+    const playAlbumBtn = document.getElementById('play-album');
+    const albumTitle = document.getElementById('album-title');
+    const albumArtist = document.getElementById('album-artist');
+    const albumImage = document.getElementById('album-image');
+    const tracklistEl = document.getElementById('tracklist');
+
+    let currentAlbum = null;
+    let currentTrackIndex = 0;
+
+    function escapeHtml(str = '') {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    async function loadAlbum() {
+        const id = window.location.pathname.split('/').pop();
+        try {
+            const response = await fetch(`/api/album/${id}`);
+            if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
+            const album = await response.json();
+            currentAlbum = album;
+
+            // Заполняем заголовок и обложку
+            albumTitle.textContent = album.title;
+            albumArtist.textContent = album.artist.name;
+            albumImage.src = album.albumImage.url;
+            albumImage.alt = escapeHtml(album.title);
+
+            // Треклист
+            tracklistEl.innerHTML = album.soundList.map((track, i) => `
+        <div class="track" data-index="${i}">
+          <div class="track-title">
+            <span>${i + 1}.</span>
+            <span>${escapeHtml(track.title)}</span>
+          </div>
+          <div class="track-duration">${formatTime(track.duration)}</div>
+        </div>
+      `).join('');
+
+            // Навешиваем обработчики клика
+            document.querySelectorAll('.track').forEach(trackEl => {
+                trackEl.addEventListener('click', () => {
+                    const index = Number(trackEl.dataset.index);
+                    playTrack(index);
+                });
+            });
+
+            // Проигрывание альбома
+            playAlbumBtn.addEventListener('click', () => {
+                playTrack(0);
+            });
+
+            // Автоматически переходит к следующему треку
+            player.addEventListener('ended', () => {
+                if (!currentAlbum) return;
+                if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+                    playTrack(currentTrackIndex + 1);
+                }
+            });
+
+        } catch (err) {
+            console.error('Ошибка загрузки альбома:', err);
+        }
+    }
+
+    function playTrack(index) {
+        if (!currentAlbum) return;
+        const track = currentAlbum.soundList[index];
+        currentTrackIndex = index;
+        player.src = track.url;
+        player.play();
+
+        // Обновляем визуально активный трек
+        document.querySelectorAll('.track').forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+    }
+
+    loadAlbum();
+</script>
+</body>
+</html>

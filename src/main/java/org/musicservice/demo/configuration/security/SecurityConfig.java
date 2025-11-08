@@ -22,7 +22,6 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity // конфиг класс для spring security
-@EnableMethodSecurity // включены аннотации @PreAuthorize, @PostAuthorize, @RoleAllowed
 public class SecurityConfig {
 
 
@@ -42,11 +41,11 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/image/**", "/js/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "musicIndex.html", "/registration.html", "/profile.html").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/**", "/music", "/sound/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/**", "/music", "/sound/**").permitAll()
-                        .requestMatchers("/admin/**").permitAll()// TODO: Поставить обратно hasRole()
+                        .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "/music/index.html", "/album/**", "/api/album/**", "/registration.html", "/profile.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers("/lk/profile").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
