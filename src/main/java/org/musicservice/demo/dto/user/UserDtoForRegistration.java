@@ -1,12 +1,12 @@
 package org.musicservice.demo.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import org.hibernate.validator.constraints.UniqueElements;
 import org.musicservice.demo.dto.image.AvatarDto;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @Setter
 public class UserDtoForRegistration {
 
+    @Pattern(regexp = "^[A-Za-zА-Яа-яЁё]+[0-9]*$", message = "Имя может содержать буквы латинского, русского алфавита и цифры")
     @NotBlank(message = "Пожалуйста, заполните имя пользоваля")
     @Size(min = 2, max = 50, message = "Минимальное количество символов 2")
     private String username;

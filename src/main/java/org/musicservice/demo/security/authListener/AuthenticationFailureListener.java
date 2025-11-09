@@ -23,6 +23,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
         // Достаем username из объекта аутентификации
         String username = event.getAuthentication().getPrincipal().toString();
         // Ищем пользователя в БД по username введенный при логине, если пользователь с таким логином существует, но пароль не верный - растет счетчик неверных логинов
-        service.getUserOptional(username).ifPresent(service::processFailedLogin);
+        service.getUserOptionalByUsername(username).ifPresent(service::processFailedLogin);
     }
 }

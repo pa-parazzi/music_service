@@ -39,6 +39,15 @@ public class UserAvatarService {
     }
 
     @Transactional
+    public void createOrGet(MultipartFile file, User user){
+        if(file==null){
+            createDefaultAvatar(user);
+            return;
+        }
+        create(file, user);
+    }
+
+    @Transactional
     public void create(MultipartFile file, User user){
         String key = "avatar/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         try (InputStream inputStream = file.getInputStream()) {
@@ -58,10 +67,10 @@ public class UserAvatarService {
     }
 
     @Transactional
-    public void createDefaultAvatar(User user){
+    public UserAvatar createDefaultAvatar(User user){
         String url = urlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
         UserAvatar userAvatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
-        userAvatarRepository.save(userAvatar);
+        return userAvatarRepository.save(userAvatar);
     }
 
     private UserAvatar setParams(User owner, String key, String url){

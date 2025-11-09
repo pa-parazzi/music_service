@@ -1,20 +1,16 @@
 package org.musicservice.demo.controller.auth;
 
-import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.musicservice.demo.dto.user.UserDtoForLogin;
 import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.exception.AuthenticationHundler.AuthenticationFailureHandlerForUser;
-import org.musicservice.demo.model.user.RefreshToken;
 import org.musicservice.demo.model.user.User;
-import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
-import org.musicservice.demo.security.jwtAuthentication.cookie.CookieManager;
 import org.musicservice.demo.service.security.JwtTokenService;
 import org.musicservice.demo.service.security.RefreshTokenService;
-import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.musicservice.demo.service.user.UserService;
+import org.musicservice.demo.util.ValidationForRegUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,7 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,14 +30,16 @@ import java.util.Map;
 public class AuthRestController {
 
     private final UserService userService;
+    private final ValidationForRegUser validationForRegUser;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
     private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthRestController(UserService userService, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
+    public AuthRestController(UserService userService, ValidationForRegUser validationForRegUser, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
         this.userService = userService;
+        this.validationForRegUser = validationForRegUser;
         this.authenticationManager = authenticationManager;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
@@ -51,8 +49,8 @@ public class AuthRestController {
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Map<String, String> registration(@RequestPart("user") @Valid UserDtoForRegistration user,
                                             @RequestPart(required = false) MultipartFile avatar,
-                                            HttpServletRequest request,
                                             HttpServletResponse response){
+        validationForRegUser.validate(user);
         User regUser = userService.registrationUser(user, avatar);
         refreshTokenService.createRefreshToken(response, regUser);
         String jwtToken = jwtTokenService.generateAccessForUser(regUser);

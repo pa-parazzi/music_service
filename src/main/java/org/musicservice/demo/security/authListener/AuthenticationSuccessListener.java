@@ -25,6 +25,6 @@ public class AuthenticationSuccessListener implements ApplicationListener<Authen
         // Получаем username введенный при логине
         String username = ((UserDetails) event.getAuthentication().getPrincipal()).getUsername();
         // Ищем пользователя в БД по username, если такой пользователь существует, и пароль введен верно - счетчик неудачных логинов сбрасывается до 0
-        service.getUserOptional(username).ifPresent(service::resetFailedLogin);
+        service.getUserOptionalByUsername(username).ifPresent(service::resetFailedLogin);
     }
 }

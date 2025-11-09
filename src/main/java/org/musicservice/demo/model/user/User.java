@@ -81,6 +81,17 @@ public class User {
         this.userAvatar = userAvatar;
     }
 
+
+    // Конструктор для регистрации пользователя
+    public User(String username, String password, String email, LocalDate dateOfBirth, Boolean enabled, Authority role){
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.dateOfBirth = dateOfBirth;
+        this.enabled = enabled;
+        this.role = role;
+    }
+
     // Блокировка аккаунта Spring Security при 3 неудачных логинах
     public boolean isAccountNonLocked(){
         if(lockTime==null){

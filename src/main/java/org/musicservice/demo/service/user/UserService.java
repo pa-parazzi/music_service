@@ -10,6 +10,7 @@ import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.dto.user.UserDtoForView;
 import org.musicservice.demo.mapper.user.AvatarMapper;
 import org.musicservice.demo.mapper.user.UserMapper;
+import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
@@ -82,23 +83,19 @@ public class UserService {
         return userRepository.findById(userId).orElseThrow(()-> new UsernameNotFoundException("Пользователь не найден"));
     }
 
-    public Optional<User> getUserOptional(String username){
+    public Optional<User> getUserOptionalByUsername(String username){
         return userRepository.searchByUsername(username);
     }
 
     @Transactional
     public User registrationUser(UserDtoForRegistration userForRegistration, MultipartFile file){
-        User user = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
-        user.setRole(Authority.USER);
-        user.setEnabled(false);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        verificationTokenService.createToken(user);
-        if(file==null){
-            userAvatarService.createDefaultAvatar(user);
-            return userRepository.save(user);
-        }
-        userAvatarService.create(file, user);
-        return userRepository.save(user);
+        Authority authority = Authority.USER;
+        String password = passwordEncoder.encode(userForRegistration.getPassword());
+        User newUser = new User(userForRegistration.getUsername(), password, userForRegistration.getEmail(), userForRegistration.getDateOfBirth(), false, authority);
+        userRepository.save(newUser);
+        userAvatarService.createOrGet(file, newUser);
+        verificationTokenService.createToken(newUser);
+        return newUser;
     }
 
     @Transactional

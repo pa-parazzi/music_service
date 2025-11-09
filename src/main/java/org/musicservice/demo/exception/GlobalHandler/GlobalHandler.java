@@ -1,6 +1,8 @@
 package org.musicservice.demo.exception.GlobalHandler;
 
+import org.musicservice.demo.exception.AuthException.RegistrationException;
 import org.musicservice.demo.exception.errorResponse.RefreshTokenErrorResponse;
+import org.musicservice.demo.exception.errorResponse.UserFieldsErrorResponse;
 import org.musicservice.demo.exception.refreshTokenError.RefreshTokenNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,12 @@ public class GlobalHandler {
     public ResponseEntity<RefreshTokenErrorResponse> exceptionHandler(RefreshTokenNotFoundException e){
         RefreshTokenErrorResponse errorResponse = new RefreshTokenErrorResponse(e.getMessage(), System.currentTimeMillis());
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<UserFieldsErrorResponse> exceptionHandler(RegistrationException e){
+        UserFieldsErrorResponse errorResponse = new UserFieldsErrorResponse(e.getMessage(), System.currentTimeMillis());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
 
