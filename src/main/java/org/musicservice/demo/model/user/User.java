@@ -57,10 +57,10 @@ public class User {
     private boolean enabled;
 
     // Токен активации аккаунта
-    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, orphanRemoval = true)
     private VerificationToken verificationToken;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, orphanRemoval = true)
     private RefreshToken refreshToken;
 
     @Enumerated(value = EnumType.STRING)
@@ -71,16 +71,19 @@ public class User {
 
     public User(){}
 
-    public User(String username, String password, String email, LocalDate dateOfBirth, Boolean enabled, Authority role, UserAvatar userAvatar) {
+    public User(String username, String password, String email, LocalDate dateOfBirth, int failedLoginAttempts, LocalDateTime lockTime, boolean enabled, VerificationToken verificationToken, RefreshToken refreshToken, Authority role, UserAvatar userAvatar) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.dateOfBirth = dateOfBirth;
+        this.failedLoginAttempts = failedLoginAttempts;
+        this.lockTime = lockTime;
         this.enabled = enabled;
+        this.verificationToken = verificationToken;
+        this.refreshToken = refreshToken;
         this.role = role;
         this.userAvatar = userAvatar;
     }
-
 
     // Конструктор для регистрации пользователя
     public User(String username, String password, String email, LocalDate dateOfBirth, Boolean enabled, Authority role){

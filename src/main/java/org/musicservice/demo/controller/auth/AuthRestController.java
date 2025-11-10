@@ -18,7 +18,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,16 +33,14 @@ public class AuthRestController {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final AuthenticationFailureHandlerForUser authenticationFailureHandler;
-    private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthRestController(UserService userService, ValidationForRegUser validationForRegUser, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler, JwtTokenService jwtTokenService) {
+    public AuthRestController(UserService userService, ValidationForRegUser validationForRegUser, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, AuthenticationFailureHandlerForUser authenticationFailureHandler) {
         this.userService = userService;
         this.validationForRegUser = validationForRegUser;
         this.authenticationManager = authenticationManager;
         this.refreshTokenService = refreshTokenService;
         this.authenticationFailureHandler = authenticationFailureHandler;
-        this.jwtTokenService = jwtTokenService;
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -51,9 +48,7 @@ public class AuthRestController {
                                             @RequestPart(required = false) MultipartFile avatar,
                                             HttpServletResponse response){
         validationForRegUser.validate(user);
-        User regUser = userService.registrationUser(user, avatar);
-        refreshTokenService.createRefreshToken(response, regUser);
-        String jwtToken = jwtTokenService.generateAccessForUser(regUser);
+        String jwtToken = userService.processRegistrationUser(user, avatar, response);
         return Map.of("jwt_token", jwtToken);
     }
 

@@ -46,7 +46,6 @@ public class RefreshTokenService {
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
-
         Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
         RefreshToken refreshToken = new RefreshToken(hash, expiryDate, false, user);
         user.setRefreshToken(refreshToken);

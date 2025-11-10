@@ -39,6 +39,14 @@ public class UserAvatarService {
     }
 
     @Transactional
+    public AvatarDto getAvatarByUser(User user){
+        AvatarDto avatarDto = avatarMapper.convertToDto(user.getUserAvatar());
+        String url = urlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), user.getUserAvatar().getKey());
+        avatarDto.setUrl(url);
+        return avatarDto;
+    }
+
+    @Transactional
     public void createOrGet(MultipartFile file, User user){
         if(file==null){
             createDefaultAvatar(user);
@@ -67,10 +75,10 @@ public class UserAvatarService {
     }
 
     @Transactional
-    public UserAvatar createDefaultAvatar(User user){
+    public void createDefaultAvatar(User user){
         String url = urlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), yandexStorageProperties.getDefaultAvatarKey());
         UserAvatar userAvatar = setParams(user, yandexStorageProperties.getDefaultAvatarKey(), url);
-        return userAvatarRepository.save(userAvatar);
+        userAvatarRepository.save(userAvatar);
     }
 
     private UserAvatar setParams(User owner, String key, String url){

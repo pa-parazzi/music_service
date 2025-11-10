@@ -10,13 +10,14 @@ import org.musicservice.demo.dto.user.UserDtoForRegistration;
 import org.musicservice.demo.dto.user.UserDtoForView;
 import org.musicservice.demo.mapper.user.AvatarMapper;
 import org.musicservice.demo.mapper.user.UserMapper;
-import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
+import org.musicservice.demo.model.user.VerificationToken;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
 import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.s3.S3UrlGenerator;
+import org.musicservice.demo.service.security.JwtTokenService;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.UserDetailsServiceImpl;
 import org.musicservice.demo.service.security.VerificationTokenService;
@@ -36,43 +37,24 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AuthService authService;
     private final UserDetailsServiceImpl userDetailsService;
-    private final PasswordEncoder passwordEncoder;
-    private final LoginSecurityProperties securityProperties;
-    private final VerificationTokenService verificationTokenService;
     private final UserMapper userMapper;
     private final UserAvatarService userAvatarService;
-    private final AvatarMapper avatarMapper;
-    private final S3UrlGenerator s3UrlGenerator;
-    private final YandexStorageProperties yandexStorageProperties;
     private final RefreshTokenService refreshTokenService;
-    private final JWTUtil jwtUtil;
+    private final VerificationTokenService verificationTokenService;
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, VerificationTokenService verificationTokenService, UserMapper userMapper, UserAvatarService userAvatarService, AvatarMapper avatarMapper, S3UrlGenerator s3UrlGenerator, YandexStorageProperties yandexStorageProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
+    public UserService(UserRepository userRepository, AuthService authService, UserDetailsServiceImpl userDetailsService, UserMapper userMapper, UserAvatarService userAvatarService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService, JwtTokenService jwtTokenService) {
         this.userRepository = userRepository;
+        this.authService = authService;
         this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
-        this.securityProperties = securityProperties;
-        this.verificationTokenService = verificationTokenService;
         this.userMapper = userMapper;
         this.userAvatarService = userAvatarService;
-        this.avatarMapper = avatarMapper;
-        this.s3UrlGenerator = s3UrlGenerator;
-        this.yandexStorageProperties = yandexStorageProperties;
         this.refreshTokenService = refreshTokenService;
-        this.jwtUtil = jwtUtil;
-    }
-
-    @Transactional
-    public UserDtoForView viewSingle(String username){
-        User user = searchByUsername(username);
-        AvatarDto avatarDto = avatarMapper.convertToDto(user.getUserAvatar());
-        String url = s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), user.getUserAvatar().getKey());
-        avatarDto.setUrl(url);
-        UserDtoForView userDto = userMapper.getUserDtoForView(user);
-        userDto.setAvatar(avatarDto);
-        return userDto;
+        this.verificationTokenService = verificationTokenService;
+        this.jwtTokenService = jwtTokenService;
     }
 
     public User searchByUsername(String username){
@@ -88,35 +70,33 @@ public class UserService {
     }
 
     @Transactional
-    public User registrationUser(UserDtoForRegistration userForRegistration, MultipartFile file){
-        Authority authority = Authority.USER;
-        String password = passwordEncoder.encode(userForRegistration.getPassword());
-        User newUser = new User(userForRegistration.getUsername(), password, userForRegistration.getEmail(), userForRegistration.getDateOfBirth(), false, authority);
-        userRepository.save(newUser);
-        userAvatarService.createOrGet(file, newUser);
-        verificationTokenService.createToken(newUser);
-        return newUser;
+    public UserDtoForView viewSingle(String username){
+        User user = searchByUsername(username);
+        AvatarDto avatarDto = userAvatarService.getAvatarByUser(user);
+        UserDtoForView userDto = userMapper.getUserDtoForView(user);
+        userDto.setAvatar(avatarDto);
+        return userDto;
+    }
+
+    @Transactional
+    public String processRegistrationUser(UserDtoForRegistration userForRegistration, MultipartFile file, HttpServletResponse response){
+        User regUser = userMapper.convertFromUserDtoForRegistrationToUser(userForRegistration);
+        User user = authService.registration(regUser);
+        verificationTokenService.createToken(user);
+        refreshTokenService.createRefreshToken(response, user);
+        userAvatarService.createOrGet(file, user);
+        return jwtTokenService.generateAccess(user.getUsername());
     }
 
     @Transactional
     public String processLogin(HttpServletRequest request , HttpServletResponse response, String username){
-        User user = searchByUsername(username);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie==null && user.getRefreshToken()==null){
-            refreshTokenService.createRefreshToken(response, user);
-            return jwtUtil.generateToken(userDetails);
-        }
-        return jwtUtil.generateToken(userDetails);
+        return authService.getJwtByCookieOrGet(userDetails, response, request);
     }
 
     @Transactional
     public void processFailedLogin(User user){
-        user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
-        if(user.getFailedLoginAttempts()>= securityProperties.getMaxFailedAttempts()){
-            user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
-        }
-        userRepository.save(user);
+        authService.failLogin(user);
     }
 
     @Transactional

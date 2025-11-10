@@ -29,7 +29,7 @@ public class RefreshToken {
     @Column(name = "revoked")
     private Boolean revoked;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
     private User user;
 
