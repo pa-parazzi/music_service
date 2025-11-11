@@ -1,5 +1,6 @@
 package org.musicservice.demo.security.authListener;
 
+import org.musicservice.demo.service.user.AuthService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -10,11 +11,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthenticationFailureListener implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
 
-    private final UserService service;
+    private final UserService userService;
+    private final AuthService authService;
 
     @Autowired
-    public AuthenticationFailureListener(UserService service) {
-        this.service = service;
+    public AuthenticationFailureListener(UserService userService, AuthService authService) {
+        this.userService = userService;
+        this.authService = authService;
     }
 
     // Реализация, что будет происходить при неудачной аутентификации
@@ -23,6 +26,6 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
         // Достаем username из объекта аутентификации
         String username = event.getAuthentication().getPrincipal().toString();
         // Ищем пользователя в БД по username введенный при логине, если пользователь с таким логином существует, но пароль не верный - растет счетчик неверных логинов
-        service.getUserOptionalByUsername(username).ifPresent(service::processFailedLogin);
+        userService.getUserOptionalByUsername(username).ifPresent(authService::failLogin);
     }
 }

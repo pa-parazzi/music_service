@@ -27,34 +27,43 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final LoginSecurityProperties securityProperties;
     private final RefreshTokenService refreshTokenService;
-    private final JWTUtil jwtUtil;
+    private final VerificationTokenService verificationTokenService;
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, LoginSecurityProperties securityProperties, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService, JwtTokenService jwtTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.securityProperties = securityProperties;
         this.refreshTokenService = refreshTokenService;
-        this.jwtUtil = jwtUtil;
+        this.verificationTokenService = verificationTokenService;
+        this.jwtTokenService = jwtTokenService;
     }
 
     @Transactional
-    public User registration(User user){
+    public User registration(HttpServletResponse response, User user){
         Authority authority = Authority.USER;
         String password = passwordEncoder.encode(user.getPassword());
         User newUser = new User(user.getUsername(), password, user.getEmail(), user.getDateOfBirth(), false, authority);
-        return userRepository.save(newUser);
+        userRepository.save(newUser);
+        verificationTokenService.createToken(newUser);
+        refreshTokenService.createRefreshToken(response, newUser);
+        return newUser;
+    }
+
+    public String generateJwt(String username){
+        return jwtTokenService.generateAccess(username);
     }
 
     @Transactional
-    public String getJwtByCookieOrGet(UserDetails userDetails, HttpServletResponse response, HttpServletRequest request){
+    public String generateJwtOrGet(UserDetails userDetails, HttpServletResponse response, HttpServletRequest request){
         User user = userRepository.findByUsername(userDetails.getUsername());
         String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
         if(refreshTokenByCookie==null && user.getRefreshToken()==null){
             refreshTokenService.createRefreshToken(response, user);
-            return jwtUtil.generateToken(userDetails);
+            return jwtTokenService.generateAccess(userDetails);
         }
-        return jwtUtil.generateToken(userDetails);
+        return jwtTokenService.generateAccess(userDetails);
     }
 
     @Transactional
@@ -63,6 +72,13 @@ public class AuthService {
         if(user.getFailedLoginAttempts()>= securityProperties.getMaxFailedAttempts()){
             user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
         }
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void resetFailedLogin(User user){
+        user.setFailedLoginAttempts(0);
+        user.setLockTime(null);
         userRepository.save(user);
     }
 }

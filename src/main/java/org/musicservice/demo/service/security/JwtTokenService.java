@@ -25,7 +25,7 @@ public class JwtTokenService {
         return jwtUtil.generateToken(userDetails);
     }
 
-    public String generateAccessForUser(User user){
-        return generateAccess(user.getUsername());
+    public String generateAccess(UserDetails userDetails){
+        return jwtUtil.generateToken(userDetails);
     }
 }
