@@ -44,6 +44,11 @@ public class Sound {
         this.key = key;
     }
 
+    public Sound(String title, int duration){
+        this.title = title;
+        this.duration = duration;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

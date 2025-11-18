@@ -35,4 +35,8 @@ public class Artist {
         this.soundList = soundList;
     }
 
+    public Artist(String name){
+        this.name = name;
+    }
+
 }

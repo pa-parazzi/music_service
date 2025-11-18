@@ -43,6 +43,10 @@ public class Album {
         this.image = image;
     }
 
+    public Album(String title){
+        this.title = title;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
