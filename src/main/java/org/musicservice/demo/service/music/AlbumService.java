@@ -3,6 +3,7 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.dto.image.AlbumImageDto;
 import org.musicservice.demo.dto.music.SoundDto;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.exception.music.AlbumNotFoundException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.repository.music.AlbumRepository;
@@ -46,7 +47,7 @@ public class AlbumService {
     }
 
     private Album searchById(Long albumId){
-        return albumRepository.searchById(albumId);
+        return albumRepository.searchById(albumId).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
     }
 
     public AlbumResponse getAlbumById(Long albumId){
