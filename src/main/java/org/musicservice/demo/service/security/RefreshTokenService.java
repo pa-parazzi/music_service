@@ -33,6 +33,10 @@ public class RefreshTokenService {
         this.authenticationTokenProperties = authenticationTokenProperties;
     }
 
+    public RefreshToken findByUserId(Long userId){
+        return refreshTokenRepository.findByUserId(userId).orElseThrow(()-> new RefreshTokenNotFoundException("refreshToken не существует для этого пользователя"));
+    }
+
     public RefreshToken searchByTokenHash(String hash) {
         return refreshTokenRepository.findByTokenHash(hash).orElseThrow(()-> new RefreshTokenNotFoundException("refreshToken с таким hash не найден в БД"));
     }

@@ -30,8 +30,7 @@ public class UserDtoForRegistration {
     @Email(message = "Не валидный email адрес")
     private String email;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "Пожалуйста, заполните дату рождения")
     private LocalDate dateOfBirth;
 

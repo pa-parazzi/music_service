@@ -3,8 +3,9 @@ package org.musicservice.demo.controller.rest.music;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.dto.music.mainResponse.MainResponse;
 import org.musicservice.demo.factory.TestMusicDataFactory;
-import org.musicservice.demo.service.music.MusicService;
+import org.musicservice.demo.model.music.Album;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,16 +19,17 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
 @Import(TestMusicDataFactory.class)
-public class AlbumControllerNegativeTest {
+class AlbumControllerPositiveIT {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
@@ -54,12 +56,42 @@ public class AlbumControllerNegativeTest {
         testMusicDataFactory.cleanData();
     }
 
-    @Test
     @Transactional
-    void viewAlbumById_NotFound_ReturnsStatusCode404() throws Exception{
-        // when
-        mockMvc.perform(get("/api/album/{id}", 999L))
-                .andExpect(status().isNotFound());
+    @Test
+    void viewAlbumsTest_ReturnsValidHttpStatusAndAlbumsData() throws Exception{
+        // given
+        Album album = testMusicDataFactory.createFactoryMusicData();
+        MainResponse expected = testMusicDataFactory.getFactoryMainResponse(album);
 
+        // when
+        MvcResult result = mockMvc.perform(get("/api/album"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        MainResponse actual = new ObjectMapper().readValue(json, MainResponse.class);
+
+        // then
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
+
+    @Transactional
+    @Test
+    void viewAlbumById_ReturnValidAlbum() throws Exception{
+        // given
+        Album album = testMusicDataFactory.createFactoryMusicData();
+        AlbumResponse expected = testMusicDataFactory.getAlbumResponseByFactoryMusicData(album);
+
+        // when
+        MvcResult result = mockMvc.perform(get("/api/album/{id}", expected.getAlbumId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        AlbumResponse actual = new ObjectMapper().readValue(json, AlbumResponse.class);
+
+        // then
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
+    }
+
 }

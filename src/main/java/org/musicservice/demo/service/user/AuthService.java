@@ -7,7 +7,6 @@ import org.musicservice.demo.configuration.security.LoginSecurityProperties;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.jwtAuthentication.cookie.CookieUtil;
-import org.musicservice.demo.security.jwtAuthentication.jwt.JWTUtil;
 import org.musicservice.demo.service.security.JwtTokenService;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.VerificationTokenService;

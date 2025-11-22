@@ -3,9 +3,6 @@ package org.musicservice.demo.factory;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
-import org.musicservice.demo.repository.music.SoundRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

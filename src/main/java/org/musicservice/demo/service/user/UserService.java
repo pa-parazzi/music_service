@@ -9,10 +9,7 @@ import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.image.UserAvatarService;
-import org.musicservice.demo.service.security.JwtTokenService;
-import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.security.UserDetailsServiceImpl;
-import org.musicservice.demo.service.security.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,12 +42,21 @@ public class UserService {
         return userRepository.searchByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
+    public User searchByEmail(String email){
+        return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Пользователь с email: " + email + "не найден"));
+    }
+
     public User searchById(Long userId){
         return userRepository.findById(userId).orElseThrow(()-> new UsernameNotFoundException("Пользователь не найден"));
     }
 
     public Optional<User> getUserOptionalByUsername(String username){
         return userRepository.searchByUsername(username);
+    }
+
+    @Transactional
+    public void deleteAll(){
+        userRepository.deleteAll();
     }
 
     @Transactional
