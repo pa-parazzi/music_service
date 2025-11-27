@@ -1,11 +1,8 @@
 package org.musicservice.demo.controller.auth;
 
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.repository.user.RefreshTokenRepository;
-import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.security.RefreshTokenService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

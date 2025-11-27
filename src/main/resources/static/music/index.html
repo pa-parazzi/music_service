@@ -4,8 +4,39 @@
     <meta charset="UTF-8">
     <title>Альбом</title>
     <link rel="stylesheet" href="/css/album.css">
+    <link rel="stylesheet" href="/css/audioPlayer.css">
+    <link rel="stylesheet" href="/css/defaultHeader.css">
 </head>
 <body>
+
+<input type="checkbox" id="side-checkbox">
+
+<header class="header">
+    <div class="header-left">
+        <!-- кнопка открытия -->
+        <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
+        <h1>Моя музыка</h1>
+    </div>
+    <nav id="sign-in/up-buttons" class="nav-buttons">
+        <a href="/login.html" class="button">Sign in</a>
+        <a href="/registration.html" class="button">Sign up</a>
+    </nav>
+    <div class="userInfo" id="userInfo"></div>
+</header>
+
+<!-- боковая панель -->
+<aside class="side-panel" role="search" aria-label="Боковая панель">
+    <div class="side-header">
+        <!-- стрелка назад -->
+        <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
+        <div class="side-title">Панель</div>
+    </div>
+    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
+</aside>
+
+<!-- затемнение -->
+<label class="overlay" for="side-checkbox" aria-hidden="true"></label>
+
 <div class="album-page">
     <div class="album-header">
         <div class="album-cover">
@@ -21,7 +52,29 @@
     <div class="tracklist" id="tracklist"></div>
 </div>
 
-<audio id="player" controls></audio>
+<audio id="player"></audio>
+
+<!-- Кастомный плеер -->
+<div id="audio-player">
+    <div class="player-controls">
+        <button id="prev-btn">⏮</button>
+        <button id="play-btn">▶</button>
+        <button id="next-btn">⏭</button>
+    </div>
+
+    <div class="player-progress">
+        <span id="current-time">0:00</span>
+        <input type="range" id="progress" min="0" max="100" value="0.1">
+        <span id="duration">0:00</span>
+    </div>
+
+    <div class="player-volume">
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.1">
+    </div>
+</div>
+
+<script src="/js/loadUserProfile.js"></script>
+<script src="/js/audioPlayer.js"></script>
 
 <script>
     const player = document.getElementById('player');
@@ -41,12 +94,6 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
-    }
-
-    function formatTime(seconds) {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m}:${s.toString().padStart(2, '0')}`;
     }
 
     async function loadAlbum() {
@@ -70,7 +117,7 @@
             <span>${i + 1}.</span>
             <span>${escapeHtml(track.title)}</span>
           </div>
-          <div class="track-duration">${formatTime(track.duration)}</div>
+          <div class="track-duration">${formatTime(Math.floor(track.duration || 0))}</div>
         </div>
       `).join('');
 

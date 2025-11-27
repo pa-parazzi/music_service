@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**", "/image/**", "/js/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/refresh").permitAll()
                         .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "/music/index.html", "/album/**", "/api/album/**", "/registration.html", "/profile.html").permitAll()
