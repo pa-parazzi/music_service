@@ -1,0 +1,30 @@
+/* === ИНФО О ПОЛЬЗОВАТЕЛЕ === */
+.userInfo {
+    display: none;
+    color: #fff;
+    font-weight: bold;
+    margin-left: 20px;
+    align-items: center;
+    gap: 10px;
+}
+
+.userInfo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.logout-btn {
+    background-color: #ff4d4d;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #e63b3b;
+}

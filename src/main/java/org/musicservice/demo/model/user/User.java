@@ -41,7 +41,7 @@ public class User {
 
     @Column(name = "date_of_birth")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    //@JsonFormat(pattern = "dd/MM/yyyy")
     @NotNull
     private LocalDate dateOfBirth;
 

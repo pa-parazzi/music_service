@@ -67,7 +67,7 @@ public class AuthRestControllerIT {
                                 "username": "TestUser",
                                 "password": "test123",
                                 "email": "igor.bocharov.88@gmail.com",
-                                "dateOfBirth": "2001-01-01"
+                                "dateOfBirth": "01/01/2001"
                              }
                         """;
         MockMultipartFile userPart = new MockMultipartFile(

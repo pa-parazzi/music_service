@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Главная</title>
-    <link rel="stylesheet" href="/css/defaultHeader.css">
+    <link rel="stylesheet" href="/css/headerAndBody.css">
+    <link rel="stylesheet" href="/css/userInfo.css">
     <link rel="stylesheet" href="/css/musicMain.css">
     <link rel="stylesheet" href="/css/audioPlayer.css">
 </head>
@@ -61,193 +62,9 @@
 </div>
 
 <script src="/js/audioPlayer.js"></script>
+<script src="/js/loadUserProfile.js"></script>
 
 <script>
-    /* --- централизованные утилиты и замок --- */
-    let refreshInProgress = null;
-
-    function clearAuth() {
-        localStorage.removeItem("jwt");
-    }
-
-    /* --- безопасный парсер JSON --- */
-    async function safeParseJson(response) {
-        const contentType = response.headers.get("Content-Type") || "";
-        if (!response.ok) return null;
-        if (response.status === 204) return null;
-        if (!contentType.includes("application/json")) {
-            try { return await response.json(); } catch (e) { return null; }
-        }
-        try {
-            return await response.json();
-        } catch (e) {
-            console.warn("safeParseJson: no JSON body", e);
-            return null;
-        }
-    }
-
-    /* --- refreshAccessToken с "замком" --- */
-    async function refreshAccessToken() {
-        if (refreshInProgress) return refreshInProgress;
-
-        refreshInProgress = (async () => {
-            try {
-                const res = await fetch('/api/auth/refresh', {
-                    method: "POST",
-                    credentials: "include"
-                });
-
-                if (!res.ok) {
-                    console.warn("refreshAccessToken: refresh не удался");
-                    clearAuth();
-                    return false;
-                }
-
-                const data = await safeParseJson(res);
-                const token = data && (data["jwt-token"] || data["jwt_token"] || data.accessToken || data.token);
-
-                if (!token) {
-                    console.warn("refreshAccessToken: ответ не содержит jwt");
-                    clearAuth();
-                    return false;
-                }
-
-                localStorage.setItem("jwt", token);
-                console.log("Access token обновлён");
-                return true;
-            } catch (e) {
-                console.error("refreshAccessToken error:", e);
-                clearAuth();
-                return false;
-            } finally {
-                refreshInProgress = null;
-            }
-        })();
-
-        return refreshInProgress;
-    }
-
-    /* --- Обёртка для запросов с авторизацией и auto-refresh --- */
-    async function apiFetch(url, options = {}) {
-        options = { ...options };
-        const headers = { ...(options.headers || {}) };
-
-        // ждём, если в данный момент выполняется refresh
-        if (refreshInProgress) await refreshInProgress;
-
-        const token = localStorage.getItem("jwt");
-
-        // Добавляем Authorization только если токен есть
-        if (token) {
-            headers["Authorization"] = "Bearer " + token;
-        } else {
-            delete headers["Authorization"];
-        }
-
-        options.headers = headers;
-        options.credentials = "include";
-
-        let response;
-
-        try {
-            response = await fetch(url, options);
-        } catch (e) {
-            console.error("apiFetch network error:", e);
-            throw e;
-        }
-
-        // Если токена нет, то просто возвращаем ответ без попытки refresh
-        if (!token) {
-            return response;
-        }
-
-        // Если токен истёк — пробуем обновить и повторить запрос
-        if (response.status === 401 || response.status === 403) {
-            const refreshed = await refreshAccessToken();
-            if (refreshed) {
-                const newToken = localStorage.getItem("jwt");
-                const retryHeaders = { ...headers };
-
-                if (newToken) {
-                    retryHeaders["Authorization"] = "Bearer " + newToken;
-                } else {
-                    delete retryHeaders["Authorization"];
-                }
-
-                try {
-                    response = await fetch(url, {
-                        ...options,
-                        headers: retryHeaders,
-                        credentials: "include"
-                    });
-                } catch (e) {
-                    console.error("apiFetch retry error:", e);
-                    throw e;
-                }
-            }
-        }
-
-        return response;
-    }
-
-
-    /* --- Загрузка профиля --- */
-    async function loadProfile() {
-        const nav = document.getElementById("sign-in/up-buttons");
-        const userInfoDiv = document.getElementById("userInfo");
-
-        try {
-            const response = await apiFetch("http://localhost:8080/lk/profile", {
-                method: "GET"
-            });
-
-            if (response.ok) {
-                const user = await response.json();
-
-                nav.style.display = "none";
-                userInfoDiv.innerHTML = `
-                    <img src="${user.avatar?.url}" alt="avatar">
-                    <span>${user.username}</span>
-                    <button id="logoutBtn" class="logout-btn">Выйти</button>
-                `;
-
-                const logoutBtn = document.getElementById("logoutBtn");
-                logoutBtn.addEventListener("click", logout);
-
-                userInfoDiv.style.display = "block";
-            } else {
-                clearAuth();
-                userInfoDiv.style.display = "none";
-                nav.style.display = "flex";
-                console.warn("Сессия истекла или токен недействителен");
-            }
-        } catch (error) {
-            console.error("Ошибка загрузки профиля:", error);
-            userInfoDiv.style.display = "none";
-            nav.style.display = "flex";
-        }
-    }
-
-    /* --- Logout --- */
-    async function logout() {
-        try {
-            const response = await apiFetch("http://localhost:8080/api/auth/logout", {
-                method: "POST",
-                credentials: "include"
-            });
-
-            clearAuth();
-            if (response.ok) {
-                console.log("Выход выполнен успешно");
-                window.location.href = "/music.html";
-            } else {
-                console.warn("Ошибка при выходе:", response.status);
-            }
-        } catch (error) {
-            console.error("Ошибка logout:", error);
-        }
-    }
-
     function escapeHtml(str = '') {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -299,60 +116,8 @@
         }
     }
 
-    /* ==============================
-       === Логика плеера ===
-    =============================== */
-
-    // const player = document.getElementById('player');
-    // const audioSource = document.getElementById('audioSource');
-    //
-    // let currentAlbum = null;
-    // let currentTrack = 0;
-    //
-    // function playAlbum(album) {
-    //     if (!album || !album.soundList || album.soundList.length === 0) {
-    //         console.warn('Альбом пуст или не найден');
-    //         return;
-    //     }
-    //
-    //     // остановим предыдущее проигрывание
-    //     try {
-    //         player.pause();
-    //         player.currentTime = 0;
-    //     } catch {}
-    //
-    //     currentAlbum = album;
-    //     currentTrack = 0;
-    //
-    //     console.log(`▶️ Запущен альбом: ${album.title}`);
-    //     playTrack(currentAlbum.soundList[currentTrack]);
-    //
-    //     // обработчик завершения трека
-    //     player.onended = () => {
-    //         currentTrack++;
-    //         if (currentTrack < currentAlbum.soundList.length) {
-    //             playTrack(currentAlbum.soundList[currentTrack]);
-    //         } else {
-    //             console.log('Альбом закончился');
-    //         }
-    //     };
-    // }
-    //
-    // function playTrack(track) {
-    //     if (!track?.url) {
-    //         console.warn('❌ Трек не содержит URL');
-    //         return;
-    //     }
-    //     console.log(`🎵 Воспроизводится трек: ${track.title}`);
-    //
-    //     audioSource.src = track.url;
-    //     player.load();
-    //     player.play().catch(err => console.warn('Ошибка play():', err));
-    // }
-
     /* --- Инициализация при загрузке страницы --- */
     document.addEventListener("DOMContentLoaded", async () => {
-        await loadProfile();
         await loadAlbums();
     });
 </script>

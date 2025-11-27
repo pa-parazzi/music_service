@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Setter
 public class UserDtoForRegistration {
 
-    @Pattern(regexp = "^[A-Za-zА-Яа-яЁё]+[0-9]*$", message = "Имя может содержать буквы латинского, русского алфавита и цифры")
+    @Pattern(regexp = "^[A-Za-zА-Яа-яЁё]+[0-9]*$", message = "Имя должно буквы латинского, русского алфавита и цифры")
     @NotBlank(message = "Пожалуйста, заполните имя пользоваля")
     @Size(min = 2, max = 50, message = "Минимальное количество символов 2")
     private String username;
@@ -30,7 +30,7 @@ public class UserDtoForRegistration {
     @Email(message = "Не валидный email адрес")
     private String email;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     @NotNull(message = "Пожалуйста, заполните дату рождения")
     private LocalDate dateOfBirth;
 

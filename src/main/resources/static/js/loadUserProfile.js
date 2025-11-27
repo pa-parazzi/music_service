@@ -182,3 +182,7 @@ async function logout() {
         console.error("Ошибка logout:", error);
     }
 }
+
+document.addEventListener("DOMContentLoaded", async() => {
+    await loadProfile();
+})
