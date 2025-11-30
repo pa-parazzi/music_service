@@ -40,7 +40,6 @@ public class VerificationTokenService {
         String token = UUID.randomUUID().toString();
         Instant expiryDate = Instant.now().plus(expirationHours);
         VerificationToken newVerificationToken = new VerificationToken(user, token, expiryDate);
-        //user.setVerificationToken(newVerificationToken);
         repository.save(newVerificationToken);
         String activationLink = base_url + "/api/auth/activate?token=" + token;
         emailService.sendActivationEmail(user.getEmail(), activationLink);

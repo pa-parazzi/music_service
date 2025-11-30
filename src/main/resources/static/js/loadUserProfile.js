@@ -174,7 +174,7 @@ async function logout() {
         clearAuth();
         if (response.ok) {
             console.log("Выход выполнен успешно");
-            window.location.href = "/music.html";
+            window.location.href = "/music/main.html";
         } else {
             console.warn("Ошибка при выходе:", response.status);
         }
@@ -185,4 +185,4 @@ async function logout() {
 
 document.addEventListener("DOMContentLoaded", async() => {
     await loadProfile();
-})
+});

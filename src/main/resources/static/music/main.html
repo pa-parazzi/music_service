@@ -19,8 +19,8 @@
         <h1>Моя музыка</h1>
     </div>
     <nav id="sign-in/up-buttons" class="nav-buttons">
-        <a href="/login.html" class="button">Sign in</a>
-        <a href="/registration.html" class="button">Sign up</a>
+        <a href="/auth/login.html" class="button">Sign in</a>
+        <a href="/auth/registration.html" class="button">Sign up</a>
     </nav>
     <div class="userInfo" id="userInfo"></div>
 </header>
@@ -76,7 +76,7 @@
 
     async function loadAlbums() {
         try {
-            const res = await fetch('http://localhost:8080/api/album');
+            const res = await fetch('/api/album');
             const data = await res.json();
 
             console.log("Загруженные альбомы:", data);
@@ -94,7 +94,9 @@
                     </div>
                     <div class="album-meta">
                         <div class="album-title">${escapeHtml(album.title)}</div>
+                        <a href="/artist/${album.artist.id}" class="artist-name-link">
                         <div class="artist-name">${escapeHtml(album.artist.name)}</div>
+                        </a>
                     </div>
                     </a>
                 `;

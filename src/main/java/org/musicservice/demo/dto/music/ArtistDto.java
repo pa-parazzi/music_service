@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class ArtistDto {
 
+    private Long id;
     private String name;
 
 }

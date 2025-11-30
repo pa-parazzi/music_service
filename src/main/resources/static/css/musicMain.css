@@ -32,6 +32,17 @@
     transition: 0.2s;
 }
 
+/* кликабельное имя артиста */
+.artist-name-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.artist-name-link:hover {
+    transform: scale(1.02);
+    transition: 0.2s;
+}
+
 .cover-wrapper {
     position: relative;
     width: 200px;

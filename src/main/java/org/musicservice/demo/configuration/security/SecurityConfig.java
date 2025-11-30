@@ -40,10 +40,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**", "/js/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/auth/**", "/music/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/admin/login.html", "/admin/main.html","/login.html", "/music.html", "/music/index.html", "/album/**", "/api/album/**", "/registration.html", "/profile.html").permitAll()
+                        .requestMatchers("/album/**", "/api/album/**", "/artist/**", "/api/artist/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers("/lk/profile").authenticated()

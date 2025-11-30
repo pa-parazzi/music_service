@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 public class AuthRestController {
 
     private final UserService userService;

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Исполнитель</title>
+    <link rel="stylesheet" href="/css/headerAndBody.css">
+    <link rel="stylesheet" href="/css/audioPlayer.css">
+    <link rel="stylesheet" href="/css/userInfo.css">
+    <link rel="stylesheet" href="/css/artist.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-left">
+        <!-- кнопка открытия -->
+        <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
+        <h1>Моя музыка</h1>
+    </div>
+    <nav id="sign-in/up-buttons" class="nav-buttons">
+        <a href="/auth/login.html" class="button">Sign in</a>
+        <a href="/auth/registration.html" class="button">Sign up</a>
+    </nav>
+    <div class="userInfo" id="userInfo"></div>
+</header>
+
+<input type="checkbox" id="side-checkbox">
+
+<div class="artist-page">
+    <p id="artist-name" class="artist-name"></p>
+    <div class="tracklist" id="tracklist"></div>
+</div>
+
+<!-- боковая панель -->
+<aside class="side-panel" role="search" aria-label="Боковая панель">
+    <div class="side-header">
+        <!-- стрелка назад -->
+        <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
+        <div class="side-title">Панель</div>
+    </div>
+    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
+</aside>
+
+<!-- затемнение -->
+<label class="overlay" for="side-checkbox" aria-hidden="true"></label>
+
+<audio id="player"></audio>
+
+<!-- Кастомный плеер -->
+<div id="audio-player">
+    <div class="player-controls">
+        <button id="prev-btn">⏮</button>
+        <button id="play-btn">▶</button>
+        <button id="next-btn">⏭</button>
+    </div>
+
+    <div class="player-progress">
+        <span id="current-time">0:00</span>
+        <input type="range" id="progress" min="0" max="100" value="0.1">
+        <span id="duration">0:00</span>
+    </div>
+
+    <div class="player-volume">
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.1">
+    </div>
+</div>
+
+<script src="/js/audioPlayer.js"></script>
+<script src="/js/loadUserProfile.js"></script>
+
+<script>
+    const player = document.getElementById('player');
+    let artistName = document.getElementById('artist-name');
+    const artistTrackList = document.getElementById('tracklist');
+
+    let currentArtist = null;
+    let currentTrackIndex = 0;
+
+    async function loadArtist() {
+        const id = window.location.pathname.split('/').pop();
+
+        try {
+            const response = await fetch(`/api/artist/${id}`);
+            if (!response.ok) throw new Error("Ошибка загрузки");
+
+            const artist = await response.json();
+            currentArtist = artist;
+
+            artistName.textContent = artist.name;
+
+
+            artistTrackList.innerHTML = artist.soundList.map((track, i) => `
+            <div class="track" data-index="${i}">
+              <div class="track-title">
+                <span>${i + 1}.</span>
+                <span>${track.title}</span>
+              </div>
+              <div class="track-duration">${formatTime(track.duration)}</div>
+            </div>
+        `).join("");
+
+            // Навешиваем обработчики клика
+            document.querySelectorAll('.track').forEach(trackEl => {
+                trackEl.addEventListener('click', () => {
+                    const index = Number(trackEl.dataset.index);
+                    playTrack(index);
+                });
+            });
+
+            player.addEventListener('ended', ()=> {
+                if(!currentArtist) return;
+                if(currentTrackIndex < currentArtist.soundList.length - 1){
+                    playTrack(currentTrackIndex + 1);
+                }
+            });
+
+            function playTrack (index) {
+                if(!currentArtist) return;
+                const track = currentArtist.soundList[index];
+                currentTrackIndex = index;
+                player.src = track.url;
+                player.play();
+
+                document.querySelectorAll('.track').forEach((el, i) => {
+                    el.classList.toggle('active', i === index);
+                });
+
+                const playBtn = document.getElementById('play-btn');
+                playBtn.textContent = "⏸";
+            }
+
+            // ===== Следующий трек =====
+            nextBtn.addEventListener("click", () => {
+                if (!currentArtist) return;
+                if (currentTrackIndex < currentArtist.soundList.length - 1) {
+                    playTrack(currentTrackIndex + 1);
+                }
+            });
+
+            // ===== Предыдущий трек =====
+            prevBtn.addEventListener("click", () => {
+                if (!currentArtist) return;
+                if (currentTrackIndex > 0) {
+                    playTrack(currentTrackIndex - 1);
+                }
+            });
+
+            // ===== Автоматический переход к следующему треку =====
+            player.addEventListener("ended", () => {
+                if (!currentArtist) return;
+                if (currentTrackIndex < currentArtist.soundList.length - 1) {
+                    playTrack(currentTrackIndex + 1);
+                }
+            });
+
+        } catch (err) {
+            console.error("Ошибка загрузки исполнителя", err);
+        }
+    }
+
+    loadArtist();
+</script>
+
+</body>
+</html>

@@ -19,8 +19,8 @@
         <h1>Моя музыка</h1>
     </div>
     <nav id="sign-in/up-buttons" class="nav-buttons">
-        <a href="/login.html" class="button">Sign in</a>
-        <a href="/registration.html" class="button">Sign up</a>
+        <a href="/auth/login.html" class="button">Sign in</a>
+        <a href="/auth/registration.html" class="button">Sign up</a>
     </nav>
     <div class="userInfo" id="userInfo"></div>
 </header>
@@ -74,8 +74,8 @@
     </div>
 </div>
 
-<script src="/js/loadUserProfile.js"></script>
 <script src="/js/audioPlayer.js"></script>
+<script src="/js/loadUserProfile.js"></script>
 
 <script>
     const player = document.getElementById('player');
@@ -107,13 +107,21 @@
 
             // Заполняем заголовок и обложку
             albumTitle.textContent = album.title;
-            albumArtist.textContent = album.artist.name;
+
+            // Кликабельное имя исполнителя, с переходом на страницу исполнителя
+            albumArtist.innerHTML = '';
+            const link = document.createElement('a');
+            link.href = `/artist/${album.artist.id}`;
+            link.textContent = album.artist.name;
+            link.className = 'artist-name-link';
+            albumArtist.appendChild(link);
+
             albumImage.src = album.albumImage.url;
             albumImage.alt = escapeHtml(album.title);
 
             // Треклист
             tracklistEl.innerHTML = album.soundList.map((track, i) => `
-        <div class="track" data-index="${i}">
+        <div class="track" id="track" data-index="${i}">
           <div class="track-title">
             <span>${i + 1}.</span>
             <span>${escapeHtml(track.title)}</span>
@@ -159,8 +167,34 @@
         document.querySelectorAll('.track').forEach((el, i) => {
             el.classList.toggle('active', i === index);
         });
+
+        const playBtn = document.getElementById('play-btn');
+        playBtn.textContent = "⏸";
     }
 
+    // ===== Следующий трек =====
+    nextBtn.addEventListener("click", () => {
+        if (!currentAlbum) return;
+        if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+            playTrack(currentTrackIndex + 1);
+        }
+    });
+
+    // ===== Предыдущий трек =====
+    prevBtn.addEventListener("click", () => {
+        if (!currentAlbum) return;
+        if (currentTrackIndex > 0) {
+            playTrack(currentTrackIndex - 1);
+        }
+    });
+
+    // ===== Автоматический переход к следующему треку =====
+    player.addEventListener("ended", () => {
+        if (!currentAlbum) return;
+        if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+            playTrack(currentTrackIndex + 1);
+        }
+    });
     loadAlbum();
 </script>
 </body>

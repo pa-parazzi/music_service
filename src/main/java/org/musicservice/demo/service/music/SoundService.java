@@ -31,6 +31,15 @@ public class SoundService {
 
     public List<SoundDto> getSoundListByAlbumId(Long albumId){
         List<Sound> soundList = soundRepository.findByAlbumId(albumId);
+        return getSoundListDto(soundList);
+    }
+
+    public List<SoundDto> getSoundListByArtistId(Long artistId){
+        List<Sound> soundList = soundRepository.findByArtistId(artistId);
+        return getSoundListDto(soundList);
+    }
+
+    private List<SoundDto> getSoundListDto(List<Sound> soundList){
         return soundList.stream().map(sound -> {
             String soundKey = sound.getKey();
             String soundUrl = s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("music"), soundKey);

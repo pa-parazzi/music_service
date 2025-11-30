@@ -60,27 +60,5 @@ playBtn.addEventListener("click", () => {
     }
 });
 
-// ===== Следующий трек =====
-nextBtn.addEventListener("click", () => {
-    if (!currentAlbum) return;
-    if (currentTrackIndex < currentAlbum.soundList.length - 1) {
-        playTrack(currentTrackIndex + 1);
-    }
-});
 
-// ===== Предыдущий трек =====
-prevBtn.addEventListener("click", () => {
-    if (!currentAlbum) return;
-    if (currentTrackIndex > 0) {
-        playTrack(currentTrackIndex - 1);
-    }
-});
-
-// ===== Автоматический переход к следующему треку =====
-player.addEventListener("ended", () => {
-    if (!currentAlbum) return;
-    if (currentTrackIndex < currentAlbum.soundList.length - 1) {
-        playTrack(currentTrackIndex + 1);
-    }
-});
 

@@ -7,7 +7,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class FrontendController {
 
     @GetMapping("/album/{id}")
-    public String forward(){
-        return "forward:/music/index.html";
+    public String album(){
+        return "forward:/music/AlbumIndex.html";
+    }
+
+    @GetMapping("/artist/{id}")
+    public String artist(){
+        return "forward:/music/artistIndex.html";
     }
 }
