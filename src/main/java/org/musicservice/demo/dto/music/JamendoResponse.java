@@ -1,12 +1,10 @@
 package org.musicservice.demo.dto.music;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class JamendoResponse {
 
     private Integer results_count;

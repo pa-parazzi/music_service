@@ -85,8 +85,3 @@
     width: 100px; /* фиксированная ширина */
     accent-color: #fff;
 }
-
-/* Чтобы треки не залезали под плеер */
-.album-page {
-    padding-bottom: 120px;
-}

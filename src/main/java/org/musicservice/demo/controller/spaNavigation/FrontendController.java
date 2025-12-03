@@ -15,4 +15,6 @@ public class FrontendController {
     public String artist(){
         return "forward:/music/artistIndex.html";
     }
+
+
 }

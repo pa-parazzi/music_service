@@ -4,6 +4,7 @@ body {
     margin: 0;
     background: rgb(32, 31, 31);
     color: #333;
+    overflow-y: scroll;
 }
 
 .header {
@@ -15,6 +16,7 @@ body {
     padding: 0 20px;
     height: 60px; /* фиксированная высота */
     box-sizing: border-box;
+    gap: 10px;
 }
 
 .header-left {
@@ -31,6 +33,47 @@ body {
     line-height: 60px;   /* всегда по высоте шапки */
     height: auto;        /* сбрасываем 80% */
     display: block;      /* обычный блочный заголовок */
+}
+
+/* === Поиск в шапке === */
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1; /* Занимает всё свободное пространство */
+    max-width: 350px;
+    margin: 0 20px;
+}
+
+.search-bar input {
+    flex: 1;
+    height: 34px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 0 10px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    outline: none;
+}
+
+.search-bar input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+.search-bar button {
+    height: 34px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 4px;
+    background: #2b2b3a;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background .2s ease;
+}
+
+.search-bar button:hover {
+    background: #2b2b3a;
 }
 
 /* кнопка-бургер */

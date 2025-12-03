@@ -1,21 +1,14 @@
 package org.musicservice.demo.factory;
 
-import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
-import org.musicservice.demo.dto.image.AlbumImageDto;
-import org.musicservice.demo.dto.music.ArtistDto;
-import org.musicservice.demo.dto.music.SoundDto;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
 import org.musicservice.demo.dto.music.mainResponse.MainResponse;
-import org.musicservice.demo.mapper.image.AlbumImageMapper;
-import org.musicservice.demo.mapper.music.ArtistMapper;
-import org.musicservice.demo.mapper.music.SoundMapper;
+import org.musicservice.demo.mapper.music.AlbumResponseMapper;
 import org.musicservice.demo.model.image.AlbumImage;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.service.s3.S3UrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 
@@ -42,19 +35,7 @@ public class TestMusicDataFactory {
     private AlbumRepository albumRepository;
 
     @Autowired
-    private ArtistMapper artistMapper;
-
-    @Autowired
-    private AlbumImageMapper albumImageMapper;
-
-    @Autowired
-    private SoundMapper soundMapper;
-
-    @Autowired
-    private S3UrlGenerator s3UrlGenerator;
-
-    @Autowired
-    private YandexStorageProperties yandexStorageProperties;
+    private AlbumResponseMapper albumResponseMapper;
 
     public void cleanData(){
         artistRepository.deleteAll();
@@ -95,28 +76,6 @@ public class TestMusicDataFactory {
     }
 
     public AlbumResponse getAlbumResponseByFactoryMusicData(Album album){
-        AlbumImage albumImage = album.getImage();
-        String albumImgUrl = s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), albumImage.getS3Key());
-        AlbumImageDto albumImageDto = albumImageMapper.convertToDto(albumImage);
-        albumImageDto.setKey(albumImage.getS3Key());
-        albumImageDto.setUrl(albumImgUrl);
-
-        ArtistDto artistDto = artistMapper.toDto(album.getArtist());
-
-        List<SoundDto> soundDtoList = album.getSoundList().stream().map(sound -> {
-            String trackUrl = s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("music"), sound.getKey());
-            SoundDto soundDto = soundMapper.toDto(sound);
-            soundDto.setUrl(trackUrl);
-            return soundDto;
-        }).toList();
-
-        AlbumResponse albumResponse = new AlbumResponse();
-        albumResponse.setAlbumId(album.getId());
-        albumResponse.setTitle(album.getTitle());
-        albumResponse.setAlbumImage(albumImageDto);
-        albumResponse.setArtist(artistDto);
-        albumResponse.setSoundList(soundDtoList);
-
-        return albumResponse;
+        return albumResponseMapper.toAlbumResponse(album);
     }
 }

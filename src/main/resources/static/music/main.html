@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Главная</title>
     <link rel="stylesheet" href="/css/headerAndBody.css">
+    <link rel="stylesheet" href="/css/audioPlayer.css">
     <link rel="stylesheet" href="/css/userInfo.css">
     <link rel="stylesheet" href="/css/musicMain.css">
-    <link rel="stylesheet" href="/css/audioPlayer.css">
 </head>
 <body>
 
@@ -18,12 +18,20 @@
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
         <h1>Моя музыка</h1>
     </div>
+
+    <form id="search-form" class="search-album">
+        <input id="search-input" type="text" name="fragment" placeholder="Введите название альбома">
+        <button id="search-button" type="submit">&#128270;</button>
+    </form>
+
     <nav id="sign-in/up-buttons" class="nav-buttons">
         <a href="/auth/login.html" class="button">Sign in</a>
         <a href="/auth/registration.html" class="button">Sign up</a>
     </nav>
     <div class="userInfo" id="userInfo"></div>
 </header>
+
+<div id="search-results"></div>
 
 <!-- боковая панель -->
 <aside class="side-panel" role="search" aria-label="Боковая панель">
@@ -65,6 +73,59 @@
 <script src="/js/loadUserProfile.js"></script>
 
 <script>
+
+    document.getElementById("search-form").addEventListener("submit", async (e) => {
+        e.preventDefault(); // ⛔️ не перезагружаем страницу
+
+        const query = document.getElementById("search-input").value.trim();
+        const albumsContainer = document.getElementById("albums");
+
+        if (!query) {
+            await loadAlbums(); // ⬅ если пусто → вернуть оригинальный список
+            return;
+        }
+
+        const response = await fetch("/search?fragment=" + encodeURIComponent(query), {
+            method: "POST" // ⬅ твой контроллер принимает POST!
+        });
+
+        if (!response.ok) {
+            albumsContainer.innerHTML = '<p class="not-found">Ничего не найдено</p>';
+            return;
+        }
+
+        const albums = await response.json();
+
+        if (albums.length === 0) {
+            albumsContainer.innerHTML = '<p class="not-found">Ничего не найдено</p>';
+            return;
+        }
+
+        albumsContainer.innerHTML = ""; // очищаем прежние
+
+        albums.forEach(album => {
+            const card = document.createElement("div");
+            card.className = "album-card";
+            card.innerHTML = `
+            <a href="/album/${album.albumId}" class="album-card-link">
+                <div class="cover-wrapper">
+                    <img src="${album.albumImage.url}"
+                         alt="${escapeHtml(album.title)}"
+                         class="album-cover">
+                    <button class="play-btn">▶</button>
+                </div>
+                <div class="album-meta">
+                    <div class="album-title">${escapeHtml(album.title)}</div>
+                    <a href="/artist/${album.artist.id}" class="artist-name-link">
+                        <div class="artist-name">${escapeHtml(album.artist.name)}</div>
+                    </a>
+                </div>
+            </a>
+        `;
+            albumsContainer.appendChild(card);
+        });
+    });
+
     function escapeHtml(str = '') {
         return String(str)
             .replace(/&/g, '&amp;')

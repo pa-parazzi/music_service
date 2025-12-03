@@ -4,6 +4,7 @@ import org.musicservice.demo.model.music.Album;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -12,5 +13,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     Optional<Album> findByTitle(String title);
 
     Optional<Album> searchById(Long id);
+
+    List<Album> findByTitleStartingWith(String title);
 
 }

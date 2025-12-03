@@ -1,13 +1,10 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.image.AlbumImageDto;
-import org.musicservice.demo.dto.music.SoundDto;
 import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
 import org.musicservice.demo.exception.music.AlbumNotFoundException;
-import org.musicservice.demo.mapper.music.AlbumMapper;
+import org.musicservice.demo.mapper.music.AlbumResponseMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.service.image.AlbumImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,30 +16,27 @@ import java.util.List;
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
-    private final AlbumImageService albumImageService;
-    private final AlbumMapper albumMapper;
-    private final SoundService soundService;
+    private final AlbumResponseMapper albumResponseMapper;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumImageService albumImageService, AlbumMapper albumMapper, SoundService soundService) {
+    public AlbumService(AlbumRepository albumRepository, AlbumResponseMapper albumResponseMapper) {
         this.albumRepository = albumRepository;
-        this.albumImageService = albumImageService;
-        this.albumMapper = albumMapper;
-        this.soundService = soundService;
+        this.albumResponseMapper = albumResponseMapper;
+    }
+
+    public List<AlbumResponse> findAlbumResponseStartingWith(String fragment){
+        List<Album> albumList = findAllStartingWith(fragment);
+        return albumList.stream().map(album -> getAlbumById(album.getId())).toList();
+    }
+
+    public List<Album> findAllStartingWith(String fragment){
+        if(fragment == null || fragment.trim().isBlank()) return null;
+        return albumRepository.findByTitleStartingWith(fragment);
     }
 
     public List<AlbumResponse> getAllAlbumResponse(){
         List<Album> albums = albumRepository.findAll();
-        return albums.stream().map(album -> {
-            Long albumId = album.getId();
-            AlbumImageDto albumImageDto = albumImageService.getAlbumImageByAlbumId(albumId);
-            List<SoundDto> soundDtoList = soundService.getSoundListByAlbumId(albumId);
-            AlbumResponse albumResponse = albumMapper.toAlbumResponse(album);
-            albumResponse.setAlbumId(albumId);
-            albumResponse.setAlbumImage(albumImageDto);
-            albumResponse.setSoundList(soundDtoList);
-            return albumResponse;
-        }).toList();
+        return albums.stream().map(albumResponseMapper::toAlbumResponse).toList();
     }
 
     private Album searchById(Long albumId){
@@ -51,12 +45,6 @@ public class AlbumService {
 
     public AlbumResponse getAlbumById(Long albumId){
         Album album = searchById(albumId);
-        AlbumResponse albumResponse = albumMapper.toAlbumResponse(album);
-        AlbumImageDto albumImageDto = albumImageService.getAlbumImageByAlbumId(albumId);
-        List<SoundDto> soundDtoList = soundService.getSoundListByAlbumId(albumId);
-        albumResponse.setAlbumId(albumId);
-        albumResponse.setAlbumImage(albumImageDto);
-        albumResponse.setSoundList(soundDtoList);
-        return albumResponse;
+        return albumResponseMapper.toAlbumResponse(album);
     }
 }

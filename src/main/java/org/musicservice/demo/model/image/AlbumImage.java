@@ -18,7 +18,7 @@ public class AlbumImage {
     private Long id;
 
     @Column(name = "s3_key")
-    private String s3Key;
+    private String key;
 
     @OneToOne
     @JoinColumn(name = "album_id", referencedColumnName = "id")
@@ -26,9 +26,13 @@ public class AlbumImage {
 
     public AlbumImage(){}
 
-    public AlbumImage(String s3Key, Album album) {
-        this.s3Key = s3Key;
+    public AlbumImage(String key, Album album) {
+        this.key = key;
         this.album = album;
+    }
+
+    public AlbumImage(String key) {
+        this.key = key;
     }
 
 }

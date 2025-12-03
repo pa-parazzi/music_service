@@ -26,7 +26,7 @@ public class Album {
 
     @ManyToOne
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
-    private Artist artist ;
+    private Artist artist;
 
     @OneToMany(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH},orphanRemoval = true)
     private List<Sound> soundList = new ArrayList<>();
@@ -40,6 +40,11 @@ public class Album {
         this.title = title;
         this.artist = artist;
         this.soundList = soundList;
+        this.image = image;
+    }
+
+    public Album(String title, AlbumImage image){
+        this.title = title;
         this.image = image;
     }
 

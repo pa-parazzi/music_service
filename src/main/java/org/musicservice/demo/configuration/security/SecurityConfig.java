@@ -41,9 +41,9 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/js/**", "/auth/**", "/music/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/main", "/admin/upload", "/admin/main.html").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/album/**", "/api/album/**", "/artist/**", "/api/artist/**").permitAll()
+                        .requestMatchers("/album/**", "/api/album/**", "/artist/**", "/api/artist/**", "/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers("/lk/profile").authenticated()

@@ -32,15 +32,15 @@ public class UploadMusic {
         this.albumImageRepository = albumImageRepository;
     }
 
-    public Artist getArtist(UploadMusicResponse response){
-        return artistRepository.findByName(response.getArtist_name()).orElseGet(()-> {
+    public Artist getArtist(UploadMusicResponse response) {
+        return artistRepository.findByName(response.getArtist_name()).orElseGet(() -> {
             Artist artist = new Artist();
             artist.setName(response.getArtist_name());
             return artist;
         });
     }
 
-    public Album getAlbum(UploadMusicResponse response){
+    public Album getAlbum(UploadMusicResponse response) {
         return albumRepository.findByTitle(response.getAlbum_name())
                 .orElseGet(() -> {
                     Album newAlbum = new Album();
@@ -49,18 +49,18 @@ public class UploadMusic {
                 });
     }
 
-    public AlbumImage getAlbumImage(UploadMusicResponse response){
-        return albumImageRepository.findByS3Key(response.getImgKey())
-                .orElseGet(()-> {
+    public AlbumImage getAlbumImage(UploadMusicResponse response) {
+        return albumImageRepository.findByKey(response.getImgKey())
+                .orElseGet(() -> {
                     AlbumImage albumImage = new AlbumImage();
-                    albumImage.setS3Key(response.getImgKey());
+                    albumImage.setKey(response.getImgKey());
                     return albumImage;
                 });
     }
 
-    public Sound getSound(UploadMusicResponse response){
+    public Sound getSound(UploadMusicResponse response) {
         return soundRepository.findByTitle(response.getName())
-                .orElseGet(()-> {
+                .orElseGet(() -> {
                     Sound newSound = new Sound();
                     newSound.setTitle(response.getName());
                     newSound.setDuration(response.getDuration());
