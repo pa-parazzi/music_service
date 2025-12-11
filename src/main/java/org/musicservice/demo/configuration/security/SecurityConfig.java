@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/album/**", "/api/album/**", "/artist/**", "/api/artist/**", "/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        .requestMatchers("/like", "/like/**").permitAll()
                         .requestMatchers("/lk/profile").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

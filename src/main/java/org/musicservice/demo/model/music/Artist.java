@@ -39,4 +39,20 @@ public class Artist {
         this.name = name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Artist artist = (Artist) o;
+        return id.equals(artist.id) && name.equals(artist.name) && albums.equals(artist.albums) && soundList.equals(artist.soundList);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + albums.hashCode();
+        result = 31 * result + soundList.hashCode();
+        return result;
+    }
 }

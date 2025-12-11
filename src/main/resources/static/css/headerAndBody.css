@@ -22,10 +22,12 @@ body {
 .header-left {
     display: flex;
     align-items: center;
-    gap: 50px;
+    gap: 20px; /* расстояние между кнопкой открытия, заголовком, кнопкой навигации на главную */
+    padding: 0;
 }
 
 .header-left h1 {
+    order: 3;
     margin: 0;
     font-size: 25px;
     font-weight: bold;
@@ -33,6 +35,17 @@ body {
     line-height: 60px;   /* всегда по высоте шапки */
     height: auto;        /* сбрасываем 80% */
     display: block;      /* обычный блочный заголовок */
+}
+
+.logo {
+    display: flex;
+    order: 2;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    line-height: 100%;
+    transform: scale(3);
+    color: black;
 }
 
 /* === Поиск в шапке === */
@@ -78,6 +91,7 @@ body {
 
 /* кнопка-бургер */
 .menu-btn {
+    order: 1;
     cursor: pointer;
     font-size: 20px;
     width: 36px;

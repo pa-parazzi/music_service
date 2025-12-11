@@ -128,6 +128,8 @@ async function apiFetch(url, options = {}) {
 
 /* --- Загрузка профиля --- */
 async function loadProfile() {
+    window.currentUser = null;
+
     const nav = document.getElementById("sign-in/up-buttons");
     const userInfoDiv = document.getElementById("userInfo");
 
@@ -138,6 +140,7 @@ async function loadProfile() {
 
         if (response.ok) {
             const user = await response.json();
+            currentUser = user;
 
             nav.style.display = "none";
             userInfoDiv.innerHTML = `

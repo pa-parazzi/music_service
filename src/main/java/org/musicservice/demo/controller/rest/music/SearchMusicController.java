@@ -1,7 +1,9 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.dto.music.response.AlbumResponse;
+import org.musicservice.demo.dto.music.response.SearchArtistAndAlbumResponse;
 import org.musicservice.demo.service.music.AlbumService;
+import org.musicservice.demo.service.search.SearchMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,15 +17,15 @@ import java.util.List;
 @RequestMapping("/search")
 public class SearchMusicController {
 
-    private final AlbumService albumService;
+    private final SearchMusicService searchMusicService;
 
     @Autowired
-    public SearchMusicController(AlbumService albumService) {
-        this.albumService = albumService;
+    public SearchMusicController(SearchMusicService searchMusicService) {
+        this.searchMusicService = searchMusicService;
     }
 
     @PostMapping
-    public ResponseEntity<List<AlbumResponse>> searchStartingWith(@RequestParam (value = "fragment" ,required = false) String fragment){
-        return ResponseEntity.ok(albumService.findAlbumResponseStartingWith(fragment));
+    public ResponseEntity<SearchArtistAndAlbumResponse> searchStartingWith(@RequestParam (value = "fragment" ,required = false) String fragment){
+        return ResponseEntity.ok(searchMusicService.searchMusicResult(fragment));
     }
 }

@@ -1,9 +1,8 @@
 package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.musicservice.demo.dto.music.ArtistDto;
-import org.musicservice.demo.dto.music.mainResponse.ArtistResponse;
+import org.musicservice.demo.dto.music.response.ArtistResponse;
 import org.musicservice.demo.model.music.Artist;
 
 @Mapper(componentModel = "spring", uses = {SoundMapper.class})

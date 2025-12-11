@@ -102,7 +102,7 @@
 
 .track:hover {
     background: #432c81;
-    cursor: pointer;
+    cursor: default;
 }
 
 .track.active {
@@ -124,3 +124,37 @@
     font-size: 0.95em;
     color: #b3b3b3;
 }
+
+.track-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Кнопка лайка */
+.like-btn {
+    background: transparent;
+    border: 2px solid #b3b3b3;
+    color: #b3b3b3;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: all 0.25s ease;
+}
+
+/* Ховер — подсвечиваем */
+.like-btn:hover {
+    border-color: #1db954;
+    color: #1db954;
+    transform: scale(1.1);
+}
+
+/* Если лайк активен */
+.like-btn.liked {
+    background: #1db954;
+    border-color: #1db954;
+    color: #fff;
+}
+
+

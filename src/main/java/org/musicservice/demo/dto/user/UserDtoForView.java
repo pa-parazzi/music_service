@@ -12,6 +12,8 @@ import java.time.LocalDate;
 @Setter
 public class UserDtoForView {
 
+
+    private Long id;
     private String username;
     private String email;
     private LocalDate dateOfBirth;

@@ -14,7 +14,7 @@ import java.util.Objects;
 @Table(name = "album")
 @Getter
 @Setter
-public class Album {
+public class Album implements Likable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,15 +57,11 @@ public class Album {
         if (o == null || getClass() != o.getClass()) return false;
 
         Album album = (Album) o;
-        return Objects.equals(title, album.title) && Objects.equals(artist, album.artist) && Objects.equals(soundList, album.soundList) && Objects.equals(image, album.image);
+        return id.equals(album.id);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hashCode(title);
-        result = 31 * result + Objects.hashCode(artist);
-        result = 31 * result + Objects.hashCode(soundList);
-        result = 31 * result + Objects.hashCode(image);
-        return result;
+        return id.hashCode();
     }
 }

@@ -1,11 +1,18 @@
 package org.musicservice.demo.controller.rest.music;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.dto.music.response.AlbumResponse;
+import org.musicservice.demo.dto.music.response.MainResponse;
+import org.musicservice.demo.dto.music.response.SearchArtistAndAlbumResponse;
+import org.musicservice.demo.factory.music.TestMusicDataFactory;
+import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.service.music.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,16 +23,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
+@Import({TestMusicDataFactory.class})
 public class SearchMusicControllerIT {
 
     @Container
@@ -43,26 +54,29 @@ public class SearchMusicControllerIT {
     }
 
     @Autowired
-    private AlbumService albumService;
+    private TestMusicDataFactory musicDataFactory;
 
     @Autowired
     private MockMvc mockMvc;
 
-    // TODO: Доделать тест
+    @BeforeEach
+    void cleanData(){
+        musicDataFactory.cleanData();
+    }
+
     @Test
     void searchAlbumResponseTest_ReturnAlbumResponseByTitleStartingWithFragment() throws Exception {
-        final String fragment = "Tri";
-        List<AlbumResponse> actual = albumService.findAlbumResponseStartingWith(fragment);
-        
-        MvcResult result = mockMvc.perform(post("/search").param("fragment", fragment))
-                .andExpect(status().isOk())
-                .andReturn();
-        
-        String json = result.getResponse().getContentAsString();
-        List<AlbumResponse> excepted = new ObjectMapper().readValue(json, new TypeReference<List<AlbumResponse>>() {});
+        Album album = musicDataFactory.createFactoryMusicData();
+        final String fragment = album.getTitle();
+        SearchArtistAndAlbumResponse response = musicDataFactory.getSearchArtistAndAlbumResponse(album);
+        response.setArtists(Collections.emptyList());
+        String expectedJson = new ObjectMapper().writeValueAsString(response);
 
-        assertThat(actual).usingRecursiveComparison().isEqualTo(excepted);
-        assertNotNull(result);
+        mockMvc.perform(post("/search").param("fragment", fragment))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json(expectedJson))
+                .andReturn();
     }
 
 

@@ -1,8 +1,7 @@
-package org.musicservice.demo.dto.music.mainResponse;
+package org.musicservice.demo.dto.music.response;
 
 import lombok.Data;
 import org.musicservice.demo.dto.music.SoundDto;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.util.List;
 

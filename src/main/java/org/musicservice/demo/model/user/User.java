@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.model.image.UserAvatar;
+import org.musicservice.demo.model.music.Like;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -41,7 +43,6 @@ public class User {
 
     @Column(name = "date_of_birth")
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    //@JsonFormat(pattern = "dd/MM/yyyy")
     @NotNull
     private LocalDate dateOfBirth;
 
@@ -57,10 +58,10 @@ public class User {
     private boolean enabled;
 
     // Токен активации аккаунта
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private VerificationToken verificationToken;
 
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private RefreshToken refreshToken;
 
     @Enumerated(value = EnumType.STRING)
@@ -68,6 +69,9 @@ public class User {
 
     @OneToOne(mappedBy = "owner")
     private UserAvatar userAvatar;
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    private List<Like> likes;
 
     public User(){}
 
@@ -112,5 +116,18 @@ public class User {
             return 0;
         }
         return Duration.between(LocalDateTime.now(), lockTime).toMinutes();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+        return id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 }

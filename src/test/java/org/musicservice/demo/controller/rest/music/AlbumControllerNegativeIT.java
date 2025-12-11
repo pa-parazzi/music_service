@@ -2,7 +2,7 @@ package org.musicservice.demo.controller.rest.music;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.factory.TestMusicDataFactory;
+import org.musicservice.demo.factory.music.TestMusicDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;

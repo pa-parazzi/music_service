@@ -1,8 +1,6 @@
-package org.musicservice.demo.dto.music.mainResponse;
+package org.musicservice.demo.dto.music.response;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.musicservice.demo.dto.image.AlbumImageDto;
 import org.musicservice.demo.dto.music.ArtistDto;
 import org.musicservice.demo.dto.music.SoundDto;

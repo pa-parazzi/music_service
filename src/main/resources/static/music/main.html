@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/audioPlayer.css">
     <link rel="stylesheet" href="/css/userInfo.css">
     <link rel="stylesheet" href="/css/musicMain.css">
+    <link rel="stylesheet" href="/css/searchMusicResult.css">
 </head>
 <body>
 
@@ -14,12 +15,12 @@
 
 <header class="header">
     <div class="header-left">
-        <!-- кнопка открытия -->
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
+        <a href="/music/main.html" class="logo">&#8962;</a>
         <h1>Моя музыка</h1>
     </div>
 
-    <form id="search-form" class="search-album">
+    <form id="search-form" class="search-form">
         <input id="search-input" type="text" name="fragment" placeholder="Введите название альбома">
         <button id="search-button" type="submit">&#128270;</button>
     </form>
@@ -31,7 +32,12 @@
     <div class="userInfo" id="userInfo"></div>
 </header>
 
-<div id="search-results"></div>
+<div class="search-results">
+    <div id="found-albums" class="found-albums"></div>
+    <div id="found-artists" class="found-artists"></div>
+    <div id="not-found" class="not-found"></div>
+</div>
+
 
 <!-- боковая панель -->
 <aside class="side-panel" role="search" aria-label="Боковая панель">
@@ -74,40 +80,57 @@
 
 <script>
 
+    const searchResults = document.querySelector(".search-results");
+    const notFoundResult = document.getElementById("not-found");
+    const foundAlbums = document.getElementById("found-albums");
+    const foundArtists = document.getElementById("found-artists");
+    const albumsContainer = document.getElementById("albums");
+
     document.getElementById("search-form").addEventListener("submit", async (e) => {
         e.preventDefault(); // ⛔️ не перезагружаем страницу
-
         const query = document.getElementById("search-input").value.trim();
-        const albumsContainer = document.getElementById("albums");
 
         if (!query) {
+            searchResults.style.display = "none";
+            albumsContainer.style.display = "flex";
             await loadAlbums(); // ⬅ если пусто → вернуть оригинальный список
             return;
         }
 
         const response = await fetch("/search?fragment=" + encodeURIComponent(query), {
-            method: "POST" // ⬅ твой контроллер принимает POST!
+            method: "POST"
         });
 
-        if (!response.ok) {
-            albumsContainer.innerHTML = '<p class="not-found">Ничего не найдено</p>';
+        const data = await response.json();
+        albumsContainer.style.display = "none";
+        searchResults.style.display = "flex";
+
+        if (!response.ok || (data.albums.length === 0 && data.artists.length === 0)) {
+            foundArtists.innerHTML = "";
+            foundAlbums.innerHTML = "";
+            notFoundResult.textContent = "Ничего не найдено";
             return;
         }
 
-        const albums = await response.json();
+        foundArtists.innerHTML = ""; // очищаем прежние
+        foundAlbums.innerHTML = "";
+        notFoundResult.innerHTML = "";
 
-        if (albums.length === 0) {
-            albumsContainer.innerHTML = '<p class="not-found">Ничего не найдено</p>';
-            return;
-        }
+        // Найденные исполнители
+        data.artists.forEach(artist => {
+            const artistCard = document.createElement("div");
+            artistCard.className = "artist-card";
+            artistCard.innerHTML = `<div class="artist-card">
+                                    <a href="/artist/${artist.id}" class="artist-name-link">${escapeHtml(artist.name)}</a>
+                                    </div>`;
+            foundArtists.appendChild(artistCard);
+        });
 
-        albumsContainer.innerHTML = ""; // очищаем прежние
-
-        albums.forEach(album => {
+        // Показывает найденные альбомы
+        data.albums.forEach(album => {
             const card = document.createElement("div");
             card.className = "album-card";
             card.innerHTML = `
-            <a href="/album/${album.albumId}" class="album-card-link">
                 <div class="cover-wrapper">
                     <img src="${album.albumImage.url}"
                          alt="${escapeHtml(album.title)}"
@@ -115,14 +138,45 @@
                     <button class="play-btn">▶</button>
                 </div>
                 <div class="album-meta">
+                    <a href="/album/${album.albumId}" class="album-card-link">
                     <div class="album-title">${escapeHtml(album.title)}</div>
+                    </a>
                     <a href="/artist/${album.artist.id}" class="artist-name-link">
                         <div class="artist-name">${escapeHtml(album.artist.name)}</div>
                     </a>
+                    <button class="like-btn" data-album-id="${album.albumId}">&#128077;</button> <!-- TODO: Добавить стили на кнопку -->
                 </div>
-            </a>
         `;
-            albumsContainer.appendChild(card);
+
+            foundAlbums.appendChild(card);
+
+            const likeBtn = card.querySelector(".like-btn");
+
+            likeBtn.addEventListener("click", async (e)=> {
+                const albumId = e.currentTarget.dataset.albumId;
+                const isLiked = likeBtn.classList.toggle("liked");
+                const actionUrl = isLiked ? "/like" : "/like/delete";
+
+                const likeRequest = JSON.stringify({
+                    userId: window.currentUser.id,
+                    targetType: "album",
+                    targetId: Number(albumId)
+                });
+
+                const response = await fetch(actionUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: likeRequest
+                });
+
+                if(!response.ok){
+                    console.log("Ошибка в функции лайков");
+                    likeBtn.classList.toggle("liked");
+                }
+            });
+
         });
     });
 
@@ -135,14 +189,14 @@
             .replace(/'/g, '&#039;');
     }
 
+    document.getElementById("like")
+
     async function loadAlbums() {
         try {
             const res = await fetch('/api/album');
             const data = await res.json();
 
             console.log("Загруженные альбомы:", data);
-
-            const albumsContainer = document.getElementById('albums');
             albumsContainer.innerHTML = '';
 
             data.albums.forEach(album => {
@@ -161,15 +215,6 @@
                     </div>
                     </a>
                 `;
-
-                card.querySelector('.album-cover').addEventListener('click', () =>{
-                    window.location.href = `/album/${album.albumId}`;
-                });
-
-                // card.querySelector('.play-btn').addEventListener('click', e => {
-                //     e.stopPropagation();
-                //     playAlbum(album);
-                // });
 
                 albumsContainer.appendChild(card);
             });

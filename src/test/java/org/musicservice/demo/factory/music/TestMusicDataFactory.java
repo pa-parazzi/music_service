@@ -1,14 +1,18 @@
-package org.musicservice.demo.factory;
+package org.musicservice.demo.factory.music;
 
-import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
-import org.musicservice.demo.dto.music.mainResponse.MainResponse;
+import org.musicservice.demo.dto.music.ArtistDto;
+import org.musicservice.demo.dto.music.response.AlbumResponse;
+import org.musicservice.demo.dto.music.response.MainResponse;
+import org.musicservice.demo.dto.music.response.SearchArtistAndAlbumResponse;
 import org.musicservice.demo.mapper.music.AlbumResponseMapper;
+import org.musicservice.demo.mapper.music.ArtistMapper;
 import org.musicservice.demo.model.image.AlbumImage;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.service.search.SearchArtistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 
@@ -36,6 +40,9 @@ public class TestMusicDataFactory {
 
     @Autowired
     private AlbumResponseMapper albumResponseMapper;
+
+    @Autowired
+    private ArtistMapper artistMapper;
 
     public void cleanData(){
         artistRepository.deleteAll();
@@ -77,5 +84,14 @@ public class TestMusicDataFactory {
 
     public AlbumResponse getAlbumResponseByFactoryMusicData(Album album){
         return albumResponseMapper.toAlbumResponse(album);
+    }
+
+    public SearchArtistAndAlbumResponse getSearchArtistAndAlbumResponse(Album album){
+        SearchArtistAndAlbumResponse response = new SearchArtistAndAlbumResponse();
+        List<ArtistDto> artistDtoList = Collections.singletonList(artistMapper.toDto(album.getArtist()));
+        List<AlbumResponse> albumResponses = Collections.singletonList(albumResponseMapper.toAlbumResponse(album));
+        response.setArtists(artistDtoList);
+        response.setAlbums(albumResponses);
+        return response;
     }
 }

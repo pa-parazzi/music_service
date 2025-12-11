@@ -12,9 +12,9 @@
 
 <header class="header">
     <div class="header-left">
-        <!-- кнопка открытия -->
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
-        <h1>Моя музыка</h1>
+        <a href="/music/main.html" class="logo">&#8962;</a>
+        <h1>Исполнители</h1>
     </div>
     <nav id="sign-in/up-buttons" class="nav-buttons">
         <a href="/auth/login.html" class="button">Sign in</a>
@@ -69,7 +69,7 @@
 
 <script>
     const player = document.getElementById('player');
-    let artistName = document.getElementById('artist-name');
+    const artistName = document.getElementById('artist-name');
     const artistTrackList = document.getElementById('tracklist');
 
     let currentArtist = null;
@@ -86,7 +86,6 @@
             currentArtist = artist;
 
             artistName.textContent = artist.name;
-
 
             artistTrackList.innerHTML = artist.soundList.map((track, i) => `
             <div class="track" data-index="${i}">

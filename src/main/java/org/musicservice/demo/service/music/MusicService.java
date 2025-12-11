@@ -1,8 +1,6 @@
 package org.musicservice.demo.service.music;
-import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
-import org.musicservice.demo.dto.music.mainResponse.ArtistResponse;
-import org.musicservice.demo.dto.music.mainResponse.MainResponse;
-import org.musicservice.demo.model.music.Artist;
+import org.musicservice.demo.dto.music.response.AlbumResponse;
+import org.musicservice.demo.dto.music.response.MainResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

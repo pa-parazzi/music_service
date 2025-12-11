@@ -4,13 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "sound")
 @Getter
 @Setter
-public class Sound {
+public class Sound implements Likable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,4 +68,5 @@ public class Sound {
     public int hashCode() {
         return Objects.hashCode(key);
     }
+
 }

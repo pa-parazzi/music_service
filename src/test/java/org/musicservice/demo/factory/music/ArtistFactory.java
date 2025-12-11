@@ -1,4 +1,4 @@
-package org.musicservice.demo.factory;
+package org.musicservice.demo.factory.music;
 
 import org.musicservice.demo.model.music.Artist;
 import org.springframework.stereotype.Component;

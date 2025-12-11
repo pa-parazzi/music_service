@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.music.mainResponse.AlbumResponse;
+import org.musicservice.demo.dto.music.response.AlbumResponse;
 import org.musicservice.demo.exception.music.AlbumNotFoundException;
 import org.musicservice.demo.mapper.music.AlbumResponseMapper;
 import org.musicservice.demo.model.music.Album;
@@ -39,7 +39,7 @@ public class AlbumService {
         return albums.stream().map(albumResponseMapper::toAlbumResponse).toList();
     }
 
-    private Album searchById(Long albumId){
+    public Album searchById(Long albumId){
         return albumRepository.searchById(albumId).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
     }
 

@@ -1,7 +1,7 @@
-package org.musicservice.demo.service.music;
+package org.musicservice.demo.service.search;
 
+import org.musicservice.demo.dto.music.ArtistDto;
 import org.musicservice.demo.dto.music.response.ArtistResponse;
-import org.musicservice.demo.exception.music.ArtistNotFoundException;
 import org.musicservice.demo.mapper.music.ArtistMapper;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.repository.music.ArtistRepository;
@@ -9,24 +9,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional(readOnly = true)
-public class ArtistService {
+public class SearchArtistService {
 
     private final ArtistRepository artistRepository;
     private final ArtistMapper artistMapper;
 
     @Autowired
-    public ArtistService(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+    public SearchArtistService(ArtistRepository artistRepository, ArtistMapper artistMapper) {
         this.artistRepository = artistRepository;
         this.artistMapper = artistMapper;
     }
 
-    public Artist findById(Long artistId){
-        return artistRepository.findById(artistId).orElseThrow(() -> new ArtistNotFoundException("Исполнителя с таким id не существует"));
-    }
-
-    public ArtistResponse viewArtist(Long artistId){
-        return artistMapper.toArtistResponse(findById(artistId));
+    public List<ArtistDto> findAllArtistStartingWith(String fragment){
+        if(fragment == null || fragment.trim().isBlank()) return null;
+        return artistRepository.findAllByNameStartingWith(fragment).stream().map(artistMapper::toDto).toList();
     }
 }

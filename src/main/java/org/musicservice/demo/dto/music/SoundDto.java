@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class SoundDto {
 
+    private Long id;
     private String title;
     private Integer duration;
     private String key;
