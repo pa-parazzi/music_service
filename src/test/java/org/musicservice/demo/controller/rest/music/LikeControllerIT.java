@@ -7,12 +7,11 @@ import org.musicservice.demo.dto.music.response.LikeResponse;
 import org.musicservice.demo.factory.like.LikeFactory;
 import org.musicservice.demo.factory.music.TestMusicDataFactory;
 import org.musicservice.demo.factory.user.UserDataFactory;
-import org.musicservice.demo.mapper.music.LikeResponseMapper;
+import org.musicservice.demo.mapper.like.LikeResponseMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Like;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.service.music.LikeService;
-import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,8 +24,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
+import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,9 +47,6 @@ public class LikeControllerIT {
 
     @Autowired
     private LikeService likeService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private UserDataFactory userDataFactory;
@@ -111,37 +109,6 @@ public class LikeControllerIT {
     }
 
     @Test
-    void getUserByThereLikes_ReturnUser() throws Exception {
-        User expected = userDataFactory.createUserFactory();
-        Album album = musicDataFactory.createFactoryMusicData();
-        Long userId = expected.getId();
-        Long albumId = album.getId();
-
-        String likeJson = """
-                {
-                  "userId": %d,
-                  "targetType": "album",
-                  "targetId": %d
-                }
-                """.formatted(userId, albumId);
-
-        MvcResult result = mockMvc.perform(post("/like")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(likeJson))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        String json = result.getResponse().getContentAsString();
-        LikeResponse response = new ObjectMapper().readValue(json, LikeResponse.class);
-
-        var actual = userService.searchById(response.getUserId());
-
-        assertThat(actual.getId()).isEqualTo(expected.getId());
-        assertThat(actual.getUsername()).isEqualTo(expected.getUsername());
-        assertThat(actual.getEmail()).isEqualTo(expected.getEmail());
-    }
-
-    @Test
     void deleteLikeByUserIdTest_ReturnAcceptedHttpStatus() throws Exception {
         User user = userDataFactory.createUserFactory();
         Album album = musicDataFactory.createFactoryMusicData();
@@ -166,5 +133,35 @@ public class LikeControllerIT {
                 .andExpect(status().isOk());
 
         assertThat(likeService.findOptByUserId(user.getId())).isEmpty();
+    }
+
+    @Test
+    void getLikeByRequestTest_ReturnValidResponseData() throws Exception {
+        User user = userDataFactory.createUserFactory();
+        Album album = musicDataFactory.createFactoryMusicData();
+        LikeRequest likeRequest = new LikeRequest();
+        likeRequest.setUserId(user.getId());
+        likeRequest.setTargetType("album");
+        likeRequest.setTargetId(album.getId());
+        Like like = likeFactory.createFactoryLike(likeRequest);
+
+        String json = """
+                {
+                  "userId": %d
+                }
+                """.formatted(user.getId());
+
+        LikeResponse expectedResponse = likeResponseMapper.toResponse(like);
+
+        MvcResult result = mockMvc.perform(post("/like/get")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<LikeResponse> actualResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<List<LikeResponse>>(){});
+
+        assertThat(actualResponse.getFirst().getTargetType()).isEqualTo(expectedResponse.getTargetType());
+        assertThat(actualResponse.getFirst().getTargetId()).isEqualTo(expectedResponse.getTargetId());
     }
 }

@@ -186,6 +186,6 @@ async function logout() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", async() => {
+window.loadUser = (async () => {
     await loadProfile();
-});
+})();

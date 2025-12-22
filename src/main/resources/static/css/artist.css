@@ -13,44 +13,4 @@
     text-align: left; /* можно оставить слева — по вкусу */
 }
 
-.tracklist {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 20px;
-}
-
-.track {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 18px;
-    border-radius: 8px;
-    transition: background 0.25s;
-}
-
-.track:hover {
-    background: #432c81;
-    cursor: pointer;
-}
-
-.track.active {
-    background: #432c81;
-}
-
-.track.active .track-title span:last-child {
-    color: #000000;
-}
-
-.track-title {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: 1.05em;
-}
-
-.track-duration {
-    font-size: 0.95em;
-    color: #b3b3b3;
-}
 

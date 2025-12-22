@@ -38,7 +38,6 @@
     <div id="not-found" class="not-found"></div>
 </div>
 
-
 <!-- боковая панель -->
 <aside class="side-panel" role="search" aria-label="Боковая панель">
     <div class="side-header">
@@ -75,159 +74,10 @@
     </div>
 </div>
 
-<script src="/js/audioPlayer.js"></script>
 <script src="/js/loadUserProfile.js"></script>
+<script src="/js/audioPlayer.js"></script>
 
-<script>
+<script type="module" src="/js/search.js"></script>
 
-    const searchResults = document.querySelector(".search-results");
-    const notFoundResult = document.getElementById("not-found");
-    const foundAlbums = document.getElementById("found-albums");
-    const foundArtists = document.getElementById("found-artists");
-    const albumsContainer = document.getElementById("albums");
-
-    document.getElementById("search-form").addEventListener("submit", async (e) => {
-        e.preventDefault(); // ⛔️ не перезагружаем страницу
-        const query = document.getElementById("search-input").value.trim();
-
-        if (!query) {
-            searchResults.style.display = "none";
-            albumsContainer.style.display = "flex";
-            await loadAlbums(); // ⬅ если пусто → вернуть оригинальный список
-            return;
-        }
-
-        const response = await fetch("/search?fragment=" + encodeURIComponent(query), {
-            method: "POST"
-        });
-
-        const data = await response.json();
-        albumsContainer.style.display = "none";
-        searchResults.style.display = "flex";
-
-        if (!response.ok || (data.albums.length === 0 && data.artists.length === 0)) {
-            foundArtists.innerHTML = "";
-            foundAlbums.innerHTML = "";
-            notFoundResult.textContent = "Ничего не найдено";
-            return;
-        }
-
-        foundArtists.innerHTML = ""; // очищаем прежние
-        foundAlbums.innerHTML = "";
-        notFoundResult.innerHTML = "";
-
-        // Найденные исполнители
-        data.artists.forEach(artist => {
-            const artistCard = document.createElement("div");
-            artistCard.className = "artist-card";
-            artistCard.innerHTML = `<div class="artist-card">
-                                    <a href="/artist/${artist.id}" class="artist-name-link">${escapeHtml(artist.name)}</a>
-                                    </div>`;
-            foundArtists.appendChild(artistCard);
-        });
-
-        // Показывает найденные альбомы
-        data.albums.forEach(album => {
-            const card = document.createElement("div");
-            card.className = "album-card";
-            card.innerHTML = `
-                <div class="cover-wrapper">
-                    <img src="${album.albumImage.url}"
-                         alt="${escapeHtml(album.title)}"
-                         class="album-cover">
-                    <button class="play-btn">▶</button>
-                </div>
-                <div class="album-meta">
-                    <a href="/album/${album.albumId}" class="album-card-link">
-                    <div class="album-title">${escapeHtml(album.title)}</div>
-                    </a>
-                    <a href="/artist/${album.artist.id}" class="artist-name-link">
-                        <div class="artist-name">${escapeHtml(album.artist.name)}</div>
-                    </a>
-                    <button class="like-btn" data-album-id="${album.albumId}">&#128077;</button> <!-- TODO: Добавить стили на кнопку -->
-                </div>
-        `;
-
-            foundAlbums.appendChild(card);
-
-            const likeBtn = card.querySelector(".like-btn");
-
-            likeBtn.addEventListener("click", async (e)=> {
-                const albumId = e.currentTarget.dataset.albumId;
-                const isLiked = likeBtn.classList.toggle("liked");
-                const actionUrl = isLiked ? "/like" : "/like/delete";
-
-                const likeRequest = JSON.stringify({
-                    userId: window.currentUser.id,
-                    targetType: "album",
-                    targetId: Number(albumId)
-                });
-
-                const response = await fetch(actionUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: likeRequest
-                });
-
-                if(!response.ok){
-                    console.log("Ошибка в функции лайков");
-                    likeBtn.classList.toggle("liked");
-                }
-            });
-
-        });
-    });
-
-    function escapeHtml(str = '') {
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
-    document.getElementById("like")
-
-    async function loadAlbums() {
-        try {
-            const res = await fetch('/api/album');
-            const data = await res.json();
-
-            console.log("Загруженные альбомы:", data);
-            albumsContainer.innerHTML = '';
-
-            data.albums.forEach(album => {
-                const card = document.createElement('div');
-                card.className = 'album-card';
-                card.innerHTML = `<a href="/album/${album.albumId}" class="album-card-link">
-                    <div class="cover-wrapper">
-                        <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
-                        <button class="play-btn" aria-label="Play ${escapeHtml(album.title)}">▶</button>
-                    </div>
-                    <div class="album-meta">
-                        <div class="album-title">${escapeHtml(album.title)}</div>
-                        <a href="/artist/${album.artist.id}" class="artist-name-link">
-                        <div class="artist-name">${escapeHtml(album.artist.name)}</div>
-                        </a>
-                    </div>
-                    </a>
-                `;
-
-                albumsContainer.appendChild(card);
-            });
-
-        } catch (err) {
-            console.error('Ошибка загрузки альбомов:', err);
-        }
-    }
-
-    /* --- Инициализация при загрузке страницы --- */
-    document.addEventListener("DOMContentLoaded", async () => {
-        await loadAlbums();
-    });
-</script>
 </body>
 </html>
