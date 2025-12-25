@@ -47,11 +47,26 @@ public class LikeService {
         return target;
     }
 
-    public List<LikeResponse> findAllByUserRequest(UserLikesRequest request) throws LikeNotFoundException{
-        List<Like> likes =  likeRepository.findAllByUserId(request.getUserId());
+    private List<Like> getAllLikesByUserRequestOrThrowNotFound(UserLikesRequest request) throws LikeNotFoundException{
+        List<Like> likes = likeRepository.findAllByUserId(request.getUserId());
         if(likes.isEmpty()){
             throw new LikeNotFoundException("Лайков у пользователя нет");
         }
+        return likes;
+    }
+
+    public List<LikeResponse> findAllSoundLikesByUserId(UserLikesRequest request) throws LikeNotFoundException{
+        List<Like> likes = getAllLikesByUserRequestOrThrowNotFound(request);
+        return likes.stream().map(likeResponseMapper::toResponse).filter(likeResponse -> likeResponse.getTargetType().equals("sound")).toList();
+    }
+
+    public List<LikeResponse> findAllAlbumLikesByUserId(UserLikesRequest request) throws LikeNotFoundException{
+        List<Like> likes = getAllLikesByUserRequestOrThrowNotFound(request);
+        return likes.stream().map(likeResponseMapper::toResponse).filter(likeResponse -> likeResponse.getTargetType().equals("album")).toList();
+    }
+
+    public List<LikeResponse> findAllByUserRequest(UserLikesRequest request) throws LikeNotFoundException{
+        List<Like> likes = getAllLikesByUserRequestOrThrowNotFound(request);
         return likes.stream().map(likeResponseMapper::toResponse).toList();
     }
 

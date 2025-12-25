@@ -134,13 +134,13 @@ async function loadProfile() {
     const userInfoDiv = document.getElementById("userInfo");
 
     try {
-        const response = await apiFetch("http://localhost:8080/lk/profile", {
+        const response = await apiFetch('/lk/profile', {
             method: "GET"
         });
 
         if (response.ok) {
             const user = await response.json();
-            currentUser = user;
+            window.currentUser = user;
 
             nav.style.display = "none";
             userInfoDiv.innerHTML = `
@@ -163,6 +163,8 @@ async function loadProfile() {
         console.error("Ошибка загрузки профиля:", error);
         userInfoDiv.style.display = "none";
         nav.style.display = "flex";
+    } finally{
+        document.dispatchEvent(new Event("userLoaded"));
     }
 }
 

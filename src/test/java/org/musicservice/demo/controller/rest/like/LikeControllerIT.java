@@ -1,4 +1,4 @@
-package org.musicservice.demo.controller.rest.music;
+package org.musicservice.demo.controller.rest.like;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +10,7 @@ import org.musicservice.demo.factory.user.UserDataFactory;
 import org.musicservice.demo.mapper.like.LikeResponseMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.model.music.Like;
+import org.musicservice.demo.model.music.Sound;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.service.music.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,7 +83,7 @@ public class LikeControllerIT {
 
     @Test
     void createLikeTest_ReturnValidLikeResponseFromUser() throws Exception {
-        User user = userDataFactory.createUserFactory();
+        User user = userDataFactory.save(userDataFactory.createUserFactory());
         Album album = musicDataFactory.createFactoryMusicData();
         Long userId = user.getId();
         Long albumId = album.getId();
@@ -110,13 +113,11 @@ public class LikeControllerIT {
 
     @Test
     void deleteLikeByUserIdTest_ReturnAcceptedHttpStatus() throws Exception {
-        User user = userDataFactory.createUserFactory();
         Album album = musicDataFactory.createFactoryMusicData();
-        LikeRequest likeRequest = new LikeRequest();
-        likeRequest.setUserId(user.getId());
-        likeRequest.setTargetType("album");
-        likeRequest.setTargetId(album.getId());
-        Like like = likeFactory.createFactoryLike(likeRequest);
+        User user = userDataFactory.createUserFactory();
+        likeFactory.createFactoryLike(user, album.getId(), "album");
+        userDataFactory.save(user);
+        Long userId = user.getId();
 
         String json = """
                 {
@@ -124,7 +125,7 @@ public class LikeControllerIT {
                   "targetType": "album",
                   "targetId": %d
                 }
-                """.formatted(user.getId(), album.getId());
+                """.formatted(userId, album.getId());
 
 
         mockMvc.perform(post("/like/delete")
@@ -132,18 +133,15 @@ public class LikeControllerIT {
                         .content(json))
                 .andExpect(status().isOk());
 
-        assertThat(likeService.findOptByUserId(user.getId())).isEmpty();
+        assertThat(likeService.findOptByUserId(userId)).isEmpty();
     }
 
     @Test
     void getLikeByRequestTest_ReturnValidResponseData() throws Exception {
-        User user = userDataFactory.createUserFactory();
         Album album = musicDataFactory.createFactoryMusicData();
-        LikeRequest likeRequest = new LikeRequest();
-        likeRequest.setUserId(user.getId());
-        likeRequest.setTargetType("album");
-        likeRequest.setTargetId(album.getId());
-        Like like = likeFactory.createFactoryLike(likeRequest);
+        User user = userDataFactory.createUserFactory();
+        Like like = likeFactory.createFactoryLike(user, album.getId(), "album");
+        userDataFactory.save(user);
 
         String json = """
                 {
@@ -164,4 +162,50 @@ public class LikeControllerIT {
         assertThat(actualResponse.getFirst().getTargetType()).isEqualTo(expectedResponse.getTargetType());
         assertThat(actualResponse.getFirst().getTargetId()).isEqualTo(expectedResponse.getTargetId());
     }
+
+    @Test
+    void getSoundLikesByUserRequest_ReturnValidLikeResponse() throws Exception {
+        Album album = musicDataFactory.createFactoryMusicData();
+        User user = userDataFactory.createUserFactory();
+        String targetType = "sound";
+        List<Sound> soundList = album.getSoundList();
+        List<Like> likes = new ArrayList<>();
+        Like like1 = likeFactory.createFactoryLike(user, soundList.get(0).getId(), targetType);
+        Like like2 = likeFactory.createFactoryLike(user,soundList.get(1).getId(), targetType);
+        Like like3 = likeFactory.createFactoryLike(user,soundList.get(2).getId(), targetType);
+        Like albumlike = likeFactory.createFactoryLike(user, album.getId(), "album");
+        likes.add(like1);
+        likes.add(like2);
+        likes.add(like3);
+        likes.add(albumlike);
+        userDataFactory.save(user);
+        likeFactory.saveAll(likes);
+
+        List<LikeResponse> expectedResponse = new ArrayList<>(likes.stream()
+                .map(likeResponseMapper::toResponse).filter(likeResponse -> likeResponse.getTargetType().equals("sound")).toList());
+
+        String json = """
+                {
+                  "userId": %d
+                }
+                """.formatted(user.getId());
+
+        MvcResult result = mockMvc.perform(post("/like/get/soundLikes")
+                .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andReturn();
+
+        List<LikeResponse> actualResponse = new ObjectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<List<LikeResponse>>(){});
+
+        Comparator<LikeResponse> byTargetId = Comparator.comparing(LikeResponse::getTargetId);
+        actualResponse.sort(byTargetId);
+        expectedResponse.sort(byTargetId);
+
+        assertThat(actualResponse.size()).isEqualTo(expectedResponse.size());
+        assertThat(actualResponse.getFirst().getTargetId()).isEqualTo(expectedResponse.getFirst().getTargetId());
+        assertThat(actualResponse.getFirst().getTargetType()).isEqualTo(expectedResponse.getFirst().getTargetType());
+    }
+
+
+
+
 }

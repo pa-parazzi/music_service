@@ -16,5 +16,9 @@ public class FrontendController {
         return "forward:/music/artistIndex.html";
     }
 
+    @GetMapping("/collection/tracks")
+    public String collectionTracks(){
+        return "forward:/music/collectionTracks.html";
+    }
 
 }

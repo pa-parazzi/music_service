@@ -42,4 +42,22 @@ public class LikeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @PostMapping("/get/soundLikes")
+    public ResponseEntity<List<LikeResponse>> getSoundLikesByUserRequest(@RequestBody UserLikesRequest request){
+        try{
+            return ResponseEntity.ok().body(likeService.findAllSoundLikesByUserId(request));
+        } catch (LikeNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PostMapping("/get/albumLikes")
+    public ResponseEntity<List<LikeResponse>> getAlbumLikesByUserRequest(@RequestBody UserLikesRequest request){
+        try{
+            return ResponseEntity.ok().body(likeService.findAllAlbumLikesByUserId(request));
+        } catch (LikeNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }

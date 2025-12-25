@@ -2,22 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Главная</title>
+    <title>Коллекция</title>
     <link rel="stylesheet" href="/css/headerAndBody.css">
     <link rel="stylesheet" href="/css/audioPlayer.css">
     <link rel="stylesheet" href="/css/userInfo.css">
-    <link rel="stylesheet" href="/css/musicMain.css">
-    <link rel="stylesheet" href="/css/searchMusicResult.css">
+    <link rel="stylesheet" href="/css/trackList.css">
 </head>
-<body>
 
+<body>
 <input type="checkbox" id="side-checkbox">
 
 <header class="header">
     <div class="header-left">
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
         <a href="/music/main.html" class="logo">&#8962;</a>
-        <h1>Моя музыка</h1>
+        <h1>Коллекция песен</h1>
     </div>
 
     <form id="search-form" class="search-form">
@@ -32,12 +31,6 @@
     <div class="userInfo" id="userInfo"></div>
 </header>
 
-<div class="search-results">
-    <div id="found-albums" class="found-albums"></div>
-    <div id="found-artists" class="found-artists"></div>
-    <div id="not-found" class="not-found"></div>
-</div>
-
 <!-- боковая панель -->
 <aside class="side-panel" role="search" aria-label="Боковая панель">
     <div class="side-header">
@@ -45,17 +38,13 @@
         <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
         <div class="side-title">Панель</div>
     </div>
-    <div class="trackCollection" id="trackCollection">
-        <a href="/collection/tracks">
-            <button class="collectionBtn">Понравившиеся песни</button>
-        </a>
-    </div>
+    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
 </aside>
 
 <!-- затемнение -->
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
-<div id="albums" class="albums"></div>
+<div class="track-collection" id="track-collection"></div>
 
 <audio id="player"></audio>
 
@@ -80,8 +69,7 @@
 
 <script src="/js/loadUserProfile.js"></script>
 <script src="/js/audioPlayer.js"></script>
-
-<script type="module" src="/js/search.js"></script>
+<script type="module" src="/js/loadTrackCollection.js"></script>
 
 </body>
 </html>

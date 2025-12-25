@@ -1,7 +1,6 @@
 // ===== Элементы управления =====
+const player = document.getElementById("player");
 const playBtn = document.getElementById("play-btn");
-const prevBtn = document.getElementById("prev-btn");
-const nextBtn = document.getElementById("next-btn");
 const progress = document.getElementById("progress");
 const volume = document.getElementById("volume");
 const currentTimeEl = document.getElementById("current-time");

@@ -25,6 +25,10 @@ public class UserDataFactory {
         user.setLockTime(null);
         user.setEnabled(false);
         user.setRole(Authority.USER);
+        return user;
+    }
+
+    public User save(User user){
         return userRepository.save(user);
     }
 
