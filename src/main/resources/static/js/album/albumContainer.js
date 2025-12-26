@@ -1,4 +1,4 @@
-import {escapeHtml} from "./util.js";
+import {escapeHtml} from "../util.js";
 
 export async function setAlbumContainer(albumsContainer, data){
     albumsContainer.innerHTML = data.albums.map((album) => `

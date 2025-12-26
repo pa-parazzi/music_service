@@ -1,7 +1,7 @@
 import{escapeHtml} from "./util.js";
 import{loadAlbums} from "./loadAlbumsMainContent.js";
-import{setAlbumContainer} from "./albumContainer.js";
-import{playAlbums} from "./playAlbum.js";
+import{setAlbumContainer} from "./album/albumContainer.js";
+import{playAlbums} from "./album/playAlbum.js";
 
 const searchResults = document.querySelector(".search-results");
 const notFoundResult = document.getElementById("not-found");

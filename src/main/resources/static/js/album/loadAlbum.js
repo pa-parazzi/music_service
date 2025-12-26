@@ -1,5 +1,5 @@
-import{escapeHtml} from "./util.js";
-import {initTrackList} from "./trackList.js";
+import{escapeHtml} from "../util.js"
+import{initSoundListWithLikes} from "../soundListWithLikes.js";
 
 const player = document.getElementById('player');
 const playAlbumBtn = document.getElementById('play-album');
@@ -35,7 +35,7 @@ async function loadAlbum() {
         albumImage.src = album.albumImage.url;
         albumImage.alt = escapeHtml(album.title);
 
-        await initTrackList({
+        await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
             object: album
         });
@@ -98,6 +98,5 @@ function playTrack(index) {
 }
 
 (async function init() {
-    await window.loadUser;
     await loadAlbum();
 })();

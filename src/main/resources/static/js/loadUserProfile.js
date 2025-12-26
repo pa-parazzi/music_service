@@ -128,7 +128,6 @@ async function apiFetch(url, options = {}) {
 
 /* --- Загрузка профиля --- */
 async function loadProfile() {
-    window.currentUser = null;
 
     const nav = document.getElementById("sign-in/up-buttons");
     const userInfoDiv = document.getElementById("userInfo");

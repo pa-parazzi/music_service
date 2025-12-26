@@ -1,5 +1,13 @@
-import{escapeHtml} from "./util.js";
-import {initTrackList} from "./trackList.js";
+import{escapeHtml} from "../util.js";
+import{initSoundListWithLikes} from "../soundListWithLikes.js";
+
+document.addEventListener("userLoaded", ()=>{
+    if(!window.currentUser){
+        console.log("Пользователь не авторизирован");
+        return;
+    }
+    loadArtist();
+});
 
 const player = document.getElementById('player');
 const nextBtn = document.getElementById('next-btn');
@@ -23,7 +31,7 @@ async function loadArtist() {
         artistName.textContent = artist.name;
         artistName.alt = escapeHtml(artist.name);
 
-        await initTrackList({
+        await initSoundListWithLikes({
             trackList: artistTrackList,
             object: artist
         });
@@ -86,7 +94,3 @@ async function loadArtist() {
         console.error("Ошибка загрузки исполнителя", err);
     }
 }
-(async function init(){
-    await window.currentUser
-    await loadArtist();
-})();
