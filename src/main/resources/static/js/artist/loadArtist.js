@@ -1,14 +1,6 @@
 import{escapeHtml} from "../util.js";
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
 
-document.addEventListener("userLoaded", ()=>{
-    if(!window.currentUser){
-        console.log("Пользователь не авторизирован");
-        return;
-    }
-    loadArtist();
-});
-
 const player = document.getElementById('player');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
@@ -94,3 +86,12 @@ async function loadArtist() {
         console.error("Ошибка загрузки исполнителя", err);
     }
 }
+
+(async function initUser(){
+    await window.loadUser;
+    if(!window.currentUser){
+        console.log("Пользователь не авторизирован");
+        return;
+    }
+    loadArtist();
+})();

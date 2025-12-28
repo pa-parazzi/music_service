@@ -1,12 +1,4 @@
-import {escapeHtml} from "./util.js";
-
-document.addEventListener("userLoaded", ()=>{
-    if(!window.currentUser){
-        console.log("Пользователь не авторизирован");
-        return;
-    }
-    loadTrackCollection();
-});
+import {escapeHtml} from "./util.js"
 
 const player = document.getElementById('player');
 const nextBtn = document.getElementById('next-btn');
@@ -136,7 +128,15 @@ async function loadTrackCollection(){
             playTrack(currentTrackIndex + 1);
         }
     });
-
 }
+
+(async function initUser(){
+    await window.loadUser;
+    if(!window.currentUser){
+        console.log("Пользователь не авторизирован");
+        return;
+    }
+    loadTrackCollection();
+})();
 
 

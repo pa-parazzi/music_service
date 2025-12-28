@@ -84,5 +84,49 @@
     margin-bottom: 20px;
 }
 
+.album-like-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+
+    border: none;
+    cursor: pointer;
+
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 18px;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+
+    transition:
+            background 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.album-like-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.1);
+}
+
+/* состояние "лайкнут" */
+.album-like-btn.liked {
+    background: #1db954;
+    color: #fff;
+}
+
+.album-like-btn.liked:hover {
+    background: #1ed760;
+}
 
 

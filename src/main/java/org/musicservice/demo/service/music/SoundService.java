@@ -30,7 +30,7 @@ public class SoundService {
         return soundRepository.findById(id).orElseThrow(()-> new SoundNotFoundException("песня не найдена"));
     }
 
-    public CollectionTracksResponse getTrackCollectionByUserRequest(List<LikeResponse> responses){
+    public CollectionTracksResponse getTrackCollectionByUserLikes(List<LikeResponse> responses){
         List<Long> soundIds = responses.stream().map(LikeResponse::getTargetId).toList();
         Map<Long, Integer> orderSoundIds = new HashMap<>();
         for (int i = 0; i < soundIds.size(); i++) {

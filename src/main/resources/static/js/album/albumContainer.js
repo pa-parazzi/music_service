@@ -1,6 +1,6 @@
 import {escapeHtml} from "../util.js";
 
-export async function setAlbumContainer(albumsContainer, data){
+export async function setAlbumContainer(albumsContainer, data, userId){
     albumsContainer.innerHTML = data.albums.map((album) => `
         <div class="album-card">
             <div class="cover-wrapper">
@@ -20,4 +20,6 @@ export async function setAlbumContainer(albumsContainer, data){
         </div>
         </div>
         `).join('');
+
+
 }

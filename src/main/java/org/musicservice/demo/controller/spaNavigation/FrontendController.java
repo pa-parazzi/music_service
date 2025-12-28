@@ -21,4 +21,9 @@ public class FrontendController {
         return "forward:/music/collectionTracks.html";
     }
 
+    @GetMapping("/collection/albums")
+    public String collectionAlbums(){
+        return "forward:/music/collectionAlbums.html";
+    }
+
 }

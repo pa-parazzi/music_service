@@ -2,23 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Альбом</title>
+    <title>Коллекция</title>
     <link rel="stylesheet" href="/css/headerAndBody.css">
     <link rel="stylesheet" href="/css/audioPlayer.css">
     <link rel="stylesheet" href="/css/userInfo.css">
-    <link rel="stylesheet" href="/css/album.css">
-    <link rel="stylesheet" href="/css/trackList.css">
+    <link rel="stylesheet" href="/css/musicMain.css">
 </head>
-<body>
 
+<body>
 <input type="checkbox" id="side-checkbox">
 
 <header class="header">
     <div class="header-left">
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
         <a href="/music/main.html" class="logo">&#8962;</a>
-        <h1>Альбомы</h1>
+        <h1>Коллекция альбомов</h1>
     </div>
+
+    <form id="search-form" class="search-form">
+        <input id="search-input" type="text" name="fragment" placeholder="Введите название альбома">
+        <button id="search-button" type="submit">&#128270;</button>
+    </form>
+
     <nav id="sign-in/up-buttons" class="nav-buttons">
         <a href="/auth/login.html" class="button">Sign in</a>
         <a href="/auth/registration.html" class="button">Sign up</a>
@@ -39,21 +44,7 @@
 <!-- затемнение -->
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
-<div class="album-page">
-    <div class="album-header">
-        <div class="album-cover">
-            <img id="album-image" src="" alt="Обложка альбома" class="album-image">
-            <button id="play-album" class="play-btn" aria-label="Play album">▶</button>
-            <button class="album-like-btn" id="album-like-btn" data-album-id="${album.albumId}">&#128077;</button>
-        </div>
-        <div class="album-details">
-            <h1 id="album-title" class="album-title"></h1>
-            <p id="album-artist" class="album-artist"></p>
-        </div>
-    </div>
-
-    <div class="tracklist" id="tracklist"></div>
-</div>
+<div class="album-collection" id="album-collection"></div>
 
 <audio id="player"></audio>
 
@@ -78,7 +69,7 @@
 
 <script src="/js/loadUserProfile.js"></script>
 <script src="/js/audioPlayer.js"></script>
-<script type="module" src="/js/album/loadAlbum.js"></script>
+<script type="module" src="/js/loadAlbumCollection.js"></script>
 
 </body>
 </html>

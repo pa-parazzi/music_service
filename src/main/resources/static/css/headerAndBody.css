@@ -220,6 +220,17 @@ body {
     text-decoration: none;
 }
 
+.albumCollection {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.albumCollection a {
+    text-decoration: none;
+}
+
 /* карточка-кнопка */
 .collectionBtn {
     width: 100%;

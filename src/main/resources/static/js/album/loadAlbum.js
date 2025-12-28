@@ -35,6 +35,59 @@ async function loadAlbum() {
         albumImage.src = album.albumImage.url;
         albumImage.alt = escapeHtml(album.title);
 
+        const userId = window.currentUser.id;
+
+        const likeResponses = await fetch('/like/get/albumLikes', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({userId})
+        });
+
+        const albumLikeBtn = document.querySelector(".album-like-btn");
+
+        const albumId = album.albumId;
+
+        if(likeResponses.ok){
+
+            const likes = await likeResponses.json();
+
+            const likedAlbums = new Set(
+                likes.map(l => l.targetId)
+            );
+
+            if (likedAlbums.has(albumId)) {
+                albumLikeBtn.classList.add("liked");
+            }
+
+        }
+
+        albumLikeBtn.addEventListener('click', async (e) => {
+
+            e.stopPropagation();
+
+            const likeRequest = {
+                userId: userId,
+                targetType: "album",
+                targetId: albumId
+            };
+
+            if (albumLikeBtn.classList.contains("liked")) {
+                const responseDeleteLike = await fetch("/like/delete", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(likeRequest)
+                });
+                albumLikeBtn.classList.toggle("liked", false);
+            } else if (!albumLikeBtn.classList.contains("liked")) {
+                const responseLike = await fetch("/like", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(likeRequest)
+                });
+                albumLikeBtn.classList.toggle("liked", true);
+            }
+        });
+
         await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
             object: album
@@ -97,6 +150,11 @@ function playTrack(index) {
     playBtn.textContent = "⏸";
 }
 
-(async function init() {
-    await loadAlbum();
+(async function initUser(){
+    await window.loadUser;
+    if(!window.currentUser){
+        console.log("Пользователь не авторизирован");
+        return;
+    }
+    loadAlbum();
 })();

@@ -132,6 +132,8 @@ async function loadProfile() {
     const nav = document.getElementById("sign-in/up-buttons");
     const userInfoDiv = document.getElementById("userInfo");
 
+    window.currentUser = null;
+
     try {
         const response = await apiFetch('/lk/profile', {
             method: "GET"
@@ -162,9 +164,9 @@ async function loadProfile() {
         console.error("Ошибка загрузки профиля:", error);
         userInfoDiv.style.display = "none";
         nav.style.display = "flex";
-    } finally{
-        document.dispatchEvent(new Event("userLoaded"));
     }
+
+    return window.currentUser;
 }
 
 /* --- Logout --- */
@@ -187,6 +189,4 @@ async function logout() {
     }
 }
 
-window.loadUser = (async () => {
-    await loadProfile();
-})();
+window.loadUser = loadProfile();
