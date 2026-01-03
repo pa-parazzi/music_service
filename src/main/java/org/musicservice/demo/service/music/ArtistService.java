@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.music.response.ArtistResponse;
+import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.exception.music.ArtistNotFoundException;
 import org.musicservice.demo.mapper.music.ArtistMapper;
 import org.musicservice.demo.model.music.Artist;
@@ -26,7 +26,7 @@ public class ArtistService {
         return artistRepository.findById(artistId).orElseThrow(() -> new ArtistNotFoundException("Исполнителя с таким id не существует"));
     }
 
-    public ArtistResponse viewArtist(Long artistId){
-        return artistMapper.toArtistResponse(findById(artistId));
+    public ArtistResponse viewArtistById(Long artistId){
+        return artistMapper.toResponse(findById(artistId));
     }
 }

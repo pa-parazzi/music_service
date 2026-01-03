@@ -1,18 +1,19 @@
 package org.musicservice.demo.model.user;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.model.image.UserAvatar;
-import org.musicservice.demo.model.music.Like;
+import org.musicservice.demo.model.like.LikeAlbum;
+import org.musicservice.demo.model.like.LikeSound;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -58,20 +59,17 @@ public class User {
     private boolean enabled;
 
     // Токен активации аккаунта
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private VerificationToken verificationToken;
 
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private RefreshToken refreshToken;
 
     @Enumerated(value = EnumType.STRING)
     private Authority role;
 
-    @OneToOne(mappedBy = "owner")
+    @OneToOne(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private UserAvatar userAvatar;
-
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
-    private List<Like> likes;
 
     public User(){}
 
@@ -120,14 +118,13 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-
-        User user = (User) o;
-        return id.equals(user.id);
+        if (this == o) return true;
+        if (!(o instanceof User other)) return false;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return getClass().hashCode();
     }
 }

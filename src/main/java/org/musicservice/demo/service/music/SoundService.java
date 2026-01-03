@@ -1,17 +1,22 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.music.SoundDto;
-import org.musicservice.demo.dto.music.response.CollectionTracksResponse;
-import org.musicservice.demo.dto.music.response.LikeResponse;
+import org.musicservice.demo.dto.like.LikedAlbumResponse;
+import org.musicservice.demo.dto.like.LikedSoundResponse;
+import org.musicservice.demo.dto.music.sound.SoundDto;
+import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.exception.music.SoundNotFoundException;
 import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.model.music.Sound;
+import org.musicservice.demo.repository.like.LikeSoundRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,19 +35,11 @@ public class SoundService {
         return soundRepository.findById(id).orElseThrow(()-> new SoundNotFoundException("песня не найдена"));
     }
 
-    public CollectionTracksResponse getTrackCollectionByUserLikes(List<LikeResponse> responses){
-        List<Long> soundIds = responses.stream().map(LikeResponse::getTargetId).toList();
-        Map<Long, Integer> orderSoundIds = new HashMap<>();
-        for (int i = 0; i < soundIds.size(); i++) {
-            orderSoundIds.put(soundIds.get(i), i);
-        }
-
-        List<SoundDto> soundDtoList =  soundRepository.findAllById(soundIds).stream()
-                .map(soundMapper::toDto)
-                .sorted(Comparator.comparingInt(dto -> orderSoundIds.get(dto.getId()))).toList();
-
-        CollectionTracksResponse collectionTracksResponse = new CollectionTracksResponse();
-        collectionTracksResponse.setSoundList(soundDtoList);
-        return collectionTracksResponse;
+    public CollectionTracksResponse getTrackCollectionByUserLikes(List<LikedSoundResponse> responses){
+        List<Long> soundIds = responses.stream().map(LikedSoundResponse::getSoundId).toList();
+        List<SoundDto> soundDtoList = soundRepository.findAllByIdForCollectionPage(soundIds).stream().map(soundMapper::toDto).toList();
+        CollectionTracksResponse collectionTracks = new CollectionTracksResponse();
+        collectionTracks.setSoundList(soundDtoList);
+        return collectionTracks;
     }
 }

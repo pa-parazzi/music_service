@@ -1,9 +1,8 @@
 package org.musicservice.demo.service.search;
 
-import org.musicservice.demo.dto.music.ArtistDto;
-import org.musicservice.demo.dto.music.response.AlbumResponse;
-import org.musicservice.demo.dto.music.response.ArtistResponse;
-import org.musicservice.demo.dto.music.response.SearchArtistAndAlbumResponse;
+import org.musicservice.demo.dto.music.artist.ArtistResponse;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.search.SearchArtistAndAlbumResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +24,7 @@ public class SearchMusicService {
 
     public SearchArtistAndAlbumResponse searchMusicResult(String fragment){
         SearchArtistAndAlbumResponse response = new SearchArtistAndAlbumResponse();
-        List<ArtistDto> artists = searchArtistService.findAllArtistStartingWith(fragment);
+        List<ArtistResponse> artists = searchArtistService.findAllArtistStartingWith(fragment);
         List<AlbumResponse> albumResponses = searchAlbumService.findAllAlbumResponseStartingWith(fragment);
 
         response.setArtists(artists);

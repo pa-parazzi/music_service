@@ -20,7 +20,7 @@ public class AlbumImage {
     @Column(name = "s3_key")
     private String key;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id", referencedColumnName = "id")
     private Album album;
 
@@ -29,10 +29,6 @@ public class AlbumImage {
     public AlbumImage(String key, Album album) {
         this.key = key;
         this.album = album;
-    }
-
-    public AlbumImage(String key) {
-        this.key = key;
     }
 
 }

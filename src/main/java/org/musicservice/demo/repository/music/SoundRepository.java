@@ -1,9 +1,11 @@
 package org.musicservice.demo.repository.music;
 
+import io.netty.util.collection.LongObjectHashMap;
 import jakarta.annotation.Nonnull;
 import org.musicservice.demo.model.music.Artist;
 import org.musicservice.demo.model.music.Sound;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +16,6 @@ public interface SoundRepository extends JpaRepository<Sound, Long> {
 
     Optional<Sound> findByTitle(String title);
 
-    List<Sound> findByAlbumId(Long albumId);
-
-    List<Sound> findByArtistId(Long artistId);
+    @Query("select s from Sound s where s.id in :ids")
+    List<Sound> findAllByIdForCollectionPage(Iterable<Long> ids);
 }

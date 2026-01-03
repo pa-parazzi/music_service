@@ -1,11 +1,11 @@
 package org.musicservice.demo.service.music;
 
-import org.aspectj.weaver.ast.Literal;
-import org.musicservice.demo.dto.music.response.AlbumResponse;
-import org.musicservice.demo.dto.music.response.CollectionAlbumsResponse;
-import org.musicservice.demo.dto.music.response.LikeResponse;
+import org.musicservice.demo.dto.like.LikedAlbumResponse;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
+import org.musicservice.demo.dto.music.album.MainAlbumResponse;
 import org.musicservice.demo.exception.music.AlbumNotFoundException;
-import org.musicservice.demo.mapper.music.AlbumResponseMapper;
+import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.model.music.Album;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,49 +22,36 @@ import java.util.Map;
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
-    private final AlbumResponseMapper albumResponseMapper;
+    private final AlbumMapper albumMapper;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumResponseMapper albumResponseMapper) {
+    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper) {
         this.albumRepository = albumRepository;
-        this.albumResponseMapper = albumResponseMapper;
+        this.albumMapper = albumMapper;
     }
 
-    public CollectionAlbumsResponse getAlbumCollectionByUserLikes(List<LikeResponse> responses){
-        List<Long> albumsIds = responses.stream().map(LikeResponse::getTargetId).toList();
-        Map<Long, Integer> orderAlbumsIds = new HashMap<>();
-        for (int i = 0; i < albumsIds.size(); i++) {
-            orderAlbumsIds.put(albumsIds.get(i), i);
-        }
-        List<AlbumResponse> albumResponses = albumRepository.findAllById(albumsIds).stream().map(albumResponseMapper::toAlbumResponse)
-                .sorted(Comparator.comparingInt(response -> orderAlbumsIds.get(response.getAlbumId()))).toList();
-
-        CollectionAlbumsResponse collectionAlbumsResponse = new CollectionAlbumsResponse();
-        collectionAlbumsResponse.setAlbums(albumResponses);
-        return collectionAlbumsResponse;
+    public CollectionAlbumsResponse getAlbumCollectionByUserLikes(List<LikedAlbumResponse> responses){
+        List<Long> ids = responses.stream().map(LikedAlbumResponse::getAlbumId).toList();
+        List<AlbumResponse> albumResponses =  albumRepository.findAllByIdWithArtistAndImage(ids).stream().map(albumMapper::toAlbumResponse).toList();
+        CollectionAlbumsResponse collectionAlbums = new CollectionAlbumsResponse();
+        collectionAlbums.setAlbums(albumResponses);
+        return collectionAlbums;
     }
 
-    public List<AlbumResponse> findAlbumResponseStartingWith(String fragment){
-        List<Album> albumList = findAllStartingWith(fragment);
-        return albumList.stream().map(album -> getAlbumById(album.getId())).toList();
-    }
-
-    public List<Album> findAllStartingWith(String fragment){
-        if(fragment == null || fragment.trim().isBlank()) return null;
-        return albumRepository.findByTitleStartingWith(fragment);
-    }
-
-    public List<AlbumResponse> getAllAlbumResponse(){
-        List<Album> albums = albumRepository.findAll();
-        return albums.stream().map(albumResponseMapper::toAlbumResponse).toList();
+    public MainAlbumResponse getAllAlbumsByMainResponse(){
+        List<Album> albums = albumRepository.findAllForMainPage();
+        List<AlbumResponse> albumResponseList = albums.stream().map(albumMapper::toAlbumResponse).toList();
+        MainAlbumResponse mainAlbumResponse =  new MainAlbumResponse();
+        mainAlbumResponse.setAlbums(albumResponseList);
+        return mainAlbumResponse;
     }
 
     public Album searchById(Long albumId){
         return albumRepository.searchById(albumId).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
     }
 
-    public AlbumResponse getAlbumById(Long albumId){
-        Album album = searchById(albumId);
-        return albumResponseMapper.toAlbumResponse(album);
+    public AlbumResponse getAlbumById(Long id){
+        Album album = albumRepository.findByIdWithArtistAndImage(id).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
+        return albumMapper.toAlbumResponse(album);
     }
 }

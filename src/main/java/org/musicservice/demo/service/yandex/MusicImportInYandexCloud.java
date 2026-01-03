@@ -1,9 +1,8 @@
 package org.musicservice.demo.service.yandex;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
-import org.musicservice.demo.dto.music.UploadMusicResponse;
+import org.musicservice.demo.dto.jamendo.UploadMusicResponse;
 import org.musicservice.demo.jamendoIntegration.JamendoClient;
-import org.musicservice.demo.service.music.UploadMusic;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -2,7 +2,7 @@ package org.musicservice.demo.service.image;
 
 import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
 import org.musicservice.demo.dto.image.AvatarDto;
-import org.musicservice.demo.mapper.user.AvatarMapper;
+import org.musicservice.demo.mapper.image.AvatarMapper;
 import org.musicservice.demo.model.image.UserAvatar;
 import org.musicservice.demo.model.user.User;
 import org.musicservice.demo.repository.image.UserAvatarRepository;

@@ -3,6 +3,7 @@ package org.musicservice.demo.model.music;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.musicservice.demo.model.like.LikeSound;
 
 import java.util.List;
 import java.util.Objects;
@@ -11,7 +12,7 @@ import java.util.Objects;
 @Table(name = "sound")
 @Getter
 @Setter
-public class Sound implements Likable{
+public class Sound{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +28,11 @@ public class Sound implements Likable{
     @Column(name = "s3_key")
     private String key;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id", referencedColumnName = "id")
     private Album album;
 
@@ -58,15 +59,14 @@ public class Sound implements Likable{
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Sound sound = (Sound) o;
-        return Objects.equals(key, sound.key);
+        if (this == o) return true;
+        if (!(o instanceof Sound other)) return false;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(key);
+        return getClass().hashCode();
     }
 
 }

@@ -6,9 +6,14 @@
 
 .album-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 40px;
     margin-bottom: 50px;
+}
+
+.album-info {
+    display: flex;
+    flex-direction: column;
 }
 
 .album-cover {
@@ -44,27 +49,6 @@
     transition: 0.2s;
 }
 
-.play-btn {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    background: #1db954;
-    border: none;
-    color: #fff;
-    padding: 14px 26px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1em;
-    transition: background 0.25s, transform 0.25s;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.play-btn:hover {
-    background: #1ed760;
-    transform: scale(1.05);
-}
-
 .album-details {
     display: flex;
     flex-direction: column;
@@ -84,42 +68,39 @@
     margin-bottom: 20px;
 }
 
+.functionalities-of-album {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px; /* отступ от текста — регулируй */
+    align-items: center;
+}
+
+
+.play-album-btn,
 .album-like-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-
-    width: 42px;
-    height: 42px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-
     border: none;
     cursor: pointer;
-
-    background: rgba(0, 0, 0, 0.55);
-    color: #fff;
-    font-size: 18px;
-    line-height: 1;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    backdrop-filter: blur(4px);
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
 
-    transition:
-            background 0.2s ease,
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
+.play-album-btn:hover,
 .album-like-btn:hover {
     background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.1);
+    transform: scale(1.08);
 }
 
-/* состояние "лайкнут" */
 .album-like-btn.liked {
     background: #1db954;
     color: #fff;
@@ -128,5 +109,6 @@
 .album-like-btn.liked:hover {
     background: #1ed760;
 }
+
 
 

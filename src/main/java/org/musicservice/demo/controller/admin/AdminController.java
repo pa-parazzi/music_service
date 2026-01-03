@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.admin;
 
 import org.musicservice.demo.dto.user.UserDtoForView;
-import org.musicservice.demo.service.music.UploadMusic;
 import org.musicservice.demo.service.yandex.MusicImportInYandexCloud;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,7 @@ public class AdminController {
     private final UserService userService;
     private final MusicImportInYandexCloud musicImportInYandexCloud;
 
-    public AdminController(UserService userService,MusicImportInYandexCloud musicImportInYandexCloud) {
+    public AdminController(UserService userService, MusicImportInYandexCloud musicImportInYandexCloud) {
         this.userService = userService;
         this.musicImportInYandexCloud = musicImportInYandexCloud;
     }

@@ -1,8 +1,7 @@
 package org.musicservice.demo.service.search;
 
-import org.musicservice.demo.dto.music.response.AlbumResponse;
-import org.musicservice.demo.mapper.music.AlbumResponseMapper;
-import org.musicservice.demo.model.music.Album;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,17 +14,17 @@ import java.util.List;
 public class SearchAlbumService {
 
     private final AlbumRepository albumRepository;
-    private final AlbumResponseMapper albumResponseMapper;
+    private final AlbumMapper albumMapper;
 
     @Autowired
-    public SearchAlbumService(AlbumRepository albumRepository, AlbumResponseMapper albumResponseMapper) {
+    public SearchAlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper) {
         this.albumRepository = albumRepository;
-        this.albumResponseMapper = albumResponseMapper;
+        this.albumMapper = albumMapper;
     }
 
     public List<AlbumResponse> findAllAlbumResponseStartingWith(String fragment){
         if(fragment == null || fragment.trim().isBlank()) return null;
-        return albumRepository.findByTitleStartingWith(fragment).stream().map(albumResponseMapper::toAlbumResponse).toList();
+        return albumRepository.findByTitleStartingWith(fragment).stream().map(albumMapper::toAlbumResponse).toList();
     }
 
 

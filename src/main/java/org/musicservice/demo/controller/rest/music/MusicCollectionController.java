@@ -1,8 +1,9 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.response.CollectionAlbumsResponse;
-import org.musicservice.demo.dto.music.response.CollectionTracksResponse;
-import org.musicservice.demo.dto.music.response.LikeResponse;
+import org.musicservice.demo.dto.like.LikedAlbumResponse;
+import org.musicservice.demo.dto.like.LikedSoundResponse;
+import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
+import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.service.music.AlbumService;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +29,12 @@ public class MusicCollectionController {
     }
 
     @PostMapping("/tracks")
-    public ResponseEntity<CollectionTracksResponse> viewTrackCollection(@RequestBody List<LikeResponse> responses) {
+    public ResponseEntity<CollectionTracksResponse> viewTrackCollection(@RequestBody List<LikedSoundResponse> responses) {
         return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(responses));
     }
 
     @PostMapping("/albums")
-    public ResponseEntity<CollectionAlbumsResponse> viewAlbumCollection(@RequestBody List<LikeResponse> responses) {
+    public ResponseEntity<CollectionAlbumsResponse> viewAlbumCollection(@RequestBody List<LikedAlbumResponse> responses) {
         return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(responses));
     }
 

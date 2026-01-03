@@ -43,12 +43,16 @@
     <div class="album-header">
         <div class="album-cover">
             <img id="album-image" src="" alt="Обложка альбома" class="album-image">
-            <button id="play-album" class="play-btn" aria-label="Play album">▶</button>
-            <button class="album-like-btn" id="album-like-btn" data-album-id="${album.albumId}">&#128077;</button>
         </div>
-        <div class="album-details">
-            <h1 id="album-title" class="album-title"></h1>
-            <p id="album-artist" class="album-artist"></p>
+        <div class="album-info">
+            <div class="album-details">
+                <h1 id="album-title" class="album-title"></h1>
+                <p id="album-artist" class="album-artist"></p>
+            </div>
+            <div class="functionalities-of-album">
+                <button class="play-album-btn" id="play-album" aria-label="Play album">▶</button>
+                <button class="album-like-btn" id="album-like-btn">&#128077;</button>
+            </div>
         </div>
     </div>
 

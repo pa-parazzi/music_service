@@ -1,8 +1,8 @@
 package org.musicservice.demo.jamendoIntegration;
 
 import org.musicservice.demo.configuration.jamendo.JamendoProperties;
-import org.musicservice.demo.dto.music.JamendoResponse;
-import org.musicservice.demo.dto.music.UploadMusicResponse;
+import org.musicservice.demo.dto.jamendo.JamendoResponse;
+import org.musicservice.demo.dto.jamendo.UploadMusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

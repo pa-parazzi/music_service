@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.musicservice.demo.model.image.AlbumImage;
+import org.musicservice.demo.model.like.LikeAlbum;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.Objects;
 @Table(name = "album")
 @Getter
 @Setter
-public class Album implements Likable{
+public class Album{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,14 +26,14 @@ public class Album implements Likable{
     @Column(name = "title")
     private String title;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", referencedColumnName = "id")
     private Artist artist;
 
-    @OneToMany(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH},orphanRemoval = true)
+    @OneToMany(mappedBy = "album")
     private List<Sound> soundList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH}, orphanRemoval = true)
+    @OneToOne(mappedBy = "album", orphanRemoval = true)
     private AlbumImage image;
 
     public Album(){}
@@ -54,14 +56,13 @@ public class Album implements Likable{
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Album album = (Album) o;
-        return id.equals(album.id);
+        if (this == o) return true;
+        if (!(o instanceof Album other)) return false;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return getClass().hashCode();
     }
 }

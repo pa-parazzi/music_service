@@ -29,6 +29,4 @@ public class UserAvatar {
         this.key = key;
         this.owner = owner;
     }
-
-
 }

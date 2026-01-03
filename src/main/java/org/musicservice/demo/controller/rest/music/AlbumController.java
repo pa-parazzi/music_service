@@ -1,8 +1,8 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.response.AlbumResponse;
-import org.musicservice.demo.dto.music.response.MainResponse;
-import org.musicservice.demo.service.music.MusicService;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.album.MainAlbumResponse;
+import org.musicservice.demo.service.music.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,20 +11,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/album")
 public class AlbumController {
 
-    private final MusicService musicService;
+    private final AlbumService albumService;
 
     @Autowired
-    public AlbumController(MusicService musicService) {
-        this.musicService = musicService;
+    public AlbumController(AlbumService albumService) {
+        this.albumService = albumService;
     }
 
     @GetMapping
-    public ResponseEntity<MainResponse> view(){
-        return ResponseEntity.ok(musicService.viewAlbums());
+    public ResponseEntity<MainAlbumResponse> view(){
+        return ResponseEntity.ok(albumService.getAllAlbumsByMainResponse());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AlbumResponse> viewById(@PathVariable("id") Long albumId){
-        return ResponseEntity.ok(musicService.getById(albumId));
+        return ResponseEntity.ok(albumService.getAlbumById(albumId));
     }
 }
