@@ -1,7 +1,7 @@
 package org.musicservice.demo.factory.user;
 
 import org.musicservice.demo.Authority.Authority;
-import org.musicservice.demo.model.user.User;
+import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;

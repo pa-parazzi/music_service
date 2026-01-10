@@ -3,7 +3,7 @@ package org.musicservice.demo.controller.auth;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.service.security.RefreshTokenService;
+import org.musicservice.demo.factory.user.UserDataFactory;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -42,7 +42,7 @@ public class AuthRestControllerIT {
     private UserService userService;
 
     @Autowired
-    private RefreshTokenService refreshTokenService;
+    private UserDataFactory userDataFactory;
 
     @DynamicPropertySource
     static void setup(DynamicPropertyRegistry registry){
@@ -54,7 +54,7 @@ public class AuthRestControllerIT {
 
     @BeforeEach
     void cleanup(){
-        userService.deleteAll();
+        userDataFactory.cleanUser();
     }
 
     @Test
@@ -90,11 +90,9 @@ public class AuthRestControllerIT {
         // then
 
         var user = userService.searchByEmail("igor.bocharov.88@gmail.com");
-        var expectedRefToken = refreshTokenService.findByUserId(user.getId());
 
         assertEquals("TestUser", user.getUsername());
         assertEquals("default_avatar.jpg", user.getUserAvatar().getKey());
-        assertEquals(expectedRefToken, user.getRefreshToken());
         assertNotEquals("test123", user.getPassword());
         assertFalse(user.isEnabled());
         

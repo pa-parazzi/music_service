@@ -1,6 +1,5 @@
 package org.musicservice.demo.jamendoIntegration;
 
-import org.musicservice.demo.configuration.jamendo.JamendoProperties;
 import org.musicservice.demo.dto.jamendo.JamendoResponse;
 import org.musicservice.demo.dto.jamendo.UploadMusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;

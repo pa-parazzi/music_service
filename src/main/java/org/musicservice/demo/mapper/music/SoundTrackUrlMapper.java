@@ -1,8 +1,8 @@
 package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Named;
-import org.musicservice.demo.configuration.YandexCloud.YandexStorageProperties;
-import org.musicservice.demo.service.s3.S3UrlGenerator;
+import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
+import org.musicservice.demo.service.yandexCloud.s3config.S3UrlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

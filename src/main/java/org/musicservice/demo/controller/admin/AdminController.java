@@ -1,7 +1,7 @@
 package org.musicservice.demo.controller.admin;
 
-import org.musicservice.demo.dto.user.UserDtoForView;
-import org.musicservice.demo.service.yandex.MusicImportInYandexCloud;
+import org.musicservice.demo.dto.user.UserMainResponse;
+import org.musicservice.demo.service.yandexCloud.MusicImportInYandexCloud;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +21,7 @@ public class AdminController {
     }
 
     @GetMapping("/main")
-    public UserDtoForView mainMenu(Principal principal){
+    public UserMainResponse mainMenu(Principal principal){
         return userService.viewSingle(principal.getName());
     }
 

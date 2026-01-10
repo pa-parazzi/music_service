@@ -1,0 +1,33 @@
+package org.musicservice.demo.entity.image;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.musicservice.demo.entity.user.User;
+
+@Entity
+@Table(name="images_avatar")
+@Getter
+@Setter
+public class UserAvatar {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "s3_key")
+    private String key;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User owner;
+
+    public UserAvatar(){}
+
+    public UserAvatar(User owner, String key) {
+        this.owner = owner;
+        this.key = key;
+    }
+
+}

@@ -1,9 +1,9 @@
 package org.musicservice.demo.exception.GlobalHandler;
 
-import org.musicservice.demo.exception.AuthException.RegistrationException;
-import org.musicservice.demo.exception.errorResponse.RefreshTokenErrorResponse;
-import org.musicservice.demo.exception.errorResponse.UserFieldsErrorResponse;
-import org.musicservice.demo.exception.refreshTokenError.RefreshTokenNotFoundException;
+import org.musicservice.demo.security.exception.RegistrationException;
+import org.musicservice.demo.security.exception.errorResponse.RefreshTokenErrorResponse;
+import org.musicservice.demo.security.exception.errorResponse.UserFieldsErrorResponse;
+import org.musicservice.demo.security.exception.RefreshTokenNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,6 +19,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalHandler {
 
+    // Ошибки валидации DTO
     @ExceptionHandler
     public ResponseEntity<Map<String, String>> exceptionHandler(MethodArgumentNotValidException e){
         Map<String, String> errors = new HashMap<>();

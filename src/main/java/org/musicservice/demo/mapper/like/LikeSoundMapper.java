@@ -3,7 +3,7 @@ package org.musicservice.demo.mapper.like;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.musicservice.demo.dto.like.LikedSoundResponse;
-import org.musicservice.demo.model.like.LikeSound;
+import org.musicservice.demo.entity.like.LikeSound;
 
 @Mapper(componentModel = "spring")
 public interface LikeSoundMapper {

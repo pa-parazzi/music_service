@@ -1,11 +1,11 @@
 package org.musicservice.demo.security.authListener;
 
-import org.musicservice.demo.service.user.AuthService;
+import org.musicservice.demo.security.userDetails.UserPrincipal;
+import org.musicservice.demo.service.auth.FailureAuthService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 // ApplicationListener<AuthenticationSuccessEvent> Слушатель успешных аутентификаций
@@ -13,20 +13,20 @@ import org.springframework.stereotype.Component;
 public class AuthenticationSuccessListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     private final UserService userService;
-    private final AuthService authService;
+    private final FailureAuthService failureAuthService;
 
     @Autowired
-    public AuthenticationSuccessListener(UserService userService, AuthService authService) {
+    public AuthenticationSuccessListener(UserService userService, FailureAuthService failureAuthService) {
         this.userService = userService;
-        this.authService = authService;
+        this.failureAuthService = failureAuthService;
     }
 
     // Что будет происходить при успешной аутентификации
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         // Получаем username введенный при логине
-        String username = ((UserDetails) event.getAuthentication().getPrincipal()).getUsername();
+        String username = ((UserPrincipal) event.getAuthentication().getPrincipal()).getUsername();
         // Ищем пользователя в БД по username, если такой пользователь существует, и пароль введен верно - счетчик неудачных логинов сбрасывается до 0
-        userService.getUserOptionalByUsername(username).ifPresent(authService::resetFailedLogin);
+        //userService.findOptByUsername(username).ifPresent(failureAuthService::resetFailedLogin);
     }
 }

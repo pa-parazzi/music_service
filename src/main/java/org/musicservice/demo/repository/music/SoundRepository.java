@@ -1,9 +1,6 @@
 package org.musicservice.demo.repository.music;
 
-import io.netty.util.collection.LongObjectHashMap;
-import jakarta.annotation.Nonnull;
-import org.musicservice.demo.model.music.Artist;
-import org.musicservice.demo.model.music.Sound;
+import org.musicservice.demo.entity.music.Sound;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

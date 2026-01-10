@@ -1,10 +1,10 @@
 package org.musicservice.demo.controller.auth;
 
 
-import org.musicservice.demo.model.user.User;
-import org.musicservice.demo.model.user.VerificationToken;
+import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.service.security.VerificationTokenService;
+import org.musicservice.demo.security.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

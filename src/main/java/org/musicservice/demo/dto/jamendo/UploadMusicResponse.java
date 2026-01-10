@@ -1,12 +1,12 @@
 package org.musicservice.demo.dto.jamendo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Getter
-@Setter
+@Data
 public class UploadMusicResponse {
 
     private String name;

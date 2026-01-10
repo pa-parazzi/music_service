@@ -1,6 +1,6 @@
 package org.musicservice.demo.controller.rest.user;
 
-import org.musicservice.demo.dto.user.UserDtoForView;
+import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,7 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public UserDtoForView profile(Principal principal){
+    public UserMainResponse profile(Principal principal){
         return service.viewSingle(principal.getName());
     }
 }

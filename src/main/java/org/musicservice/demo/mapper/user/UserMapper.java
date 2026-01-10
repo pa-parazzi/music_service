@@ -1,18 +1,18 @@
 package org.musicservice.demo.mapper.user;
 
 import org.mapstruct.Mapper;
-import org.musicservice.demo.dto.user.UserDtoForLogin;
-import org.musicservice.demo.dto.user.UserDtoForRegistration;
-import org.musicservice.demo.dto.user.UserDtoForView;
-import org.musicservice.demo.model.user.User;
+import org.mapstruct.Mapping;
+import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.dto.user.UserMainResponse;
+import org.musicservice.demo.mapper.image.UserAvatarMapper;
+import org.musicservice.demo.entity.user.User;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserAvatarMapper.class})
 public interface UserMapper {
 
-    User convertFromUserDtoForRegistrationToUser(UserDtoForRegistration userDtoForRegistration);
+    User toUser(RegistrationRequest registrationRequest);
 
-    UserDtoForView getUserDtoForView(User user);
-
-    User convertFromUserForLogin(UserDtoForLogin userDtoForLogin);
+    @Mapping(target = "avatar", source = "userAvatar")
+    UserMainResponse toMainResponse(User user);
 
 }

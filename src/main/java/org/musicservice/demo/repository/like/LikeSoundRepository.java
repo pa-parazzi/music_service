@@ -1,6 +1,6 @@
 package org.musicservice.demo.repository.like;
 
-import org.musicservice.demo.model.like.LikeSound;
+import org.musicservice.demo.entity.like.LikeSound;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

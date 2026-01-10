@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.mapper.image.AlbumImageMapper;
-import org.musicservice.demo.model.music.Album;
+import org.musicservice.demo.entity.music.Album;
 
 @Mapper(componentModel = "spring", uses = {AlbumImageMapper.class})
 public interface AlbumMapper {

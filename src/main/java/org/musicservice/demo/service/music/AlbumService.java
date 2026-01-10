@@ -6,16 +6,13 @@ import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
 import org.musicservice.demo.exception.music.AlbumNotFoundException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
-import org.musicservice.demo.model.music.Album;
+import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)

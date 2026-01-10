@@ -3,7 +3,7 @@ package org.musicservice.demo.mapper.music;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.musicservice.demo.dto.music.sound.SoundDto;
-import org.musicservice.demo.model.music.Sound;
+import org.musicservice.demo.entity.music.Sound;
 
 import java.util.List;
 

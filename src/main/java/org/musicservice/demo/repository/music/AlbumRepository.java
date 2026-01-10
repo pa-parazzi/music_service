@@ -1,7 +1,6 @@
 package org.musicservice.demo.repository.music;
 
-import org.musicservice.demo.model.music.Album;
-import org.springframework.data.jpa.repository.EntityGraph;
+import org.musicservice.demo.entity.music.Album;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

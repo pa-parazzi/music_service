@@ -3,7 +3,7 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.exception.music.ArtistNotFoundException;
 import org.musicservice.demo.mapper.music.ArtistMapper;
-import org.musicservice.demo.model.music.Artist;
+import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

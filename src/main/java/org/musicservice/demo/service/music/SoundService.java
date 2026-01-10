@@ -1,22 +1,17 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.like.LikedAlbumResponse;
 import org.musicservice.demo.dto.like.LikedSoundResponse;
 import org.musicservice.demo.dto.music.sound.SoundDto;
 import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.exception.music.SoundNotFoundException;
 import org.musicservice.demo.mapper.music.SoundMapper;
-import org.musicservice.demo.model.music.Sound;
-import org.musicservice.demo.repository.like.LikeSoundRepository;
+import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
