@@ -58,13 +58,12 @@ public class VerificationTokenService {
         VerificationToken verificationToken = findByToken(token);
         if(verificationToken==null){
             return "Ваш токен активации истек"; // TODO: Добавить возможность "запросить новый токен"
+        } else if(verificationToken.getExpiryDate().isBefore(Instant.now())){
+            verificationTokenRepository.delete(verificationToken);
+            return "Ваш токен активации истек";
         }
-        User user = verificationToken.getUser();
-        VerifyEmailRequest request = new VerifyEmailRequest();
-        request.setUserId(user.getId());
-        request.setEmail(user.getEmail());
-        user.setEnabled(true);
-        userRepository.save(user);
+        Long userId = verificationToken.getUser().getId();
+        userRepository.enableUser(userId);
         verificationTokenRepository.delete(verificationToken);
         return "Ваш аккаунт активирован!";
     }

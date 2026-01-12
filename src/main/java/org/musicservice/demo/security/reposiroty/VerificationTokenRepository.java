@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface VerificationTokenRepository extends JpaRepository<VerificationToken, Long> {
 
-    @Query("select v_t from VerificationToken v_t join fetch v_t.user where v_t.token=:token")
     Optional<VerificationToken> findByToken(String token);
 
     void deleteAllByExpiryDateBefore(Instant expiryDateBefore);
+
 }
