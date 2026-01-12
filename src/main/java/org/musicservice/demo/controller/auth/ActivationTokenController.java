@@ -15,25 +15,15 @@ import org.springframework.web.bind.annotation.*;
 public class ActivationTokenController {
 
     private final VerificationTokenService verificationTokenService;
-    private final UserRepository userRepository;
 
     @Autowired
-    public ActivationTokenController(VerificationTokenService verificationTokenService, UserRepository userRepository) {
+    public ActivationTokenController(VerificationTokenService verificationTokenService) {
         this.verificationTokenService = verificationTokenService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/activate")
     public ResponseEntity<String> activate(@RequestParam("token") String token){
-        VerificationToken verificationToken = verificationTokenService.findByToken(token);
-        if(verificationTokenService.isExpiryDate(verificationToken)){
-            verificationTokenService.createToken(verificationToken.getUser());
-            return ResponseEntity.badRequest().body("Ваш токен активации истек, новый был отправлен на почту " + verificationToken.getUser().getEmail());
-        }
-        User user = verificationToken.getUser();
-        user.setEnabled(true);
-        verificationTokenService.delete(verificationToken);
-        userRepository.save(user);
-        return ResponseEntity.ok("Аккаунт активирован!");
+        String message = verificationTokenService.verify(token);
+        return ResponseEntity.ok(message);
     }
 }

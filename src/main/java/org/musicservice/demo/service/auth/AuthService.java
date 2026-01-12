@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.dto.TokenSubject;
+import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
@@ -41,7 +42,10 @@ public class AuthService {
     public String processRegistration(RegistrationRequest regRequest, MultipartFile file, HttpServletResponse response){
         User regUser = userService.create(regRequest);
         avatarService.createOrGet(file, regUser);
-        verificationTokenService.createToken(regUser);
+        VerifyEmailRequest emailRequest = new VerifyEmailRequest();
+        emailRequest.setUserId(regUser.getId());
+        emailRequest.setEmail(regUser.getEmail());
+        verificationTokenService.createToken(emailRequest);
         refreshTokenService.create(response, regUser.getId(), regUser.getRole());
         TokenSubject tokenSubject = TokenSubjectMapper.from(regUser);
         return jwtTokenService.generateToken(tokenSubject);

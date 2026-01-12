@@ -41,8 +41,7 @@ public class AuthRestControllerIT {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserDataFactory userDataFactory;
+
 
     @DynamicPropertySource
     static void setup(DynamicPropertyRegistry registry){
@@ -54,7 +53,7 @@ public class AuthRestControllerIT {
 
     @BeforeEach
     void cleanup(){
-        userDataFactory.cleanUser();
+        userService.cleanAll();
     }
 
     @Test

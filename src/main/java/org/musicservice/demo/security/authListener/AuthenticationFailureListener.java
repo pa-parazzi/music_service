@@ -20,6 +20,7 @@ public class AuthenticationFailureListener implements ApplicationListener<Authen
         this.failureAuthService = failureAuthService;
     }
 
+    // TODO: Исключить запросы к БД
     // Реализация, что будет происходить при неудачной аутентификации
     @Override
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {

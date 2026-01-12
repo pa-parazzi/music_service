@@ -59,10 +59,6 @@ public class User {
     @Column(name="enabled")
     private boolean enabled;
 
-    // Токен активации аккаунта
-    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
-    private VerificationToken verificationToken;
-
     @Enumerated(value = EnumType.STRING)
     private Authority role;
 

@@ -56,5 +56,9 @@ public class UserService {
         return userMapper.toMainResponse(searchByUsername(username));
     }
 
+    @Transactional
+    public void cleanAll(){
+        userRepository.deleteAll();
+    }
 
 }

@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/album/**", "/api/album/**", "/artist/**", "/api/artist/**", "/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        //.requestMatchers("/api/auth/activate").permitAll()
                         .requestMatchers("/album/like/create", "/album/like/delete", "/album/like/get").permitAll()
                         .requestMatchers("/sound/like/create", "/sound/like/delete", "/sound/like/get").permitAll()
                         .requestMatchers("/collection/tracks", "/collection/albums").permitAll()

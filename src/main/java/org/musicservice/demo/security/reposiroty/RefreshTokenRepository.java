@@ -16,9 +16,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshTokenProjection> findForAuthByTokenHash(String tokenHash);
 
-    Optional<RefreshToken> findByUserId(Long userId);
-
-    void deleteByUserId(Long userId);
-
-    List<RefreshToken> findALlByExpiryDateBefore(Instant expiryDateBefore);
+    void deleteALlByExpiryDateBefore(Instant expiryDateBefore);
 }
