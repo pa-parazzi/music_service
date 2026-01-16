@@ -2,7 +2,11 @@ import {escapeHtml} from "./util.js";
 
 export async function initSoundListWithLikes({trackList, object}){
 
-    trackList.innerHTML = object.soundList.map((track, i) => `
+    const albumId = object.albumId;
+    const soundListResponse = await fetch(`/api/sound/${albumId}`);
+    const soundList = await soundListResponse.json();
+
+    trackList.innerHTML = soundList.map((track, i) => `
         <div class="track" id="track" data-index="${i}">
           <div class="track-title">
             <span>${i + 1}</span>
@@ -18,7 +22,7 @@ export async function initSoundListWithLikes({trackList, object}){
 
     const userId = window.currentUser.id;
 
-    const likeResponses = await fetch('/like/get/soundLikes', {
+    const likeResponses = await fetch('/sound/like/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
@@ -28,7 +32,7 @@ export async function initSoundListWithLikes({trackList, object}){
         const likes = await likeResponses.json();
 
         const likedSounds = new Set(
-            likes.map(l => l.targetId)
+            likes.map(l => l.soundId)
         );
 
         document.querySelectorAll(".like-btn").forEach(btn => {
@@ -48,19 +52,18 @@ export async function initSoundListWithLikes({trackList, object}){
 
             const likeRequest = {
                 userId: userId,
-                targetType: "sound",
                 targetId: trackId
             };
 
             if(btn.classList.contains("liked")){
-                const responseDeleteLike = await fetch("/like/delete", {
+                const responseDeleteLike = await fetch("/sound/like/delete", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", false);
             } else if(!btn.classList.contains("liked")){
-                const responseLike = await fetch("/like", {
+                const responseLike = await fetch("/sound/like/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)
@@ -69,5 +72,7 @@ export async function initSoundListWithLikes({trackList, object}){
             }
         });
     });
+
+    return soundList;
 
 }

@@ -11,6 +11,7 @@ const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 
 let currentAlbum = null;
+let soundList = null;
 let currentTrackIndex = 0;
 
 async function loadAlbum() {
@@ -37,7 +38,7 @@ async function loadAlbum() {
 
         const userId = window.currentUser.id;
 
-        const likeResponses = await fetch('/like/get/albumLikes', {
+        const likeAlbumResponse = await fetch('/album/like/get', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({userId})
@@ -47,12 +48,12 @@ async function loadAlbum() {
 
         const albumId = album.albumId;
 
-        if(likeResponses.ok){
+        if(likeAlbumResponse.ok){
 
-            const likes = await likeResponses.json();
+            const likes = await likeAlbumResponse.json();
 
             const likedAlbums = new Set(
-                likes.map(l => l.targetId)
+                likes.map(l => l.albumId)
             );
 
             if (likedAlbums.has(albumId)) {
@@ -67,19 +68,18 @@ async function loadAlbum() {
 
             const likeRequest = {
                 userId: userId,
-                targetType: "album",
                 targetId: albumId
             };
 
             if (albumLikeBtn.classList.contains("liked")) {
-                const responseDeleteLike = await fetch("/like/delete", {
+                const responseDeleteLike = await fetch('/album/like/delete', {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(likeRequest)
                 });
                 albumLikeBtn.classList.toggle("liked", false);
             } else if (!albumLikeBtn.classList.contains("liked")) {
-                const responseLike = await fetch("/like", {
+                const responseLike = await fetch('/album/like/create', {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(likeRequest)
@@ -88,7 +88,7 @@ async function loadAlbum() {
             }
         });
 
-        await initSoundListWithLikes({
+        soundList = await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
             object: album
         });
@@ -109,7 +109,7 @@ async function loadAlbum() {
         // ===== Следующий трек =====
         nextBtn.addEventListener("click", () => {
             if (!currentAlbum) return;
-            if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+            if (currentTrackIndex < soundList.length - 1) {
                 playTrack(currentTrackIndex + 1);
             }
         });
@@ -125,7 +125,7 @@ async function loadAlbum() {
         // Автоматически переходит к следующему треку
         player.addEventListener('ended', () => {
             if (!currentAlbum) return;
-            if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+            if (currentTrackIndex < soundList.length - 1) {
                 playTrack(currentTrackIndex + 1);
             }
         });
@@ -137,7 +137,7 @@ async function loadAlbum() {
 
 function playTrack(index) {
     if (!currentAlbum) return;
-    const track = currentAlbum.soundList[index];
+    const track = soundList[index];
     currentTrackIndex = index;
     player.src = track.url;
     player.play();

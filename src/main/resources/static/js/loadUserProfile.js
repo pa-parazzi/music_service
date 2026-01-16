@@ -27,31 +27,25 @@ async function refreshAccessToken() {
 
     refreshInProgress = (async () => {
         try {
-            const res = await fetch('/api/auth/refresh', {
+            const res = await fetch("/api/auth/refresh", {
                 method: "POST",
                 credentials: "include"
             });
 
             if (!res.ok) {
-                console.warn("refreshAccessToken: refresh не удался");
                 clearAuth();
                 return false;
             }
 
-            const data = await safeParseJson(res);
-            const token = data && (data["jwt-token"] || data["jwt_token"] || data.accessToken || data.token);
-
-            if (!token) {
-                console.warn("refreshAccessToken: ответ не содержит jwt");
+            const data = await res.json();
+            if (!data?.accessToken) {
                 clearAuth();
                 return false;
             }
 
-            localStorage.setItem("jwt", token);
-            console.log("Access token обновлён");
+            localStorage.setItem("jwt", data.accessToken);
             return true;
         } catch (e) {
-            console.error("refreshAccessToken error:", e);
             clearAuth();
             return false;
         } finally {
@@ -62,68 +56,43 @@ async function refreshAccessToken() {
     return refreshInProgress;
 }
 
+
 /* --- Обёртка для запросов с авторизацией и auto-refresh --- */
 async function apiFetch(url, options = {}) {
-    options = { ...options };
-    const headers = { ...(options.headers || {}) };
-
-    // ждём, если в данный момент выполняется refresh
     if (refreshInProgress) await refreshInProgress;
 
+    const headers = { ...(options.headers || {}) };
     const token = localStorage.getItem("jwt");
 
-    // Добавляем Authorization только если токен есть
     if (token) {
-        headers["Authorization"] = "Bearer " + token;
-    } else {
-        delete headers["Authorization"];
+        headers.Authorization = "Bearer " + token;
     }
 
-    options.headers = headers;
-    options.credentials = "include";
+    const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include"
+    });
 
-    let response;
-
-    try {
-        response = await fetch(url, options);
-    } catch (e) {
-        console.error("apiFetch network error:", e);
-        throw e;
-    }
-
-    // Если токена нет, то просто возвращаем ответ без попытки refresh
-    if (!token) {
-        return response;
-    }
-
-    // Если токен истёк — пробуем обновить и повторить запрос
-    if (response.status === 401 || response.status === 403) {
+    if ((response.status === 401 || response.status === 403) && token) {
         const refreshed = await refreshAccessToken();
-        if (refreshed) {
-            const newToken = localStorage.getItem("jwt");
-            const retryHeaders = { ...headers };
+        if (!refreshed) return response;
 
-            if (newToken) {
-                retryHeaders["Authorization"] = "Bearer " + newToken;
-            } else {
-                delete retryHeaders["Authorization"];
-            }
+        const newToken = localStorage.getItem("jwt");
+        if (!newToken) return response;
 
-            try {
-                response = await fetch(url, {
-                    ...options,
-                    headers: retryHeaders,
-                    credentials: "include"
-                });
-            } catch (e) {
-                console.error("apiFetch retry error:", e);
-                throw e;
-            }
-        }
+        headers.Authorization = "Bearer " + newToken;
+
+        return fetch(url, {
+            ...options,
+            headers,
+            credentials: "include"
+        });
     }
 
     return response;
 }
+
 
 
 /* --- Загрузка профиля --- */
@@ -172,7 +141,7 @@ async function loadProfile() {
 /* --- Logout --- */
 async function logout() {
     try {
-        const response = await apiFetch("http://localhost:8080/api/auth/logout", {
+        const response = await apiFetch('/api/auth/logout', {
             method: "POST",
             credentials: "include"
         });
