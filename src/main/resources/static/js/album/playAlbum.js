@@ -12,26 +12,38 @@ export async function playAlbums(
     playAlbumButtons
 ){
 
-    playAlbumButtons.forEach(btn => {
-        btn.textContent = "▶";
+    let currentSoundList = null;
 
+    playAlbumButtons.forEach(btn => {
+
+        btn.textContent = "▶";
         const albumId = Number(btn.dataset.albumId);
         const album = albums.find(a => a.albumId === albumId);
 
-        btn.addEventListener('click', () => {
+        const albumTracksCache = new Map();
 
-            // 👉 Если нажали на ДРУГОЙ альбом
+        btn.addEventListener('click', async () => {
+            // 👉 если это НОВЫЙ альбом
             if (currentAlbum !== album) {
+
                 resetAlbumButton();
 
                 currentAlbum = album;
                 currentAlbumButton = btn;
                 currentTrackIndex = 0;
 
+                // 🔹 загружаем ТОЛЬКО если ещё не загружали
+                if (!albumTracksCache.has(albumId)) {
+                    const response = await fetch(`/api/sound/${albumId}`);
+                    const tracks = await response.json();
+                    albumTracksCache.set(albumId, tracks);
+                }
+
+                currentSoundList = albumTracksCache.get(albumId);
+
                 playTrack(currentTrackIndex);
                 return;
             }
-
             // 👉 Тот же альбом → toggle play / pause
             togglePlayPause();
         });
@@ -47,7 +59,7 @@ export async function playAlbums(
 // ====== NEXT ======
     nextBtn.addEventListener('click', () => {
         if (!currentAlbum) return;
-        if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+        if (currentTrackIndex < currentSoundList.length - 1) {
             playTrack(currentTrackIndex + 1);
         }
     });
@@ -63,7 +75,7 @@ export async function playAlbums(
 // ====== АВТОПЕРЕКЛЮЧЕНИЕ ПО ОКОНЧАНИЮ ======
     player.addEventListener('ended', () => {
         if (!currentAlbum) return;
-        if (currentTrackIndex < currentAlbum.soundList.length - 1) {
+        if (currentTrackIndex < currentSoundList.length - 1) {
             playTrack(currentTrackIndex + 1);
         } else {
             setPlayingState(false);
@@ -71,7 +83,7 @@ export async function playAlbums(
     });
 
     function playTrack(index) {
-        const track = currentAlbum.soundList[index];
+        const track = currentSoundList[index];
         currentTrackIndex = index;
 
         player.src = track.url;
