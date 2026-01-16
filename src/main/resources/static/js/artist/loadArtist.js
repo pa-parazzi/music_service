@@ -1,5 +1,5 @@
 import{escapeHtml} from "../util.js";
-import{initSoundListWithLikes} from "../soundListWithLikes.js";
+//import{initSoundListWithLikes} from "../soundListWithLikes.js";
 
 const player = document.getElementById('player');
 const nextBtn = document.getElementById('next-btn');
@@ -23,10 +23,10 @@ async function loadArtist() {
         artistName.textContent = artist.name;
         artistName.alt = escapeHtml(artist.name);
 
-        await initSoundListWithLikes({
-            trackList: artistTrackList,
-            object: artist
-        });
+        // await initSoundListWithLikes({
+        //     trackList: artistTrackList,
+        //     object: artist
+        // });
 
         // Навешиваем обработчики клика
         document.querySelectorAll('.track').forEach(trackEl => {
