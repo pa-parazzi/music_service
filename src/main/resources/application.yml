@@ -19,4 +19,4 @@ jamendo:
 
 auth-token:
   refresh-token-duration: P30D
-  access-token-duration: PT15M
+  access-token-duration: PT1M

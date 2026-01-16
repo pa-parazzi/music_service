@@ -5,7 +5,6 @@ import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.dto.VerifyEmailRequest;
-import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.security.util.TokenSubjectMapper;
@@ -27,36 +26,34 @@ public class AuthService {
     private final UserAvatarService avatarService;
     private final RefreshTokenService refreshTokenService;
     private final VerificationTokenService verificationTokenService;
-    private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthService(UserService userService, UserAvatarService avatarService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService, JwtTokenService jwtTokenService) {
+    public AuthService(UserService userService, UserAvatarService avatarService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService) {
         this.userService = userService;
         this.avatarService = avatarService;
         this.refreshTokenService = refreshTokenService;
         this.verificationTokenService = verificationTokenService;
-        this.jwtTokenService = jwtTokenService;
     }
 
     @Transactional
-    public String processRegistration(RegistrationRequest regRequest, MultipartFile file, HttpServletResponse response){
+    public TokenSubject processRegistration(RegistrationRequest regRequest, MultipartFile file, HttpServletResponse response){
         User regUser = userService.create(regRequest);
         avatarService.createOrGet(file, regUser);
         VerifyEmailRequest emailRequest = new VerifyEmailRequest();
         emailRequest.setUserId(regUser.getId());
         emailRequest.setEmail(regUser.getEmail());
         verificationTokenService.createToken(emailRequest);
-        refreshTokenService.create(response, regUser.getId(), regUser.getRole());
-        TokenSubject tokenSubject = TokenSubjectMapper.from(regUser);
-        return jwtTokenService.generateToken(tokenSubject);
+        refreshTokenService.create(response, regUser.getId());
+        return TokenSubjectMapper.from(regUser);
     }
 
-    // Логин, выдача jwt после успешной аутентификации
     @Transactional
-    public String processLogin(Authentication authentication){
+    public TokenSubject processLogin(Authentication authentication, HttpServletResponse response){
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
-        TokenSubject subject = new TokenSubject(principal.userId(), principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
-        return jwtTokenService.generateToken(subject);
+        Long userId = principal.userId();
+        refreshTokenService.deleteByUserId(userId, response);
+        refreshTokenService.create(response ,userId);
+        return new TokenSubject(userId, principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }
 
 }

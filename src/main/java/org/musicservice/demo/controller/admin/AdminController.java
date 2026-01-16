@@ -1,12 +1,11 @@
 package org.musicservice.demo.controller.admin;
 
-import org.musicservice.demo.dto.user.UserMainResponse;
-import org.musicservice.demo.service.yandexCloud.MusicImportInYandexCloud;
 import org.musicservice.demo.service.user.UserService;
+import org.musicservice.demo.service.yandexCloud.MusicImportInYandexCloud;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin")
@@ -20,17 +19,17 @@ public class AdminController {
         this.musicImportInYandexCloud = musicImportInYandexCloud;
     }
 
-    @GetMapping("/main")
-    public UserMainResponse mainMenu(Principal principal){
-        return userService.viewSingle(principal.getName());
-    }
+//    @GetMapping("/main")
+//    public UserMainResponse mainMenu(Principal principal){
+//        return userService.viewSingle(principal.getName());
+//    }
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadJson() throws Exception {
         try {
             musicImportInYandexCloud.importMusic();
             return ResponseEntity.ok("Импорт запущен");
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new Exception("Импорт не удался: " + e.getMessage());
         }
     }

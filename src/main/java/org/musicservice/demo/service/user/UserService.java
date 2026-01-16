@@ -37,8 +37,8 @@ public class UserService {
         return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Пользователь с email: " + email + "не найден"));
     }
 
-    public User searchById(Long userId){
-        return userRepository.findById(userId).orElseThrow(()-> new UsernameNotFoundException("Пользователь не найден"));
+    public User searchById(Long id){
+        return userRepository.searchById(id).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
     }
 
     public Optional<User> findOptByUsername(String username){
@@ -52,8 +52,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserMainResponse viewSingle(String username){
-        return userMapper.toMainResponse(searchByUsername(username));
+    public UserMainResponse viewSingle(Long id){
+        return userMapper.toMainResponse(searchById(id));
     }
 
     @Transactional

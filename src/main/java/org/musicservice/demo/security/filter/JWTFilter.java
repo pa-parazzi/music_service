@@ -45,13 +45,14 @@ public class JWTFilter extends OncePerRequestFilter {
                             jwt.getClaim("roles").asList(String.class).stream().map(SimpleGrantedAuthority::new).toList();
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                    if(SecurityContextHolder.getContext().getAuthentication()==null){
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    }
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }catch (JWTVerificationException e){
-                    logger.debug("Jwt token is invalid or expired: {}");
+                    SecurityContextHolder.clearContext();
                 }
             }
+        } else if(request.getRequestURI().equals("/api/auth/refresh")){
+            filterChain.doFilter(request, response);
+            return;
         }
         filterChain.doFilter(request, response);
     }

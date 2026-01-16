@@ -3,8 +3,6 @@ package org.musicservice.demo.entity.auth;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.musicservice.demo.Authority.Authority;
-import org.musicservice.demo.entity.user.User;
 
 import java.time.Instant;
 
@@ -31,15 +29,12 @@ public class RefreshToken {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "user_role")
-    private Authority role;
-
     public RefreshToken(){}
 
-    public RefreshToken(String tokenHash, Instant expiryDate, Long userId, Authority role) {
+    public RefreshToken(String tokenHash, Instant expiryDate, Long userId) {
         this.tokenHash = tokenHash;
         this.expiryDate = expiryDate;
         this.userId = userId;
-        this.role = role;
+        this.revoked = false;
     }
 }

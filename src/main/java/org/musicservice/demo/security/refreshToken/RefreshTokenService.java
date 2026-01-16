@@ -2,7 +2,6 @@ package org.musicservice.demo.security.refreshToken;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
 import org.musicservice.demo.security.exception.RefreshTokenNotFoundException;
 import org.musicservice.demo.entity.auth.RefreshToken;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,12 +39,18 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public void create(HttpServletResponse response, Long userId, Authority role){
+    public void deleteByUserId(Long userId, HttpServletResponse response){
+        refreshTokenRepository.deleteByUserId(userId);
+        cookieManager.clearCookie(response);
+    }
+
+    @Transactional
+    public void create(HttpServletResponse response, Long userId){
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
         Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
-        RefreshToken refreshToken = new RefreshToken(hash, expiryDate, userId, role);
+        RefreshToken refreshToken = new RefreshToken(hash, expiryDate, userId);
         refreshTokenRepository.save(refreshToken);
     }
 

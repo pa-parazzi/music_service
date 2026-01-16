@@ -15,4 +15,7 @@ public interface SoundRepository extends JpaRepository<Sound, Long> {
 
     @Query("select s from Sound s where s.id in :ids")
     List<Sound> findAllByIdForCollectionPage(Iterable<Long> ids);
+
+
+    List<Sound> findAllByAlbumId(Long albumId);
 }
