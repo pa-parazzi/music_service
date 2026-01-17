@@ -11,7 +11,7 @@ async function loadTrackCollection(){
 
     const userId = window.currentUser.id;
 
-    const likeResponses = await fetch('/like/get/soundLikes', {
+    const likeResponses = await fetch('/sound/like/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
@@ -42,14 +42,14 @@ async function loadTrackCollection(){
       `).join('');
 
     const likedSounds = new Set(
-        likeList.map(l => l.targetId)
+        likeList.map(l => l.soundId)
     );
 
     document.querySelectorAll('.like-btn').forEach(btn => {
         const trackId = Number(btn.dataset.trackId);
 
         if (likedSounds.has(trackId)) {
-            btn.classList.add("liked");
+            btn.classList.toggle("liked", true);
         }
 
         btn.addEventListener('click', async (e) => {
@@ -58,19 +58,18 @@ async function loadTrackCollection(){
 
             const likeRequest = {
                 userId: userId,
-                targetType: "sound",
                 targetId: trackId
             };
 
             if(btn.classList.contains("liked")){
-                const responseDeleteLike = await fetch("/like/delete", {
+                const responseDeleteLike = await fetch("/sound/like/delete", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", false);
             } else if(!btn.classList.contains("liked")){
-                const responseLike = await fetch("/like", {
+                const responseLike = await fetch("/sound/like/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)
@@ -136,7 +135,7 @@ async function loadTrackCollection(){
         console.log("Пользователь не авторизирован");
         return;
     }
-    loadTrackCollection();
+    await loadTrackCollection();
 })();
 
 

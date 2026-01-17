@@ -1,10 +1,6 @@
 import {escapeHtml} from "./util.js";
 
-export async function initSoundListWithLikes({trackList, object}){
-
-    const albumId = object.albumId;
-    const soundListResponse = await fetch(`/api/sound/${albumId}`);
-    const soundList = await soundListResponse.json();
+export async function initSoundListWithLikes({trackList, soundList}){
 
     trackList.innerHTML = soundList.map((track, i) => `
         <div class="track" id="track" data-index="${i}">
@@ -72,7 +68,4 @@ export async function initSoundListWithLikes({trackList, object}){
             }
         });
     });
-
-    return soundList;
-
 }

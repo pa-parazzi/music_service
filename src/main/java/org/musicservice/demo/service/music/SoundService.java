@@ -30,6 +30,10 @@ public class SoundService {
         return soundRepository.findById(id).orElseThrow(()-> new SoundNotFoundException("песня не найдена"));
     }
 
+    public List<SoundDto> getSoundListByArtistId(Long artistId){
+        return soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toDto).toList();
+    }
+
     public List<SoundDto> getSoundListByAlbumId(Long albumId){
         return soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toDto).toList();
     }

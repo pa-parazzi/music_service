@@ -88,9 +88,12 @@ async function loadAlbum() {
             }
         });
 
-        soundList = await initSoundListWithLikes({
+        const soundListResponse = await fetch(`/api/sound/album/${albumId}`);
+        soundList = await soundListResponse.json();
+
+        await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
-            object: album
+            soundList: soundList
         });
 
         // Навешиваем обработчики клика
@@ -156,5 +159,5 @@ function playTrack(index) {
         console.log("Пользователь не авторизирован");
         return;
     }
-    loadAlbum();
+    await loadAlbum();
 })();

@@ -1,5 +1,5 @@
 import{escapeHtml} from "../util.js";
-//import{initSoundListWithLikes} from "../soundListWithLikes.js";
+import{initSoundListWithLikes} from "../soundListWithLikes.js";
 
 const player = document.getElementById('player');
 const nextBtn = document.getElementById('next-btn');
@@ -9,6 +9,7 @@ const artistTrackList = document.getElementById('tracklist');
 
 let currentArtist = null;
 let currentTrackIndex = 0;
+let soundList = null;
 
 async function loadArtist() {
     const id = window.location.pathname.split('/').pop();
@@ -23,10 +24,13 @@ async function loadArtist() {
         artistName.textContent = artist.name;
         artistName.alt = escapeHtml(artist.name);
 
-        // await initSoundListWithLikes({
-        //     trackList: artistTrackList,
-        //     object: artist
-        // });
+        const soundListResponse = await fetch(`/api/sound/artist/${id}`);
+        soundList = await soundListResponse.json();
+
+        await initSoundListWithLikes({
+            trackList: artistTrackList,
+            soundList: soundList
+        });
 
         // Навешиваем обработчики клика
         document.querySelectorAll('.track').forEach(trackEl => {
@@ -38,30 +42,15 @@ async function loadArtist() {
 
         player.addEventListener('ended', () => {
             if (!currentArtist) return;
-            if (currentTrackIndex < currentArtist.soundList.length - 1) {
+            if (currentTrackIndex < soundList.length - 1) {
                 playTrack(currentTrackIndex + 1);
             }
         });
 
-        function playTrack(index) {
-            if (!currentArtist) return;
-            const track = currentArtist.soundList[index];
-            currentTrackIndex = index;
-            player.src = track.url;
-            player.play();
-
-            document.querySelectorAll('.track').forEach((el, i) => {
-                el.classList.toggle('active', i === index);
-            });
-
-            const playBtn = document.getElementById('play-btn');
-            playBtn.textContent = "⏸";
-        }
-
         // ===== Следующий трек =====
         nextBtn.addEventListener("click", () => {
             if (!currentArtist) return;
-            if (currentTrackIndex < currentArtist.soundList.length - 1) {
+            if (currentTrackIndex < soundList.length - 1) {
                 playTrack(currentTrackIndex + 1);
             }
         });
@@ -77,7 +66,7 @@ async function loadArtist() {
         // ===== Автоматический переход к следующему треку =====
         player.addEventListener("ended", () => {
             if (!currentArtist) return;
-            if (currentTrackIndex < currentArtist.soundList.length - 1) {
+            if (currentTrackIndex < soundList.length - 1) {
                 playTrack(currentTrackIndex + 1);
             }
         });
@@ -87,11 +76,26 @@ async function loadArtist() {
     }
 }
 
+function playTrack(index) {
+    if (!currentArtist) return;
+    const track = soundList[index];
+    currentTrackIndex = index;
+    player.src = track.url;
+    player.play();
+
+    document.querySelectorAll('.track').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+    });
+
+    const playBtn = document.getElementById('play-btn');
+    playBtn.textContent = "⏸";
+}
+
 (async function initUser(){
     await window.loadUser;
     if(!window.currentUser){
         console.log("Пользователь не авторизирован");
         return;
     }
-    loadArtist();
+    await loadArtist();
 })();
