@@ -10,10 +10,10 @@ export async function initSoundListWithLikes({trackList, soundList}){
           </div>
 
           <div class="track-right">
+          <button class="like-btn" id="like-btn" data-track-id="${track.id}">&#8853;</button>
           <div class="track-duration">${formatTime(Math.floor(track.duration || 0))}</div>
-          <button class="like-btn" id="like-btn" data-track-id="${track.id}">&#128077;</button>
           </div>
-        </div> 
+        </div>
       `).join('');
 
     const userId = window.currentUser.id;
@@ -35,6 +35,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
             const trackId = Number(btn.dataset.trackId);
             if (likedSounds.has(trackId)) {
                 btn.classList.add("liked");
+                btn.textContent = "✔";
             }
         });
     }
@@ -58,6 +59,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", false);
+                btn.textContent = "⊕";
             } else if(!btn.classList.contains("liked")){
                 const responseLike = await fetch("/sound/like/create", {
                     method: "POST",
@@ -65,6 +67,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", true);
+                btn.textContent = "✔";
             }
         });
     });

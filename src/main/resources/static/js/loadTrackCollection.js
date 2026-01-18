@@ -35,8 +35,8 @@ async function loadTrackCollection(){
           </div>
 
           <div class="track-right">
+          <button class="like-btn" id="like-btn" data-track-id="${track.id}">&#10133;</button>
           <div class="track-duration">${formatTime(Math.floor(track.duration || 0))}</div>
-          <button class="like-btn" id="like-btn" data-track-id="${track.id}">&#128077;</button>
           </div>
         </div> 
       `).join('');
@@ -50,6 +50,7 @@ async function loadTrackCollection(){
 
         if (likedSounds.has(trackId)) {
             btn.classList.toggle("liked", true);
+            btn.textContent = "✔";
         }
 
         btn.addEventListener('click', async (e) => {
@@ -68,6 +69,7 @@ async function loadTrackCollection(){
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", false);
+                btn.textContent = "⊕";
             } else if(!btn.classList.contains("liked")){
                 const responseLike = await fetch("/sound/like/create", {
                     method: "POST",
@@ -75,6 +77,7 @@ async function loadTrackCollection(){
                     body: JSON.stringify(likeRequest)
                 });
                 btn.classList.toggle("liked", true);
+                btn.textContent = "✔";
             }
         });
     });

@@ -1,7 +1,9 @@
 import{escapeHtml} from "../util.js";
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
+import{playTrack} from "../playTrack.js";
 
 const player = document.getElementById('player');
+const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const artistName = document.getElementById('artist-name');
@@ -36,22 +38,15 @@ async function loadArtist() {
         document.querySelectorAll('.track').forEach(trackEl => {
             trackEl.addEventListener('click', () => {
                 const index = Number(trackEl.dataset.index);
-                playTrack(index);
+                currentTrackIndex = playTrack(soundList, index, playBtn, player);
             });
-        });
-
-        player.addEventListener('ended', () => {
-            if (!currentArtist) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                playTrack(currentTrackIndex + 1);
-            }
         });
 
         // ===== Следующий трек =====
         nextBtn.addEventListener("click", () => {
             if (!currentArtist) return;
             if (currentTrackIndex < soundList.length - 1) {
-                playTrack(currentTrackIndex + 1);
+                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
             }
         });
 
@@ -59,7 +54,7 @@ async function loadArtist() {
         prevBtn.addEventListener("click", () => {
             if (!currentArtist) return;
             if (currentTrackIndex > 0) {
-                playTrack(currentTrackIndex - 1);
+                currentTrackIndex = playTrack(soundList, currentTrackIndex - 1, playBtn, player);
             }
         });
 
@@ -67,28 +62,13 @@ async function loadArtist() {
         player.addEventListener("ended", () => {
             if (!currentArtist) return;
             if (currentTrackIndex < soundList.length - 1) {
-                playTrack(currentTrackIndex + 1);
+                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
             }
         });
 
     } catch (err) {
         console.error("Ошибка загрузки исполнителя", err);
     }
-}
-
-function playTrack(index) {
-    if (!currentArtist) return;
-    const track = soundList[index];
-    currentTrackIndex = index;
-    player.src = track.url;
-    player.play();
-
-    document.querySelectorAll('.track').forEach((el, i) => {
-        el.classList.toggle('active', i === index);
-    });
-
-    const playBtn = document.getElementById('play-btn');
-    playBtn.textContent = "⏸";
 }
 
 (async function initUser(){

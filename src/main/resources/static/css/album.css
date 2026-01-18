@@ -75,9 +75,21 @@
     align-items: center;
 }
 
-
-.play-album-btn,
 .album-like-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 48px;
+    line-height: 1;
+    color: #b3b3b3;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.play-album-btn{
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -95,19 +107,18 @@
     transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.play-album-btn:hover,
-.album-like-btn:hover {
+.play-album-btn:hover{
     background: rgba(255, 255, 255, 0.15);
     transform: scale(1.08);
 }
 
-.album-like-btn.liked {
-    background: #1db954;
-    color: #fff;
+.album-like-btn:hover {
+    color: #aa9f68;
+    transform: scale(1.15);
 }
 
-.album-like-btn.liked:hover {
-    background: #1ed760;
+.album-like-btn.liked {
+    color: #aa9f68;
 }
 
 

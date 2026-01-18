@@ -148,14 +148,3 @@ body {
     text-align: center;
 }
 
-/* === АДАПТИВ === */
-@media (max-width: 600px) {
-    .main-content {
-        margin: 20px;
-        padding: 20px;
-    }
-
-    .upload-section input[type="file"] {
-        max-width: 100%;
-    }
-}
