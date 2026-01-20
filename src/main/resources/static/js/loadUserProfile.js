@@ -114,13 +114,33 @@ async function loadProfile() {
 
             nav.style.display = "none";
             userInfoDiv.innerHTML = `
-                    <img src="${user.avatar?.url}" alt="avatar">
-                    <span>${user.username}</span>
-                    <button id="logoutBtn" class="logout-btn">Выйти</button>
-                `;
+            <div class="profile-menu">
+              <button class="avatar-btn" id="avatar-btn">
+                   <img src="${user.avatar?.url}" alt="avatar">
+              </button>
+              
+              <div class="profile-drop-down" id="profile-drop-down">
+                   <div class="profile-name">${user.username}</div>
+                   <button id="logoutBtn" class="logout-btn">Выйти</button>             
+              </div>
+            </div>
+            `;
+
+            const avatarBtn = document.getElementById("avatar-btn");
+            const dropDown = document.getElementById("profile-drop-down");
+
+            avatarBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                dropDown.classList.toggle("open", true);
+            });
+
+            document.addEventListener("click", ()=> {
+                dropDown.classList.toggle("open", false);
+            });
 
             const logoutBtn = document.getElementById("logoutBtn");
             logoutBtn.addEventListener("click", logout);
+
 
             userInfoDiv.style.display = "block";
         } else {

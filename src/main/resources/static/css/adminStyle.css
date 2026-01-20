@@ -137,6 +137,7 @@ body {
     cursor: pointer;
     transition: background 0.2s;
 }
+
 .upload-section .button:hover {
     background: #0056b3;
 }

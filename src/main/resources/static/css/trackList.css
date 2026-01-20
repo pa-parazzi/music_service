@@ -1,11 +1,4 @@
-.tracklist {
-    margin-bottom: 120px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 20px;
-}
-
+/* Карточка - трек */
 .track {
     display: flex;
     align-items: center;
@@ -15,15 +8,18 @@
     transition: background 0.2s ease;
 }
 
+/* При наведении */
 .track:hover {
     background: #2b2b3a;
     cursor: default;
 }
 
+/* Активный трек */
 .track.active {
     background: #4f4f7e;
 }
 
+/* Название */
 .track-title {
     color: white;
     display: flex;
@@ -39,12 +35,14 @@
     opacity: 0.6;
 }
 
+/* Контейнер правая часть: длительность, кнопка лайка*/
 .track-right {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
+/* Длительность */
 .track-duration {
     font-size: 0.95em;
     color: #b3b3b3;

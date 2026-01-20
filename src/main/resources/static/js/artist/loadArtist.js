@@ -1,6 +1,6 @@
 import{escapeHtml} from "../util.js";
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
-import{playTrack} from "../playTrack.js";
+import{audioListener} from "../audioListener.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');
@@ -8,10 +8,6 @@ const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const artistName = document.getElementById('artist-name');
 const artistTrackList = document.getElementById('tracklist');
-
-let currentArtist = null;
-let currentTrackIndex = 0;
-let soundList = null;
 
 async function loadArtist() {
     const id = window.location.pathname.split('/').pop();
@@ -21,50 +17,25 @@ async function loadArtist() {
         if (!response.ok) throw new Error("Ошибка загрузки");
 
         const artist = await response.json();
-        currentArtist = artist;
+
 
         artistName.textContent = artist.name;
         artistName.alt = escapeHtml(artist.name);
 
         const soundListResponse = await fetch(`/api/sound/artist/${id}`);
-        soundList = await soundListResponse.json();
+        const soundList = await soundListResponse.json();
 
         await initSoundListWithLikes({
             trackList: artistTrackList,
             soundList: soundList
         });
 
-        // Навешиваем обработчики клика
-        document.querySelectorAll('.track').forEach(trackEl => {
-            trackEl.addEventListener('click', () => {
-                const index = Number(trackEl.dataset.index);
-                currentTrackIndex = playTrack(soundList, index, playBtn, player);
-            });
-        });
+        const playerState = {
+            currentTrackIndex: 0,
+            soundList: soundList
+        }
 
-        // ===== Следующий трек =====
-        nextBtn.addEventListener("click", () => {
-            if (!currentArtist) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
-            }
-        });
-
-        // ===== Предыдущий трек =====
-        prevBtn.addEventListener("click", () => {
-            if (!currentArtist) return;
-            if (currentTrackIndex > 0) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex - 1, playBtn, player);
-            }
-        });
-
-        // ===== Автоматический переход к следующему треку =====
-        player.addEventListener("ended", () => {
-            if (!currentArtist) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
-            }
-        });
+        audioListener(playerState, player, playBtn, nextBtn, prevBtn);
 
     } catch (err) {
         console.error("Ошибка загрузки исполнителя", err);

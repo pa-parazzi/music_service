@@ -1,11 +1,12 @@
 import{escapeHtml} from "../util.js"
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
 import{playTrack} from "../playTrack.js";
+import {audioListener} from "../audioListener.js";
 
 const player = document.getElementById('player');
 const playAlbumBtn = document.getElementById('play-album');
 const albumTitle = document.getElementById('album-title');
-const albumArtist = document.getElementById('album-artist');
+const artistName = document.getElementById('artist-name');
 const albumImage = document.getElementById('album-image');
 
 const playBtn = document.getElementById('play-btn');
@@ -13,8 +14,6 @@ const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 
 let currentAlbum = null;
-let soundList = null;
-let currentTrackIndex = 0;
 
 async function loadAlbum() {
     const id = window.location.pathname.split('/').pop();
@@ -28,12 +27,12 @@ async function loadAlbum() {
         albumTitle.textContent = album.title;
 
         // Кликабельное имя исполнителя, с переходом на страницу исполнителя
-        albumArtist.innerHTML = '';
+        artistName.innerHTML = '';
         const link = document.createElement('a');
         link.href = `/artist/${album.artist.id}`;
         link.textContent = album.artist.name;
         link.className = 'artist-name-link';
-        albumArtist.appendChild(link);
+        artistName.appendChild(link);
 
         albumImage.src = album.albumImage.url;
         albumImage.alt = escapeHtml(album.title);
@@ -94,49 +93,41 @@ async function loadAlbum() {
         });
 
         const soundListResponse = await fetch(`/api/sound/album/${albumId}`);
-        soundList = await soundListResponse.json();
+        const soundList = await soundListResponse.json();
 
         await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
             soundList: soundList
         });
 
-        // Навешиваем обработчики клика
-        document.querySelectorAll('.track').forEach(trackEl => {
-            trackEl.addEventListener('click', () => {
-                const index = Number(trackEl.dataset.index);
-                currentTrackIndex = playTrack(soundList, index, playBtn, player);
-            });
-        });
+        const playerState = {
+            currentTrackIndex: 0,
+            soundList: soundList
+        }
+
+        audioListener(playerState, player, playBtn, nextBtn, prevBtn);
 
         // Проигрывание альбома
         playAlbumBtn.addEventListener('click', () => {
-            currentTrackIndex = playTrack(soundList, 0, playBtn, player);
-            // TODO: реализовать состояние кнопки play/pause
-        });
-
-        // ===== Следующий трек =====
-        nextBtn.addEventListener("click", () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
+            if(!player.src){
+                playerState.currentTrackIndex = playTrack(soundList, 0, playBtn, player);
+            }else if(player.paused){
+                player.play();
+            } else {
+                player.pause();
             }
         });
 
-        // ===== Предыдущий трек =====
-        prevBtn.addEventListener("click", () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex > 0) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex - 1, playBtn, player);
-            }
+        // Если проигрывается трек - меняем иконки на аудио-плеере и кнопке альбома
+        player.addEventListener('play', () => {
+            playAlbumBtn.textContent = "⏸";
+            playBtn.textContent = "⏸";
         });
 
-        // Автоматически переходит к следующему треку
-        player.addEventListener('ended', () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                currentTrackIndex = playTrack(soundList, currentTrackIndex + 1, playBtn, player);
-            }
+        // Если пауза - сменили значки
+        player.addEventListener('pause', () => {
+            playAlbumBtn.textContent = "▶";
+            playBtn.textContent = "▶";
         });
 
     } catch (err) {

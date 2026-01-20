@@ -1,7 +1,8 @@
+/* Общий контейнер со списком песен */
 .artist-page {
-    max-width: 900px;
-    margin: 60px auto;
-    padding: 0 20px;
+    max-width: 1200px;
+    margin: 40px 100px 120px;
+    padding: 0 16px;
 }
 
 /* Имя исполнителя */
@@ -12,5 +13,3 @@
     margin-bottom: 30px;
     text-align: left; /* можно оставить слева — по вкусу */
 }
-
-
