@@ -1,0 +1,8 @@
+/* Общий контейнер для списка песен */
+.tracklist {
+    margin-bottom: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+}

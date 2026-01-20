@@ -19,8 +19,13 @@ public class SoundController {
         this.soundService = soundService;
     }
 
-    @GetMapping("/{albumId}")
-    public ResponseEntity<List<SoundDto>> getTracksByAlbum(@PathVariable("albumId") Long albumId){
-        return ResponseEntity.ok().body(soundService.getSoundListByAlbumId(albumId));
+    @GetMapping("/album/{id}")
+    public ResponseEntity<List<SoundDto>> getTracksByAlbum(@PathVariable("id") Long id){
+        return ResponseEntity.ok().body(soundService.getSoundListByAlbumId(id));
+    }
+
+    @GetMapping("/artist/{id}")
+    public ResponseEntity<List<SoundDto>> getTracksByArtist(@PathVariable("id") Long id){
+        return ResponseEntity.ok().body(soundService.getSoundListByArtistId(id));
     }
 }

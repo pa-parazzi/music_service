@@ -1,18 +1,19 @@
 import{escapeHtml} from "../util.js"
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
+import{playTrack} from "../playTrack.js";
+import {audioListener} from "../audioListener.js";
 
 const player = document.getElementById('player');
 const playAlbumBtn = document.getElementById('play-album');
 const albumTitle = document.getElementById('album-title');
-const albumArtist = document.getElementById('album-artist');
+const artistName = document.getElementById('artist-name');
 const albumImage = document.getElementById('album-image');
 
+const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 
 let currentAlbum = null;
-let soundList = null;
-let currentTrackIndex = 0;
 
 async function loadAlbum() {
     const id = window.location.pathname.split('/').pop();
@@ -26,12 +27,12 @@ async function loadAlbum() {
         albumTitle.textContent = album.title;
 
         // Кликабельное имя исполнителя, с переходом на страницу исполнителя
-        albumArtist.innerHTML = '';
+        artistName.innerHTML = '';
         const link = document.createElement('a');
         link.href = `/artist/${album.artist.id}`;
         link.textContent = album.artist.name;
         link.className = 'artist-name-link';
-        albumArtist.appendChild(link);
+        artistName.appendChild(link);
 
         albumImage.src = album.albumImage.url;
         albumImage.alt = escapeHtml(album.title);
@@ -58,6 +59,7 @@ async function loadAlbum() {
 
             if (likedAlbums.has(albumId)) {
                 albumLikeBtn.classList.add("liked");
+                albumLikeBtn.textContent = "✔";
             }
 
         }
@@ -78,6 +80,7 @@ async function loadAlbum() {
                     body: JSON.stringify(likeRequest)
                 });
                 albumLikeBtn.classList.toggle("liked", false);
+                albumLikeBtn.textContent = "⊕";
             } else if (!albumLikeBtn.classList.contains("liked")) {
                 const responseLike = await fetch('/album/like/create', {
                     method: "POST",
@@ -85,69 +88,51 @@ async function loadAlbum() {
                     body: JSON.stringify(likeRequest)
                 });
                 albumLikeBtn.classList.toggle("liked", true);
+                albumLikeBtn.textContent = "✔";
             }
         });
 
-        soundList = await initSoundListWithLikes({
+        const soundListResponse = await fetch(`/api/sound/album/${albumId}`);
+        const soundList = await soundListResponse.json();
+
+        await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
-            object: album
+            soundList: soundList
         });
 
-        // Навешиваем обработчики клика
-        document.querySelectorAll('.track').forEach(trackEl => {
-            trackEl.addEventListener('click', () => {
-                const index = Number(trackEl.dataset.index);
-                playTrack(index);
-            });
-        });
+        const playerState = {
+            currentTrackIndex: 0,
+            soundList: soundList
+        }
+
+        audioListener(playerState, player, playBtn, nextBtn, prevBtn);
 
         // Проигрывание альбома
         playAlbumBtn.addEventListener('click', () => {
-            playTrack(0);
-        });
-
-        // ===== Следующий трек =====
-        nextBtn.addEventListener("click", () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                playTrack(currentTrackIndex + 1);
+            if(!player.src){
+                playerState.currentTrackIndex = playTrack(soundList, 0, playBtn, player);
+            }else if(player.paused){
+                player.play();
+            } else {
+                player.pause();
             }
         });
 
-        // ===== Предыдущий трек =====
-        prevBtn.addEventListener("click", () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex > 0) {
-                playTrack(currentTrackIndex - 1);
-            }
+        // Если проигрывается трек - меняем иконки на аудио-плеере и кнопке альбома
+        player.addEventListener('play', () => {
+            playAlbumBtn.textContent = "⏸";
+            playBtn.textContent = "⏸";
         });
 
-        // Автоматически переходит к следующему треку
-        player.addEventListener('ended', () => {
-            if (!currentAlbum) return;
-            if (currentTrackIndex < soundList.length - 1) {
-                playTrack(currentTrackIndex + 1);
-            }
+        // Если пауза - сменили значки
+        player.addEventListener('pause', () => {
+            playAlbumBtn.textContent = "▶";
+            playBtn.textContent = "▶";
         });
 
     } catch (err) {
         console.error('Ошибка загрузки альбома:', err);
     }
-}
-
-function playTrack(index) {
-    if (!currentAlbum) return;
-    const track = soundList[index];
-    currentTrackIndex = index;
-    player.src = track.url;
-    player.play();
-
-    // Обновляем визуально активный трек
-    document.querySelectorAll('.track').forEach((el, i) => {
-        el.classList.toggle('active', i === index);
-    });
-
-    playBtn.textContent = "⏸";
 }
 
 (async function initUser(){
@@ -156,5 +141,5 @@ function playTrack(index) {
         console.log("Пользователь не авторизирован");
         return;
     }
-    loadAlbum();
+    await loadAlbum();
 })();

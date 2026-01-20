@@ -1,15 +1,15 @@
 import {escapeHtml} from "../util.js";
 
-export async function setAlbumContainer(albumsContainer, data){
+export async function initAlbumContainer(albumsContainer, data){
     albumsContainer.innerHTML = data.albums.map((album) => `
-        <div class="album-card">
-            <div class="cover-wrapper">
-                 <a href="/album/${album.albumId}" class="album-card-link">
-                 <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
-                 </a>
-                 <button class="play-album-btn" aria-label="Play ${escapeHtml(album.title)}" 
-                 data-album-id="${album.albumId}"></button>
-            </div>
+     <div class="album-card">
+         <div class="cover-wrapper">
+             <a href="/album/${album.albumId}" class="album-card-link">
+             <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
+             </a>
+             <button class="play-album-btn" aria-label="Play ${escapeHtml(album.title)}" 
+             data-album-id="${album.albumId}"></button>
+        </div>
         <div class="album-meta">
              <a href="/album/${album.albumId}" class="album-title-link">
              <div class="album-title">${escapeHtml(album.title)}</div>
@@ -18,7 +18,7 @@ export async function setAlbumContainer(albumsContainer, data){
              <div class="artist-name">${escapeHtml(album.artist.name)}</div>
              </a>
         </div>
-        </div>
+     </div>
         `).join('');
 
 

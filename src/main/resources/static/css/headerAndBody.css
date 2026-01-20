@@ -196,17 +196,6 @@ body {
     border: none;
 }
 
-/* адаптив */
-@media (max-width: 480px) {
-    .side-panel {
-        width: 220px;
-        left: -220px;
-    }
-    #side-checkbox:checked ~ .side-panel {
-        left: 0;
-    }
-}
-
 /* === КОЛЛЕКЦИИ В БОКОВОЙ ПАНЕЛИ === */
 .trackCollection {
     margin-top: 20px;

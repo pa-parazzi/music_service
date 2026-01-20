@@ -1,0 +1,6 @@
+/* Контейнер для коллекции песен */
+.track-collection {
+    max-width: 1200px;
+    margin: 40px 80px 120px; /* центр + место под плеер */
+    padding: 0 16px;
+}

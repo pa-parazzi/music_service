@@ -1,5 +1,5 @@
 import {playAlbums} from "./album/playAlbum.js";
-import {setAlbumContainer} from "./album/albumContainer.js";
+import {initAlbumContainer} from "./album/albumContainer.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');
@@ -17,7 +17,7 @@ async function loadAlbumCollection(){
 
     const userId = window.currentUser.id;
 
-    const albumLikesResponses = await fetch('/like/get/albumLikes', {
+    const albumLikesResponses = await fetch('/album/like/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
@@ -33,13 +33,12 @@ async function loadAlbumCollection(){
 
     const albumData = await albumCollectionResponse.json();
 
-    await setAlbumContainer(albumCollectionContainer, albumData);
+    await initAlbumContainer(albumCollectionContainer, albumData);
 
     const playAlbumButtons = document.querySelectorAll('.play-album-btn');
 
     await playAlbums(albumData.albums, player, playBtn, nextBtn, prevBtn, currentAlbum, currentAlbumButton,
         currentTrackIndex, isPlaying, playAlbumButtons);
-
 
 }
 
@@ -49,5 +48,5 @@ async function loadAlbumCollection(){
         console.log("Пользователь не авторизирован");
         return;
     }
-    loadAlbumCollection();
+    await loadAlbumCollection();
 })();

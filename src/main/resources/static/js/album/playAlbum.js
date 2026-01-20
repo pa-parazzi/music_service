@@ -34,7 +34,7 @@ export async function playAlbums(
 
                 // 🔹 загружаем ТОЛЬКО если ещё не загружали
                 if (!albumTracksCache.has(albumId)) {
-                    const response = await fetch(`/api/sound/${albumId}`);
+                    const response = await fetch(`/api/sound/album/${albumId}`);
                     const tracks = await response.json();
                     albumTracksCache.set(albumId, tracks);
                 }

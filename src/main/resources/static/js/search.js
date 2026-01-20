@@ -1,6 +1,6 @@
 import{escapeHtml} from "./util.js";
 import{loadAlbums} from "./loadAlbumsMainContent.js";
-import{setAlbumContainer} from "./album/albumContainer.js";
+import{initAlbumContainer} from "./album/albumContainer.js";
 import{playAlbums} from "./album/playAlbum.js";
 
 const searchResults = document.querySelector(".search-results");
@@ -62,7 +62,7 @@ document.getElementById("search-form").addEventListener("submit", async (e) => {
     const albums = data.albums;
 
     // Найденные альбомы
-    await setAlbumContainer(foundAlbums, data);
+    await initAlbumContainer(foundAlbums, data);
 
     const playAlbumButtons = document.querySelectorAll('.play-album-btn');
 
