@@ -5,22 +5,6 @@ function clearAuth() {
     localStorage.removeItem("jwt");
 }
 
-/* --- безопасный парсер JSON --- */
-async function safeParseJson(response) {
-    const contentType = response.headers.get("Content-Type") || "";
-    if (!response.ok) return null;
-    if (response.status === 204) return null;
-    if (!contentType.includes("application/json")) {
-        try { return await response.json(); } catch (e) { return null; }
-    }
-    try {
-        return await response.json();
-    } catch (e) {
-        console.warn("safeParseJson: no JSON body", e);
-        return null;
-    }
-}
-
 /* --- refreshAccessToken с "замком" --- */
 async function refreshAccessToken() {
     if (refreshInProgress) return refreshInProgress;
@@ -38,7 +22,7 @@ async function refreshAccessToken() {
             }
 
             const data = await res.json();
-            if (!data?.accessToken) {
+            if (!data.accessToken) {
                 clearAuth();
                 return false;
             }
@@ -140,7 +124,6 @@ async function loadProfile() {
 
             const logoutBtn = document.getElementById("logoutBtn");
             logoutBtn.addEventListener("click", logout);
-
 
             userInfoDiv.style.display = "block";
         } else {

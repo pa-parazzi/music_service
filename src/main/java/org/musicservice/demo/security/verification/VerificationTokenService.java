@@ -46,11 +46,11 @@ public class VerificationTokenService {
     public void createToken(VerifyEmailRequest request){
         String token = UUID.randomUUID().toString();
         Instant expiryDate = Instant.now().plus(expirationHours);
-        User user = entityManager.getReference(User.class, request.getUserId());
+        User user = entityManager.getReference(User.class, request.userId());
         VerificationToken newVerificationToken = new VerificationToken(user, token, expiryDate);
         verificationTokenRepository.save(newVerificationToken);
         String activationLink = activationUrl + token;
-        emailService.sendActivationEmail(request.getEmail(), activationLink);
+        emailService.sendActivationEmail(request.email(), activationLink);
     }
 
     @Transactional

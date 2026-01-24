@@ -7,11 +7,11 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @NotBlank(message = "Пожалуйста, заполните имя пользоваля")
-    @Size(min = 2, max = 50, message = "Минимальное количество символов 2")
+    @NotBlank(message = "Обязательное поле")
+    @Size(min = 5, max = 50, message = "Минимальное количество символов 5")
     private String username;
 
-    @NotBlank(message = "Пожалуйста, заполните пароль")
+    @NotBlank(message = "Обязательное поле")
     @Size(min = 5, max = 255, message = "Минимальное количество символов 5")
     private String password;
 }

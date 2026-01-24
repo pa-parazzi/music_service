@@ -1,13 +1,12 @@
 package org.musicservice.demo.controller.auth;
 
-
-import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.entity.auth.VerificationToken;
-import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -23,7 +22,6 @@ public class ActivationTokenController {
 
     @GetMapping("/activate")
     public ResponseEntity<String> activate(@RequestParam("token") String token){
-        String message = verificationTokenService.verify(token);
-        return ResponseEntity.ok(message);
+        return ResponseEntity.ok(verificationTokenService.verify(token));
     }
 }

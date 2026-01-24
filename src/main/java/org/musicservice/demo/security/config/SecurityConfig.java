@@ -1,5 +1,6 @@
 package org.musicservice.demo.security.config;
 
+import org.musicservice.demo.security.authHandler.ApiAuthenticationEntryPoint;
 import org.musicservice.demo.security.filter.JWTFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,14 +18,16 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity // конфиг класс для spring security
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
+    private final ApiAuthenticationEntryPoint authenticationEntryPoint;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter) {
+    public SecurityConfig(JWTFilter jwtFilter, ApiAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtFilter = jwtFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
@@ -32,6 +35,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/js/**", "/auth/**", "/music/**").permitAll()
                         .requestMatchers("/admin/main", "/admin/upload", "/admin/main.html").permitAll()

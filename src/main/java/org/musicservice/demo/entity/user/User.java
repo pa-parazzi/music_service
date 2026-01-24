@@ -8,8 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
-import org.musicservice.demo.entity.auth.RefreshToken;
-import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -29,23 +27,15 @@ public class User {
     private Long id;
 
     @Column(name = "username")
-    @NotBlank
-    @Size(min = 2, max = 20)
     private String username;
 
     @Column
-    @NotBlank
-    @Size(min = 5, max = 100)
     private String password;
 
     @Column(name = "email")
-    @NotBlank
-    @Email
     private String email;
 
     @Column(name = "date_of_birth")
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    @NotNull
     private LocalDate dateOfBirth;
 
     @Column(name = "failed_login_attempts")

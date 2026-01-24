@@ -1,6 +1,7 @@
 package org.musicservice.demo.controller.rest.user;
 
 import org.musicservice.demo.dto.user.UserMainResponse;
+import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -20,7 +21,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public UserMainResponse profile(Authentication authentication){
-        Long userId = (Long) authentication.getPrincipal();
-        return service.viewSingle(userId);
+        Long id = (Long) authentication.getPrincipal();
+        return service.viewSingle(id);
     }
 }

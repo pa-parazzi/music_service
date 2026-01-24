@@ -29,20 +29,24 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User searchByUsername(String username){
-        return userRepository.searchByUsername(username).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+    public User searchByUsernameWithAvatar(String username){
+        return userRepository.searchByUsernameWithAvatar(username).orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " not found"));
     }
 
     public User searchByEmail(String email){
-        return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("Пользователь с email: " + email + "не найден"));
+        return userRepository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User with email: " + email + " not found"));
+    }
+
+    public User searchByIdWithAvatar(Long id){
+        return userRepository.searchByIdWithAvatar(id).orElseThrow(() -> new UsernameNotFoundException("User with id: " + id + " not found"));
     }
 
     public User searchById(Long id){
-        return userRepository.searchById(id).orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+        return userRepository.searchById(id).orElseThrow(() -> new UsernameNotFoundException("User with id: " + id + " not found"));
     }
 
-    public Optional<User> findOptByUsername(String username){
-        return userRepository.searchByUsername(username);
+    public User searchByUsername(String username){
+        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " not found"));
     }
 
     @Transactional
@@ -53,7 +57,7 @@ public class UserService {
     }
 
     public UserMainResponse viewSingle(Long id){
-        return userMapper.toMainResponse(searchById(id));
+        return userMapper.toMainResponse(searchByIdWithAvatar(id));
     }
 
     @Transactional

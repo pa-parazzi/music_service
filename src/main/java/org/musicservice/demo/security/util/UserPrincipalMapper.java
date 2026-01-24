@@ -1,6 +1,5 @@
 package org.musicservice.demo.security.util;
 
-import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

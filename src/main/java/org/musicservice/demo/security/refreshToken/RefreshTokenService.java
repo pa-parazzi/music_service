@@ -2,12 +2,13 @@ package org.musicservice.demo.security.refreshToken;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
-import org.musicservice.demo.security.exception.RefreshTokenNotFoundException;
 import org.musicservice.demo.entity.auth.RefreshToken;
-import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
+import org.musicservice.demo.exception.response.RefreshTokenErrorCode;
 import org.musicservice.demo.security.cookie.CookieManager;
 import org.musicservice.demo.security.cookie.CookieUtil;
+import org.musicservice.demo.exception.VerifyRefreshTokenException;
+import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
+import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +31,34 @@ public class RefreshTokenService {
         this.authenticationTokenProperties = authenticationTokenProperties;
     }
 
-    public RefreshToken searchByTokenHash(String hash) {
-        return refreshTokenRepository.findEntityByTokenHash(hash).orElseThrow(()-> new RefreshTokenNotFoundException("refreshToken с таким hash не найден в БД"));
+    public RefreshToken verifyRequest(HttpServletRequest request) {
+        String refreshTokenValue = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenValue==null){
+            throw new VerifyRefreshTokenException(RefreshTokenErrorCode.MISSING);
+        }
+        String hash = RefreshTokenUtil.hash(refreshTokenValue);
+        return refreshTokenRepository.findByTokenHash(hash).orElseThrow(()-> new VerifyRefreshTokenException(RefreshTokenErrorCode.INVALID));
     }
 
-    public Optional<RefreshTokenProjection> getOptTokenByHash(String hash){
-        return refreshTokenRepository.findForAuthByTokenHash(hash);
+    @Transactional
+    public RefreshToken rotation(RefreshToken refreshToken, HttpServletResponse response){
+        if(isExpired(refreshToken.getExpiryDate())){
+            refreshTokenRepository.delete(refreshToken);
+            return create(response, refreshToken.getUserId());
+        }
+        return refreshToken;
+    }
+
+    @Transactional
+    public void dropToken(HttpServletRequest request, HttpServletResponse response){
+        String refreshTokenValue = CookieUtil.getRefreshTokenByCookie(request);
+        if(refreshTokenValue==null){
+            return;
+        }
+        String hash = RefreshTokenUtil.hash(refreshTokenValue);
+        Optional<RefreshToken> optRefreshToken = refreshTokenRepository.findByTokenHash(hash);
+        optRefreshToken.ifPresent(refreshTokenRepository::delete);
+        cookieManager.clearCookie(response);
     }
 
     @Transactional
@@ -45,24 +68,12 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public void create(HttpServletResponse response, Long userId){
+    public RefreshToken create(HttpServletResponse response, Long userId){
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
         Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
-        RefreshToken refreshToken = new RefreshToken(hash, expiryDate, userId);
-        refreshTokenRepository.save(refreshToken);
-    }
-
-    // Удаление токена
-    @Transactional
-    public void delete(HttpServletRequest request, HttpServletResponse response){
-        String refreshTokenByCookie = CookieUtil.getRefreshTokenByCookie(request);
-        if(refreshTokenByCookie!=null){
-            RefreshToken foundToken = searchByTokenHash(RefreshTokenUtil.hash(refreshTokenByCookie));
-            refreshTokenRepository.delete(foundToken);
-            cookieManager.clearCookie(response);
-        }
+        return refreshTokenRepository.save(new RefreshToken(hash, expiryDate, userId));
     }
 
     public boolean isExpired(Instant expiryDate){

@@ -112,7 +112,7 @@
                 }
             } else if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem("jwt", data.jwt_token);
+                localStorage.setItem("jwt", data.accessToken);
 
                 const feedback = document.getElementById("feedback");
                 feedback.textContent = "Успешный вход!";

@@ -4,9 +4,9 @@ import org.musicservice.demo.dto.like.LikedAlbumResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
-import org.musicservice.demo.exception.music.AlbumNotFoundException;
-import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.exception.ApiNotFoundException;
+import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,11 +44,11 @@ public class AlbumService {
     }
 
     public Album searchById(Long albumId){
-        return albumRepository.searchById(albumId).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
+        return albumRepository.searchById(albumId).orElseThrow(()->new ApiNotFoundException("Album with id: " + albumId + " not found"));
     }
 
     public AlbumResponse getAlbumById(Long id){
-        Album album = albumRepository.findByIdWithArtistAndImage(id).orElseThrow(()->new AlbumNotFoundException("Альбом не существует"));
+        Album album = albumRepository.findByIdWithArtistAndImage(id).orElseThrow(()->new ApiNotFoundException("Album with id: " + id + " not found"));
         return albumMapper.toAlbumResponse(album);
     }
 }
