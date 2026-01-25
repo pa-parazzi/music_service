@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Вход</title>
@@ -52,82 +52,7 @@
     </form>
 </div>
 
-<script>
-
-    function showFieldError(fieldId, message) {
-        const errorDiv = document.getElementById(fieldId + "Error");
-        errorDiv.textContent = message;
-        errorDiv.style.display="block";
-    }
-
-    function clearMessages() {
-        const usernameMsg = document.getElementById("usernameError");
-        const passwordMsg = document.getElementById("passwordError");
-
-        const errorMsg = document.getElementById("errorMessage");
-        const feedback = document.getElementById("feedback");
-
-        usernameMsg.style.display = "none";
-        usernameMsg.textContent = "";
-        passwordMsg.style.display = "none";
-        passwordMsg.textContent = "";
-
-        errorMsg.style.display = "none";
-        errorMsg.textContent = "";
-        feedback.style.display = "none";
-        feedback.textContent = "";
-    }
-
-    const form = document.getElementById("loginForm");
-
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        clearMessages();
-
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: "POST",
-                credentials: 'include', // чтобы получить set_cookie
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ username, password })
-            });
-
-            if (!response.ok) {
-                const errorJson = await response.json();
-
-                if (errorJson.username) {
-                    showFieldError("username", errorJson.username);
-                }
-                if (errorJson.password) {
-                    showFieldError("password", errorJson.password);
-                }
-
-                if (errorJson.error || errorJson.message) {
-                    const errorMsg = document.getElementById("errorMessage");
-                    errorMsg.textContent = errorJson.error || errorJson.message;
-                    errorMsg.style.display = "block";
-                }
-            } else if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem("jwt", data.accessToken);
-
-                const feedback = document.getElementById("feedback");
-                feedback.textContent = "Успешный вход!";
-                feedback.style.display = "block";
-                setTimeout(() =>{
-                    window.location.href="/music/main.html";
-                }, 2000);
-            }
-        } catch (error) {
-            const errorMsg = document.getElementById("errorMessage");
-            errorMsg.textContent = "Необработанная ошибка";
-            errorMsg.style.display = "block";
-        }
-    });
-</script>
+<script src="/js/auth/login.js"></script>
 
 </body>
 </html>
