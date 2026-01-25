@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.rest.user;
 
 import org.musicservice.demo.dto.user.UserMainResponse;
-import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

@@ -1,7 +1,6 @@
 package org.musicservice.demo.security.userDetails;
 
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.util.UserPrincipalMapper;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserPrincipal
 
     @Override
     public UserPrincipal loadPrincipalById(Long id) {
-        User user = userService.searchById(id);
+        User user = userService.searchByIdWithAvatar(id);
         return UserPrincipalMapper.from(user);
     }
 }

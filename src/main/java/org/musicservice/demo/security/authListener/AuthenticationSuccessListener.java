@@ -1,6 +1,6 @@
 package org.musicservice.demo.security.authListener;
 
-import org.musicservice.demo.service.auth.FailureAuthService;
+import org.musicservice.demo.service.auth.AuthenticationListenerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
@@ -10,17 +10,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthenticationSuccessListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
-    private final FailureAuthService failureAuthService;
+    private final AuthenticationListenerService authenticationListenerService;
 
     @Autowired
-    public AuthenticationSuccessListener(FailureAuthService failureAuthService) {
-        this.failureAuthService = failureAuthService;
+    public AuthenticationSuccessListener(AuthenticationListenerService authenticationListenerService) {
+        this.authenticationListenerService = authenticationListenerService;
     }
 
     // Что будет происходить при успешной аутентификации
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         String username = event.getAuthentication().getName();
-        failureAuthService.resetFailedLogin(username);
+        authenticationListenerService.resetFailedLogin(username);
     }
 }

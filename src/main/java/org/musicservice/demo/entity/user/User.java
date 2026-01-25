@@ -1,17 +1,11 @@
 package org.musicservice.demo.entity.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.entity.image.UserAvatar;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -66,23 +60,9 @@ public class User {
         this.role = role;
     }
 
-    // Блокировка аккаунта Spring Security при 3 неудачных логинах
+    // Учетная запись не заблокирована?
     public boolean isAccountNonLocked(){
-        if(lockTime==null){
-            return true;
-        }else if(lockTime.isBefore(LocalDateTime.now())){
-            this.lockTime=null;
-            this.failedLoginAttempts=0;
-            return true;
-        }
-        return false;
-    }
-
-    public long getRemainingLockSeconds(){
-        if(lockTime==null){
-            return 0;
-        }
-        return Duration.between(LocalDateTime.now(), lockTime).toMinutes();
+        return lockTime == null || lockTime.isBefore(LocalDateTime.now());
     }
 
     @Override
