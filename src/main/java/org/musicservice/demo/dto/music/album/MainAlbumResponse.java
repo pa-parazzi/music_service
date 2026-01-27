@@ -1,10 +1,5 @@
 package org.musicservice.demo.dto.music.album;
 
-import lombok.Data;
-
 import java.util.List;
 
-@Data
-public class MainAlbumResponse {
-    private List<AlbumResponse> albums;
-}
+public record MainAlbumResponse (List<AlbumResponse> albums) {}

@@ -2,7 +2,7 @@ package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.like.LikedSoundResponse;
 import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
-import org.musicservice.demo.dto.music.sound.SoundDto;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.ApiNotFoundException;
 import org.musicservice.demo.mapper.music.SoundMapper;
@@ -30,19 +30,18 @@ public class SoundService {
         return soundRepository.findById(id).orElseThrow(()-> new ApiNotFoundException("Sound with id: " + id + " not found"));
     }
 
-    public List<SoundDto> getSoundListByArtistId(Long artistId){
-        return soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toDto).toList();
+    public List<SoundResponse> getSoundListByArtistId(Long artistId){
+        return soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toResponse).toList();
     }
 
-    public List<SoundDto> getSoundListByAlbumId(Long albumId){
-        return soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toDto).toList();
+    public List<SoundResponse> getSoundListByAlbumId(Long albumId){
+        return soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toResponse).toList();
     }
 
     public CollectionTracksResponse getTrackCollectionByUserLikes(List<LikedSoundResponse> responses){
-        List<Long> soundIds = responses.stream().map(LikedSoundResponse::getSoundId).toList();
-        List<SoundDto> soundDtoList = soundRepository.findAllByIdForCollectionPage(soundIds).stream().map(soundMapper::toDto).toList();
-        CollectionTracksResponse collectionTracks = new CollectionTracksResponse();
-        collectionTracks.setSoundList(soundDtoList);
-        return collectionTracks;
+        List<Long> soundOrderIds = responses.stream().map(LikedSoundResponse::getSoundId).toList();
+        Long[] orderIds = soundOrderIds.toArray(Long[]::new);
+        List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
+        return new CollectionTracksResponse(response);
     }
 }

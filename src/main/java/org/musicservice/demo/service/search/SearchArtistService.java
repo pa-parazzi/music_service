@@ -1,7 +1,6 @@
 package org.musicservice.demo.service.search;
 
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
-import org.musicservice.demo.mapper.music.ArtistMapper;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,16 +13,14 @@ import java.util.List;
 public class SearchArtistService {
 
     private final ArtistRepository artistRepository;
-    private final ArtistMapper artistMapper;
 
     @Autowired
-    public SearchArtistService(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+    public SearchArtistService(ArtistRepository artistRepository) {
         this.artistRepository = artistRepository;
-        this.artistMapper = artistMapper;
     }
 
     public List<ArtistResponse> findAllArtistStartingWith(String fragment){
         if(fragment == null || fragment.trim().isBlank()) return null;
-        return artistRepository.findAllByNameStartingWith(fragment).stream().map(artistMapper::toResponse).toList();
+        return artistRepository.findAllByNameStartingWith(fragment);
     }
 }

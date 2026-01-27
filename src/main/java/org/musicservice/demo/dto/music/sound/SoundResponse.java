@@ -1,10 +1,9 @@
 package org.musicservice.demo.dto.music.sound;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 @Data
-public class SoundDto {
+public class SoundResponse {
 
     private Long id;
     private String title;

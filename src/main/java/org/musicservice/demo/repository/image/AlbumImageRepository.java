@@ -11,5 +11,4 @@ public interface AlbumImageRepository extends JpaRepository<AlbumImage, Long> {
 
     Optional<AlbumImage> findByKey(String s3Key);
 
-    AlbumImage findByAlbumId(Long albumId);
 }
