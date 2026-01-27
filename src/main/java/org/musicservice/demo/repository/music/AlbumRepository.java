@@ -16,7 +16,8 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Optional<Album> searchById(Long id);
 
-    List<Album> findByTitleStartingWith(String title);
+    @Query("select a from Album a join fetch a.artist join fetch a.image where a.title like concat(:title, '%')")
+    List<Album> findAllByTitleStartingWith(@Param("title") String title);
 
     // Возвращает список всех альбомов со связями: Исполнитель, Обложка - для главной страницы, где не нужен список песен
     @Query("select a from Album a join fetch a.artist join fetch a.image")
