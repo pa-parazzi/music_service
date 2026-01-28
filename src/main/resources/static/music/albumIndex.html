@@ -34,7 +34,16 @@
         <label class="side-button-2" for="side-checkbox" aria-label="Назад">&larr;</label>
         <div class="side-title">Панель</div>
     </div>
-    <p>Сюда можно поместить пункты меню, настройки и т.д.</p>
+    <div class="trackCollection" id="trackCollection">
+        <a href="/collection/tracks">
+            <button class="collectionBtn">Понравившиеся песни</button>
+        </a>
+    </div>
+    <div class="albumCollection" id="albumCollection">
+        <a href="/collection/albums">
+            <button class="collectionBtn">Понравившиеся альбомы</button>
+        </a>
+    </div>
 </aside>
 
 <!-- затемнение -->
@@ -82,7 +91,7 @@
 </div>
 
 <script src="/js/loadUserProfile.js"></script>
-<script src="/js/audioPlayer.js"></script>
+<script src="/js/audio/audioPlayer.js"></script>
 <script type="module" src="/js/album/loadAlbum.js"></script>
 
 </body>

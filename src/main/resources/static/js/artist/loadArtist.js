@@ -1,6 +1,6 @@
 import{escapeHtml} from "../util.js";
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
-import{audioListener} from "../audioListener.js";
+import{audioListener} from "../audio/audioListener.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');

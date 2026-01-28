@@ -1,5 +1,5 @@
-import {playAlbums} from "./album/playAlbum.js";
-import {initAlbumContainer} from "./album/albumContainer.js";
+import {playAlbums} from "../audio/playAlbum.js";
+import {initAlbumContainer} from "../album/albumContainer.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');

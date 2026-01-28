@@ -1,7 +1,7 @@
 import{escapeHtml} from "../util.js"
 import{initSoundListWithLikes} from "../soundListWithLikes.js";
-import{playTrack} from "../playTrack.js";
-import {audioListener} from "../audioListener.js";
+import{playTrack} from "../audio/playTrack.js";
+import {audioListener} from "../audio/audioListener.js";
 
 const player = document.getElementById('player');
 const playAlbumBtn = document.getElementById('play-album');
