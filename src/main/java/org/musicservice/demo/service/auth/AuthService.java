@@ -3,6 +3,7 @@ package org.musicservice.demo.service.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.dto.TokenResponse;
 import org.musicservice.demo.security.dto.TokenSubject;
@@ -51,13 +52,13 @@ public class AuthService {
     public TokenResponse processRegistration(RegistrationRequest regRequest, MultipartFile file, HttpServletResponse response){
         registrationValidator.validateUsername(regRequest.getUsername());
         registrationValidator.validateEmail(regRequest.getEmail());
-        User regUser = userService.create(regRequest);
-        Long userId = regUser.getId();
-        avatarService.createOrGet(file, regUser);
-        VerifyEmailRequest emailRequest = new VerifyEmailRequest(userId, regUser.getEmail());
+        User newUser = userService.create(regRequest);
+        Long userId = newUser.getId();
+        avatarService.createOrGet(file, newUser);
+        VerifyEmailRequest emailRequest = new VerifyEmailRequest(userId, newUser.getEmail());
         verificationTokenService.createToken(emailRequest);
-        refreshTokenService.create(response, regUser.getId());
-        TokenSubject subject = new TokenSubject(userId, List.of(regUser.getRole().getAuthority()));
+        refreshTokenService.create(response, newUser.getId());
+        TokenSubject subject = new TokenSubject(userId, List.of(newUser.getRole().getAuthority()));
         String accessToken = jwtTokenService.generateToken(subject);
         return new TokenResponse(accessToken);
     }
@@ -73,11 +74,13 @@ public class AuthService {
         return new TokenResponse(accessToken);
     }
 
+    @Transactional
     public TokenResponse refreshAccess(HttpServletResponse response, HttpServletRequest request){
-        var foundToken = refreshTokenService.verifyRequest(request);
-        var validToken = refreshTokenService.rotation(foundToken, response);
-        UserPrincipal principal = userDetailsService.loadPrincipalById(validToken.getUserId());
-        TokenSubject tokenSubject =  new TokenSubject(principal.userId(), principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
+        RefreshToken foundToken = refreshTokenService.verifyRequest(request);
+        Long userId = foundToken.getUserId();
+        refreshTokenService.rotation(foundToken, response);
+        UserPrincipal principal = userDetailsService.loadPrincipalById(userId);
+        TokenSubject tokenSubject =  new TokenSubject(userId, principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
         String accessToken = jwtTokenService.generateToken(tokenSubject);
         return new TokenResponse(accessToken);
     }

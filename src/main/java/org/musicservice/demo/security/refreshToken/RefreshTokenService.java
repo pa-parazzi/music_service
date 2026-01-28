@@ -41,12 +41,15 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public RefreshToken rotation(RefreshToken refreshToken, HttpServletResponse response){
+    public void rotation(RefreshToken refreshToken, HttpServletResponse response){
         if(isExpired(refreshToken.getExpiryDate())){
-            refreshTokenRepository.delete(refreshToken);
-            return create(response, refreshToken.getUserId());
+            Long userId = refreshToken.getUserId();
+            String newToken = RefreshTokenUtil.generateRefreshToken();
+            String hash = RefreshTokenUtil.hash(newToken);
+            Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
+            refreshTokenRepository.rotation(userId, hash, expiryDate);
+            cookieManager.setCookie(response, newToken);
         }
-        return refreshToken;
     }
 
     @Transactional

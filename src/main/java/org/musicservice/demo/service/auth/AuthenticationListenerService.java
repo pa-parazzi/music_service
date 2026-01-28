@@ -22,7 +22,7 @@ public class AuthenticationListenerService {
     }
 
     @Transactional
-    public void failLogin(String username){
+    public void failedLoginProcess(String username){
         int updateRows = userRepository.incrementFailedAttempts(username);
         if(updateRows == 0){
             return;
