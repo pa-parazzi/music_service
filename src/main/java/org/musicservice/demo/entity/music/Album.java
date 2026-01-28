@@ -41,15 +41,6 @@ public class Album{
         this.image = image;
     }
 
-    public Album(String title, AlbumImage image){
-        this.title = title;
-        this.image = image;
-    }
-
-    public Album(String title){
-        this.title = title;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

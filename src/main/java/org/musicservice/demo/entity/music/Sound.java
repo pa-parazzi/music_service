@@ -42,17 +42,6 @@ public class Sound{
         this.key = key;
     }
 
-    public Sound(String title, int duration, String key){
-        this.title = title;
-        this.duration = duration;
-        this.key = key;
-    }
-
-    public Sound(String title, int duration){
-        this.title = title;
-        this.duration = duration;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
