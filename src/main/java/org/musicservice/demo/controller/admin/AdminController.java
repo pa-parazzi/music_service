@@ -21,7 +21,7 @@ public class AdminController {
 
 //    @GetMapping("/main")
 //    public UserMainResponse mainMenu(Principal principal){
-//        return userService.viewSingle(principal.getName());
+//        return userService.viewMainResponseById(principal.getName());
 //    }
 
     @PostMapping("/upload")

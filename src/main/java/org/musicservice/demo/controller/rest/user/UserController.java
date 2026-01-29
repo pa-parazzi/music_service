@@ -21,6 +21,6 @@ public class UserController {
     @GetMapping("/profile")
     public UserMainResponse profile(Authentication authentication){
         Long id = (Long) authentication.getPrincipal();
-        return service.viewSingle(id);
+        return service.viewMainResponseById(id);
     }
 }
