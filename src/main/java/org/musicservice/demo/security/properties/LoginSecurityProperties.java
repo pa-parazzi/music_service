@@ -12,5 +12,5 @@ import org.springframework.stereotype.Component;
 public class LoginSecurityProperties {
 
     private int maxFailedAttempts;
-    private long lockDurationMinutes;
+    private int lockDurationMinutes;
 }

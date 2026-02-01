@@ -47,7 +47,7 @@ public class AlbumService {
         return albumRepository.searchById(albumId).orElseThrow(()->new ApiNotFoundException("Album with id: " + albumId + " not found"));
     }
 
-    public AlbumResponse getAlbumById(Long id){
+    public AlbumResponse findByIdWithArtistAndImage(Long id){
         return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new ApiNotFoundException("Album with id: " + id + " not found"));
     }
 }

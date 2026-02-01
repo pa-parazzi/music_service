@@ -57,7 +57,7 @@ public class AuthService {
         avatarService.createOrGet(file, newUser);
         VerifyEmailRequest emailRequest = new VerifyEmailRequest(userId, newUser.getEmail());
         verificationTokenService.createToken(emailRequest);
-        refreshTokenService.create(response, newUser.getId());
+        refreshTokenService.create(response, userId);
         TokenSubject subject = new TokenSubject(userId, List.of(newUser.getRole().getAuthority()));
         String accessToken = jwtTokenService.generateToken(subject);
         return new TokenResponse(accessToken);

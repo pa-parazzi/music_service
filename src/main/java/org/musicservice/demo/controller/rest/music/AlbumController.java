@@ -25,6 +25,6 @@ public class AlbumController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AlbumResponse> viewById(@PathVariable("id") Long albumId){
-        return ResponseEntity.ok(albumService.getAlbumById(albumId));
+        return ResponseEntity.ok(albumService.findByIdWithArtistAndImage(albumId));
     }
 }
