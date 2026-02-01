@@ -1,5 +1,6 @@
 package org.musicservice.demo.support.factory;
 
+import lombok.Getter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.dto.image.UserAvatarResponse;
 import org.musicservice.demo.dto.user.RegistrationRequest;
@@ -8,6 +9,7 @@ import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 
 import java.time.LocalDate;
+
 
 public class ValidUserDataFactory {
 
@@ -20,8 +22,12 @@ public class ValidUserDataFactory {
     private static final String AVATAR_KEY = "default_avatar.jpg";
     private static final String AVATAR_URL = "https://mus-app-img.storage.yandexcloud.net/default_avatar.jpg";
 
+    public static String username(){
+        return USERNAME;
+    }
+
     public static RegistrationRequest registrationRequest() {
-        RegistrationRequest request = new RegistrationRequest();
+        final RegistrationRequest request = new RegistrationRequest();
         request.setUsername(USERNAME);
         request.setPassword(PASSWORD);
         request.setEmail(EMAIL);
@@ -43,6 +49,18 @@ public class ValidUserDataFactory {
         avatar.setId(ID);
         user.setUserAvatar(avatar);
 
+        return user;
+    }
+
+    public static User user(){
+        User user = new User(
+                USERNAME,
+                PASSWORD,
+                EMAIL,
+                DATE_OF_BIRTH,
+                AUTHORITY
+        );
+        user.setId(ID);
         return user;
     }
 

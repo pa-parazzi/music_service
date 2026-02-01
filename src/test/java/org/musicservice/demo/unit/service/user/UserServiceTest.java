@@ -1,4 +1,4 @@
-package org.musicservice.demo.unit.service;
+package org.musicservice.demo.unit.service.user;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,8 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +58,7 @@ public class UserServiceTest {
 
         verify(passwordEncoder).encode(registrationRequest.getPassword());
         verify(userRepository).save(any(User.class));
+        verifyNoMoreInteractions(passwordEncoder, userRepository);
     }
 
     @Test
@@ -75,6 +75,7 @@ public class UserServiceTest {
         assertNotNull(result.getUserAvatar());
 
         verify(userRepository).searchByIdWithAvatar(userId);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -94,6 +95,7 @@ public class UserServiceTest {
 
         verify(userRepository).searchByIdWithAvatar(userId);
         verify(userMapper).toMainResponse(expectedUser);
+        verifyNoMoreInteractions(userRepository, userMapper);
     }
 
     @Test
@@ -110,6 +112,7 @@ public class UserServiceTest {
         assertNotNull(result.getUserAvatar());
 
         verify(userRepository).searchByUsernameWithAvatar(username);
+        verifyNoMoreInteractions(userRepository);
     }
 
 
@@ -125,6 +128,7 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, ()-> userService.searchByIdWithAvatar(userId));
 
         verify(userRepository).searchByIdWithAvatar(userId);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -136,6 +140,7 @@ public class UserServiceTest {
         assertThrows(UserNotFoundException.class, ()-> userService.searchByUsernameWithAvatar(username));
 
         verify(userRepository).searchByUsernameWithAvatar(username);
+        verifyNoMoreInteractions(userRepository);
     }
 
 
