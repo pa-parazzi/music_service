@@ -13,7 +13,7 @@ import org.musicservice.demo.exception.UserNotFoundException;
 import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.user.UserService;
-import org.musicservice.demo.support.factory.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -42,13 +42,13 @@ public class UserServiceTest {
 
     @Test
     void createUserTest_ReturnValidUser(){
-        final RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
-        final String encodingPassword = "encoded";
+        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
+        String encodingPassword = "encoded";
 
         when(passwordEncoder.encode(registrationRequest.getPassword())).thenReturn(encodingPassword);
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0)); // вернули тот же объект, что был передан в save()
 
-        final User result = userService.create(registrationRequest);
+        User result = userService.create(registrationRequest);
 
         assertEquals(registrationRequest.getUsername(), result.getUsername());
         assertEquals(encodingPassword, result.getPassword());
@@ -63,12 +63,12 @@ public class UserServiceTest {
 
     @Test
     void searchByIdWithAvatarTest_ReturnValidUser(){
-        final User expectedUser = ValidUserDataFactory.userWithAvatar();
-        final Long userId = expectedUser.getId();
+        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        Long userId = expectedUser.getId();
 
         when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
 
-        final User result = userService.searchByIdWithAvatar(userId);
+        User result = userService.searchByIdWithAvatar(userId);
 
         assertEquals(expectedUser.getId(), result.getId());
         assertEquals(expectedUser.getUsername(), result.getUsername());
@@ -80,14 +80,14 @@ public class UserServiceTest {
 
     @Test
     void viewMainResponseByIdTest_ReturnValidResponse(){
-        final User expectedUser = ValidUserDataFactory.userWithAvatar();
-        final Long userId = expectedUser.getId();
-        final UserMainResponse expectedResponse = ValidUserDataFactory.userMainResponse(expectedUser);
+        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        Long userId = expectedUser.getId();
+        UserMainResponse expectedResponse = ValidUserDataFactory.userMainResponse(expectedUser);
 
         when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
         when(userMapper.toMainResponse(expectedUser)).thenReturn(expectedResponse);
 
-        final UserMainResponse result = userService.viewMainResponseById(userId);
+        UserMainResponse result = userService.viewMainResponseById(userId);
 
         assertEquals(userId, result.getId());
         assertEquals(expectedResponse.getUsername(), result.getUsername());
@@ -100,12 +100,12 @@ public class UserServiceTest {
 
     @Test
     void searchByUsernameWithAvatarTest_ReturnValidUser(){
-        final User expectedUser = ValidUserDataFactory.userWithAvatar();
-        final String username = expectedUser.getUsername();
+        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        String username = expectedUser.getUsername();
 
         when(userRepository.searchByUsernameWithAvatar(username)).thenReturn(Optional.of(expectedUser));
 
-        final User result = userService.searchByUsernameWithAvatar(username);
+        User result = userService.searchByUsernameWithAvatar(username);
 
         assertEquals(expectedUser.getId(), result.getId());
         assertEquals(username, result.getUsername());
@@ -121,7 +121,7 @@ public class UserServiceTest {
 
     @Test
     void searchByIdWithAvatarTest_ThrowUserNotFoundException(){
-        final Long userId = 1L;
+        Long userId = 1L;
 
         when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.empty());
 
@@ -133,7 +133,7 @@ public class UserServiceTest {
 
     @Test
     void searchByUsernameWithAvatar_ThrowUserNotFoundException(){
-        final String username = "name";
+        String username = "name";
 
         when(userRepository.searchByUsernameWithAvatar(username)).thenReturn(Optional.empty());
 
@@ -142,7 +142,5 @@ public class UserServiceTest {
         verify(userRepository).searchByUsernameWithAvatar(username);
         verifyNoMoreInteractions(userRepository);
     }
-
-
 
 }

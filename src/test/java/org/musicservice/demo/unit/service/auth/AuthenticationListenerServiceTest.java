@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.musicservice.demo.service.auth.AuthenticationListenerService;
-import org.musicservice.demo.support.factory.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 
 import java.time.LocalDateTime;
 
@@ -30,8 +30,8 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginProcessTest_ShouldReturnEarly_WhenNoRowsUpdated(){
-        final String username = ValidUserDataFactory.username();
-        final int countRowsUpdated = 0;
+        String username = ValidUserDataFactory.username();
+        int countRowsUpdated = 0;
         when(userRepository.incrementFailedAttempts(username)).thenReturn(countRowsUpdated);
 
         authenticationListenerService.failedLoginProcess(username);
@@ -43,10 +43,10 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginAttempts_ShouldIncrementFailedAttempt(){
-        final String username = ValidUserDataFactory.username();
-        final int coundRowsUpdated = 1;
-        final int lockDurationMinutes = 15;
-        final int failedLoginAttempts = 3;
+        String username = ValidUserDataFactory.username();
+        int coundRowsUpdated = 1;
+        int lockDurationMinutes = 15;
+        int failedLoginAttempts = 3;
 
         when(userRepository.incrementFailedAttempts(username)).thenReturn(coundRowsUpdated);
         when(securityProperties.getLockDurationMinutes()).thenReturn(lockDurationMinutes);
@@ -66,7 +66,7 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void resetFailedLogin_NoMoreInteractions(){
-        final String username = ValidUserDataFactory.username();
+        String username = ValidUserDataFactory.username();
 
         when(userRepository.resetFailedLoginAttempts(username)).thenReturn(1);
 

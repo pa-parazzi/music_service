@@ -1,6 +1,5 @@
-package org.musicservice.demo.support.factory;
+package org.musicservice.demo.support.factory.user;
 
-import lombok.Getter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.dto.image.UserAvatarResponse;
 import org.musicservice.demo.dto.user.RegistrationRequest;
@@ -27,7 +26,7 @@ public class ValidUserDataFactory {
     }
 
     public static RegistrationRequest registrationRequest() {
-        final RegistrationRequest request = new RegistrationRequest();
+        RegistrationRequest request = new RegistrationRequest();
         request.setUsername(USERNAME);
         request.setPassword(PASSWORD);
         request.setEmail(EMAIL);
@@ -74,7 +73,5 @@ public class ValidUserDataFactory {
         userResponse.setAvatar(avatarResponse);
         return userResponse;
     }
-
-
 
 }
