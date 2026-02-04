@@ -3,8 +3,6 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.dto.like.LikedSoundResponse;
 import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.entity.music.Sound;
-import org.musicservice.demo.exception.ApiNotFoundException;
 import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +22,6 @@ public class SoundService {
     public SoundService(SoundRepository soundRepository, SoundMapper soundMapper) {
         this.soundRepository = soundRepository;
         this.soundMapper = soundMapper;
-    }
-
-    public Sound findById(Long id){
-        return soundRepository.findById(id).orElseThrow(()-> new ApiNotFoundException("Sound with id: " + id + " not found"));
     }
 
     public List<SoundResponse> getSoundListByArtistId(Long artistId){

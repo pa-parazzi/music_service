@@ -14,8 +14,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Optional<Album> findByTitle(String title);
 
-    Optional<Album> searchById(Long id);
-
     @Query("select a from Album a join fetch a.artist join fetch a.image where a.title like concat(:title, '%')")
     List<Album> findAllByTitleStartingWith(@Param("title") String title);
 

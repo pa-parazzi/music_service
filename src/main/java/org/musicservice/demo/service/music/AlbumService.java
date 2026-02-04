@@ -32,7 +32,7 @@ public class AlbumService {
 
     public CollectionAlbumsResponse getAlbumCollectionByUserLikes(List<LikedAlbumResponse> responses){
         List<Long> orderIds = responses.stream().map(LikedAlbumResponse::getAlbumId).toList(); // порядок элементов сохранен
-        List<AlbumResponse> unorderResponse =  albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
+        List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
         List<AlbumResponse> response = orderIds.stream().map(mapById::get).toList();
         return new CollectionAlbumsResponse(response);
@@ -41,10 +41,6 @@ public class AlbumService {
     public MainAlbumResponse getAllAlbumsByMainResponse(){
         List<AlbumResponse> albumResponseList = albumRepository.findAllForMainPage().stream().map(albumMapper::toAlbumResponse).toList();
         return new MainAlbumResponse(albumResponseList);
-    }
-
-    public Album searchById(Long albumId){
-        return albumRepository.searchById(albumId).orElseThrow(()->new ApiNotFoundException("Album with id: " + albumId + " not found"));
     }
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){
