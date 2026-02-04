@@ -71,7 +71,7 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public RefreshToken create(HttpServletResponse response, Long userId){
+    public RefreshToken create(Long userId, HttpServletResponse response){
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);

@@ -32,19 +32,19 @@ public class LikeAlbumService {
 
     @Transactional
     public void create(UserLikeRequest request){
-        User user = entityManager.getReference(User.class, request.getUserId());
-        Album album = entityManager.getReference(Album.class, request.getTargetId());
+        User user = entityManager.getReference(User.class, request.userId());
+        Album album = entityManager.getReference(Album.class, request.targetId());
         LikeAlbum likeAlbum = new LikeAlbum(user, album);
         likeAlbumRepository.save(likeAlbum);
     }
 
     @Transactional
     public void delete(UserLikeRequest request){
-        likeAlbumRepository.deleteByUserIdAndAlbumId(request.getUserId(), request.getTargetId());
+        likeAlbumRepository.deleteByUserIdAndAlbumId(request.userId(), request.targetId());
     }
 
     public List<LikedAlbumResponse> getAllLikedAlbums(UserGetLikesRequest request){
-        return likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(request.getUserId()).stream().map(likeAlbumMapper::toResponse).toList();
+        return likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId()).stream().map(likeAlbumMapper::toResponse).toList();
     }
 
 }

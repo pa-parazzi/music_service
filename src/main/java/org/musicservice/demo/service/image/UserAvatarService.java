@@ -1,20 +1,14 @@
 package org.musicservice.demo.service.image;
 
-import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
+import org.musicservice.demo.service.s3Storage.S3Storage;
+import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -22,32 +16,21 @@ public class UserAvatarService {
 
     private final UserAvatarRepository userAvatarRepository;
     private final YandexStorageProperties yandexStorageProperties;
-    private final S3Client s3Client;
+    private final S3Storage s3Storage;
 
     @Autowired
-    public UserAvatarService(UserAvatarRepository userAvatarRepository, YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
+    public UserAvatarService(UserAvatarRepository userAvatarRepository, YandexStorageProperties yandexStorageProperties, S3Storage s3Storage) {
         this.userAvatarRepository = userAvatarRepository;
         this.yandexStorageProperties = yandexStorageProperties;
-        this.s3Client = s3Client;
+        this.s3Storage = s3Storage;
     }
 
     @Transactional
-    public void create(MultipartFile file, User user){
-        String key = "avatar/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-        try (InputStream inputStream = file.getInputStream()) {
-            // Загружаем файл в бакет
-            s3Client.putObject(PutObjectRequest.builder()
-                            .bucket(yandexStorageProperties.getBuckets().get("img"))
-                            .key(key)
-                            .contentType(file.getContentType())
-                            .build(),
-                    RequestBody.fromInputStream(inputStream, file.getSize()));
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка загрузки аватара в S3", e);
-        }
+    public UserAvatar create(MultipartFile file, User user){
+        String key = s3Storage.upload(file);
         UserAvatar userAvatar = new UserAvatar(user, key);
         user.setUserAvatar(userAvatar);
-        userAvatarRepository.save(userAvatar);
+        return userAvatarRepository.save(userAvatar);
     }
 
     @Transactional
@@ -58,7 +41,7 @@ public class UserAvatarService {
     }
 
     @Transactional
-    public void createOrGet(MultipartFile file, User user){
+    public void createOrGetDefault(MultipartFile file, User user){
         if(file==null){
             createDefaultAvatar(user);
             return;

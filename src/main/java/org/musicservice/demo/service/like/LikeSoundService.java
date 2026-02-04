@@ -32,18 +32,18 @@ public class LikeSoundService {
 
     @Transactional
     public void create(UserLikeRequest request){
-        User user = entityManager.getReference(User.class, request.getUserId());
-        Sound sound = entityManager.getReference(Sound.class, request.getTargetId());
+        User user = entityManager.getReference(User.class, request.userId());
+        Sound sound = entityManager.getReference(Sound.class, request.targetId());
         LikeSound likeSound = new LikeSound(user, sound);
         likeSoundRepository.save(likeSound);
     }
 
     @Transactional
     public void delete(UserLikeRequest request){
-        likeSoundRepository.deleteByUserIdAndSoundId(request.getUserId(), request.getTargetId());
+        likeSoundRepository.deleteByUserIdAndSoundId(request.userId(), request.targetId());
     }
 
     public List<LikedSoundResponse> getAllLikedSounds(UserGetLikesRequest request){
-        return likeSoundRepository.findAllByUserIdOrderByCreatedAtDesc(request.getUserId()).stream().map(likeSoundMapper::toResponse).toList();
+        return likeSoundRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId()).stream().map(likeSoundMapper::toResponse).toList();
     }
 }

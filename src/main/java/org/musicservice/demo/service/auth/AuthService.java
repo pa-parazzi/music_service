@@ -54,10 +54,10 @@ public class AuthService {
         registrationValidator.validateEmail(regRequest.getEmail());
         User newUser = userService.create(regRequest);
         Long userId = newUser.getId();
-        avatarService.createOrGet(file, newUser);
+        avatarService.createOrGetDefault(file, newUser);
         VerifyEmailRequest emailRequest = new VerifyEmailRequest(userId, newUser.getEmail());
         verificationTokenService.createToken(emailRequest);
-        refreshTokenService.create(response, userId);
+        refreshTokenService.create(userId, response);
         TokenSubject subject = new TokenSubject(userId, List.of(newUser.getRole().getAuthority()));
         String accessToken = jwtTokenService.generateToken(subject);
         return new TokenResponse(accessToken);
@@ -68,7 +68,7 @@ public class AuthService {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         Long userId = principal.userId();
         refreshTokenService.deleteByUserId(userId, response);
-        refreshTokenService.create(response, userId);
+        refreshTokenService.create(userId, response);
         TokenSubject subject =  new TokenSubject(userId, principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
         String accessToken = jwtTokenService.generateToken(subject);
         return new TokenResponse(accessToken);
@@ -77,8 +77,8 @@ public class AuthService {
     @Transactional
     public TokenResponse refreshAccess(HttpServletResponse response, HttpServletRequest request){
         RefreshToken foundToken = refreshTokenService.verifyRequest(request);
-        Long userId = foundToken.getUserId();
         refreshTokenService.rotation(foundToken, response);
+        Long userId = foundToken.getUserId();
         UserPrincipal principal = userDetailsService.loadPrincipalById(userId);
         TokenSubject tokenSubject =  new TokenSubject(userId, principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
         String accessToken = jwtTokenService.generateToken(tokenSubject);
