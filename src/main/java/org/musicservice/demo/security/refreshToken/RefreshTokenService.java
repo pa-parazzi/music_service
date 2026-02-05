@@ -7,7 +7,7 @@ import org.musicservice.demo.exception.response.RefreshTokenErrorCode;
 import org.musicservice.demo.security.cookie.CookieManager;
 import org.musicservice.demo.security.cookie.CookieUtil;
 import org.musicservice.demo.exception.VerifyRefreshTokenException;
-import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
+import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,13 +22,13 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieManager cookieManager;
-    private final AuthenticationTokenProperties authenticationTokenProperties;
+    private final RefreshTokenProperties refreshTokenProperties;
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, AuthenticationTokenProperties authenticationTokenProperties) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, CookieManager cookieManager, RefreshTokenProperties refreshTokenProperties) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.cookieManager = cookieManager;
-        this.authenticationTokenProperties = authenticationTokenProperties;
+        this.refreshTokenProperties = refreshTokenProperties;
     }
 
     public RefreshToken verifyRequest(HttpServletRequest request) {
@@ -46,7 +46,7 @@ public class RefreshTokenService {
             Long userId = refreshToken.getUserId();
             String newToken = RefreshTokenUtil.generateRefreshToken();
             String hash = RefreshTokenUtil.hash(newToken);
-            Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
+            Instant expiryDate = Instant.now().plus(refreshTokenProperties.getDuration());
             refreshTokenRepository.rotation(userId, hash, expiryDate);
             cookieManager.setCookie(response, newToken);
         }
@@ -75,7 +75,7 @@ public class RefreshTokenService {
         String generatedRefreshToken = RefreshTokenUtil.generateRefreshToken();
         String hash = RefreshTokenUtil.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
-        Instant expiryDate = Instant.now().plus(authenticationTokenProperties.getRefreshTokenDuration());
+        Instant expiryDate = Instant.now().plus(refreshTokenProperties.getDuration());
         return refreshTokenRepository.save(new RefreshToken(hash, expiryDate, userId));
     }
 

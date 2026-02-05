@@ -8,12 +8,11 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 
 @Component
-@ConfigurationProperties(prefix = "auth-token")
+@ConfigurationProperties(prefix = "refresh-token")
 @Getter
 @Setter
-public class AuthenticationTokenProperties {
+public class RefreshTokenProperties {
 
-    private Duration refreshTokenDuration;
-    private Duration accessTokenDuration;
+    private Duration duration;
 }
 

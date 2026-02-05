@@ -17,9 +17,14 @@ yandex:
 jamendo:
   client-id: 9dc3f71a
 
-auth-token:
-  refresh-token-duration: P30D
+jwt:
+  jwt-secret-key: cd0353d9c7bde503904336bfb85fd34d
+  issuer: app-name
+  leeway-seconds: 30
   access-token-duration: PT1M
+
+refresh-token:
+  duration: P30D
 
 verification-token:
   expiration-hours: PT24H

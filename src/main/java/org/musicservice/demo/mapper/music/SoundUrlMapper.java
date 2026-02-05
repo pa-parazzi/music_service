@@ -1,4 +1,4 @@
-package org.musicservice.demo.mapper.image;
+package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Named;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
@@ -7,19 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserAvatarUrlMapper {
+public class SoundUrlMapper {
 
     private final YandexStorageProperties yandexStorageProperties;
     private final S3UrlGenerator s3UrlGenerator;
 
     @Autowired
-    public UserAvatarUrlMapper(YandexStorageProperties yandexStorageProperties, S3UrlGenerator s3UrlGenerator) {
+    public SoundUrlMapper(YandexStorageProperties yandexStorageProperties, S3UrlGenerator s3UrlGenerator) {
         this.yandexStorageProperties = yandexStorageProperties;
         this.s3UrlGenerator = s3UrlGenerator;
     }
 
     @Named("mapUrl")
     public String mapUrl(String key){
-        return s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), key);
+        return s3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("music"), key);
     }
 }

@@ -1,7 +1,7 @@
 package org.musicservice.demo.security.config;
 
 import org.musicservice.demo.security.authHandler.ApiAuthenticationEntryPoint;
-import org.musicservice.demo.security.filter.JWTFilter;
+import org.musicservice.demo.security.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JWTFilter jwtFilter;
+    private final JwtFilter jwtFilter;
     private final ApiAuthenticationEntryPoint authenticationEntryPoint;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter, ApiAuthenticationEntryPoint authenticationEntryPoint) {
+    public SecurityConfig(JwtFilter jwtFilter, ApiAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtFilter = jwtFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
     }

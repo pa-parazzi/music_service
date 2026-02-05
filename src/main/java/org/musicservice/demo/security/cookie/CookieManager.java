@@ -1,7 +1,7 @@
 package org.musicservice.demo.security.cookie;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
+import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CookieManager {
 
-    private final AuthenticationTokenProperties authenticationTokenProperties;
+    private final RefreshTokenProperties refreshTokenProperties;
 
     @Autowired
-    public CookieManager(AuthenticationTokenProperties authenticationTokenProperties) {
-        this.authenticationTokenProperties = authenticationTokenProperties;
+    public CookieManager(RefreshTokenProperties refreshTokenProperties) {
+        this.refreshTokenProperties = refreshTokenProperties;
     }
 
     // Задает refreshToken в cookie в браузере
@@ -23,7 +23,7 @@ public class CookieManager {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(authenticationTokenProperties.getRefreshTokenDuration().plusDays(1).getSeconds())
+                .maxAge(refreshTokenProperties.getDuration().plusDays(1).getSeconds())
                 .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

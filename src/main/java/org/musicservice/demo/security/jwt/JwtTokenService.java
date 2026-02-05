@@ -6,11 +6,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.musicservice.demo.security.dto.TokenSubject;
-import org.musicservice.demo.security.properties.AuthenticationTokenProperties;
-import org.musicservice.demo.security.userDetails.UserPrincipal;
+import org.musicservice.demo.security.properties.JwtTokenProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -22,26 +19,25 @@ import java.util.UUID;
 public class JwtTokenService {
 
     private final JWTVerifier jwtVerifier;
-    private final AuthenticationTokenProperties properties;
+    private final JwtTokenProperties jwtTokenProperties;
     private final Algorithm algorithm;
 
     @Autowired
-    public JwtTokenService(@Value("${jwt_secret_key}") String secret,
-                           AuthenticationTokenProperties properties) {
-        this.properties = properties;
-        this.algorithm = Algorithm.HMAC256(secret);
+    public JwtTokenService(JwtTokenProperties jwtTokenProperties) {
+        this.jwtTokenProperties = jwtTokenProperties;
+        this.algorithm = Algorithm.HMAC256(jwtTokenProperties.getJwtSecretKey());
         this.jwtVerifier = JWT.require(algorithm)
-                .withIssuer("app-name")
-                .acceptLeeway(30)
+                .withIssuer(jwtTokenProperties.getIssuer())
+                .acceptLeeway(jwtTokenProperties.getLeewaySeconds())
                 .build();
     }
 
     public String generateToken(TokenSubject subject){
         Instant now = Instant.now();
-        Date expirationDate = Date.from(now.plus(properties.getAccessTokenDuration()));
+        Date expirationDate = Date.from(now.plus(jwtTokenProperties.getAccessTokenDuration()));
         return JWT.create()
-                .withIssuer("app-name")
-                .withSubject(subject.userId().toString())
+                .withIssuer(jwtTokenProperties.getIssuer())
+                .withSubject(subject.userId().toString()) // если userId = null -> NPE
                 .withArrayClaim("roles", subject.roles().toArray(String[]::new))
                 .withIssuedAt(Date.from(now))
                 .withExpiresAt(expirationDate)
@@ -52,6 +48,5 @@ public class JwtTokenService {
     public DecodedJWT validateToken(String token) throws JWTVerificationException {
         return jwtVerifier.verify(token);
     }
-
 
 }

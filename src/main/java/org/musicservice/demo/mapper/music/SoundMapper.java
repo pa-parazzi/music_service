@@ -5,7 +5,7 @@ import org.mapstruct.Mapping;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Sound;
 
-@Mapper(componentModel = "spring", uses = SoundTrackUrlMapper.class)
+@Mapper(componentModel = "spring", uses = SoundUrlMapper.class)
 public interface SoundMapper {
 
     @Mapping(target = "url", source = "key", qualifiedByName = "mapUrl")

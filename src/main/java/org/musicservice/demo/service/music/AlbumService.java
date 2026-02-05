@@ -4,7 +4,6 @@ import org.musicservice.demo.dto.like.LikedAlbumResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
-import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.exception.ApiNotFoundException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
