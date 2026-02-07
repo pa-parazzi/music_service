@@ -2,7 +2,6 @@ package org.musicservice.demo.support.factory.auth;
 
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.entity.auth.RefreshToken;
-import org.musicservice.demo.security.refreshToken.RefreshTokenUtil;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,6 +23,8 @@ public class AuthenticationDataFactory {
     private static final Collection<? extends GrantedAuthority> AUTHORITY = List.of(new SimpleGrantedAuthority(Authority.USER.getAuthority()));
 
     private static final String ACCESS_TOKEN = "jwt-token";
+    private static final String REFRESH_TOKEN_VALUE = "value";
+    private static final String REFRESH_TOKEN_HASH = "hash";
 
     public static UserPrincipal principal(){
         return new UserPrincipal(
@@ -43,12 +44,18 @@ public class AuthenticationDataFactory {
         return ACCESS_TOKEN;
     }
 
-    public static RefreshToken refreshToken(Long userid){
-        String tokenValue = RefreshTokenUtil.generateRefreshToken();
-        String hash = RefreshTokenUtil.hash(tokenValue);
-        Duration duration = Duration.ofHours(24);
-        Instant expiryDate = Instant.now().plus(duration);
-        return new RefreshToken(hash, expiryDate, userid);
+    public static String refreshTokenValue(){
+        return REFRESH_TOKEN_VALUE;
+    }
+
+    public static RefreshToken validRefreshToken(){
+        Instant expiryDate = Instant.now().plus(Duration.ofHours(24));
+        return new RefreshToken(REFRESH_TOKEN_HASH, expiryDate, ID);
+    }
+
+    public static RefreshToken expiredRefreshToken(){
+        Instant expiryDate = Instant.now().minusSeconds(1);
+        return new RefreshToken(REFRESH_TOKEN_HASH, expiryDate, ID);
     }
 
 }

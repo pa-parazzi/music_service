@@ -138,7 +138,7 @@ public class AuthServiceTest {
     void refreshAccess_ShouldRotateRefreshTokenAndIssueNewAccessToken(){
         UserPrincipal principal = AuthenticationDataFactory.principal();
         Long userId = principal.userId();
-        RefreshToken refreshToken = AuthenticationDataFactory.refreshToken(userId);
+        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
         String accessToken = AuthenticationDataFactory.accessToken();
 
         when(refreshTokenService.verifyRequest(mockHttpServletRequest)).thenReturn(refreshToken);
