@@ -42,7 +42,4 @@ public class ImageUrlMapperTest {
         verify(yandexStorageProperties).getBuckets();
         verify(s3UrlGenerator).generatePublicUrl(imgBucketMap.get(bucketKey), imgKey);
     }
-
-
-
 }

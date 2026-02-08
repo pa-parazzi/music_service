@@ -5,13 +5,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.musicservice.demo.service.auth.AuthenticationListenerService;
+import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -29,50 +35,47 @@ public class AuthenticationListenerServiceTest {
     private AuthenticationListenerService authenticationListenerService;
 
     @Test
-    void failedLoginProcessTest_ShouldReturnEarly_WhenNoRowsUpdated(){
-        String username = ValidUserDataFactory.username();
-        int countRowsUpdated = 0;
-        when(userRepository.incrementFailedAttempts(username)).thenReturn(countRowsUpdated);
+    void failedLoginProcess_ShouldIncrementFailedAttempt(){
+        User user = AuthenticationDataFactory.userWithFailedLoginAttemptsZero();
+        String username = user.getUsername();
+        int maxFailedAttempts = AuthenticationDataFactory.maxFailedLoginAttempts();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(securityProperties.getMaxFailedAttempts()).thenReturn(maxFailedAttempts);
 
         authenticationListenerService.failedLoginProcess(username);
 
-        verify(userRepository).incrementFailedAttempts(username);
-        verifyNoMoreInteractions(userRepository);
+        assertEquals(1, user.getFailedLoginAttempts());
+    }
+
+    @Test
+    void failedLoginProcess_ShouldNothing_WhenUserIsEmpty(){
+        User user = AuthenticationDataFactory.userWithFailedLoginAttemptsZero();
+        String username = user.getUsername();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        authenticationListenerService.failedLoginProcess(username);
+
         verifyNoInteractions(securityProperties);
     }
 
     @Test
-    void failedLoginAttempts_ShouldIncrementFailedAttempt(){
-        String username = ValidUserDataFactory.username();
-        int coundRowsUpdated = 1;
-        int lockDurationMinutes = 15;
-        int failedLoginAttempts = 3;
+    void failedLoginProcess_ShouldSetLockTime_WhenReachedMaxFailedLoginAttempts(){
+        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttempts();
+        String username = user.getUsername();
+        int maxFailedAttempts = AuthenticationDataFactory.maxFailedLoginAttempts();
+        int lockDurationMinutes = AuthenticationDataFactory.lockDurationMinutes();
 
-        when(userRepository.incrementFailedAttempts(username)).thenReturn(coundRowsUpdated);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(securityProperties.getMaxFailedAttempts()).thenReturn(maxFailedAttempts);
         when(securityProperties.getLockDurationMinutes()).thenReturn(lockDurationMinutes);
-        when(userRepository.lockUserIfMaxLoginAttempts(eq(username), any(LocalDateTime.class), any(Integer.class))).thenReturn(coundRowsUpdated);
-        when(securityProperties.getMaxFailedAttempts()).thenReturn(failedLoginAttempts);
 
         authenticationListenerService.failedLoginProcess(username);
 
-        verify(userRepository).incrementFailedAttempts(username);
-        verify(securityProperties).getLockDurationMinutes();
-        verify(userRepository).lockUserIfMaxLoginAttempts(eq(username), any(LocalDateTime.class), any(Integer.class));
-        verify(securityProperties).getMaxFailedAttempts();
-
-        verifyNoMoreInteractions(userRepository, securityProperties);
+        assertFalse(user.isAccountNonLocked());
+        assertTrue(user.getLockTime().isAfter(LocalDateTime.now().plusMinutes(lockDurationMinutes).minusMinutes(1)));
     }
 
 
-    @Test
-    void resetFailedLogin_NoMoreInteractions(){
-        String username = ValidUserDataFactory.username();
-
-        when(userRepository.resetFailedLoginAttempts(username)).thenReturn(1);
-
-        authenticationListenerService.resetFailedLogin(username);
-
-        verify(userRepository).resetFailedLoginAttempts(username);
-        verifyNoMoreInteractions(userRepository);
-    }
 }

@@ -2,6 +2,8 @@ package org.musicservice.demo.support.factory.auth;
 
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.entity.auth.RefreshToken;
+import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,6 +29,12 @@ public class AuthenticationDataFactory {
     private static final String REFRESH_TOKEN_VALUE = "value";
     private static final String REFRESH_TOKEN_HASH = "hash";
 
+    private static final String EMAIL = "test@mail.com";
+    private static final LocalDate DATE_OF_BIRTH = LocalDate.of(2000, 1, 1);
+
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 3;
+    private static final int LOCK_DURATION_MINUTES = 15;
+
     public static UserPrincipal principal(){
         return new UserPrincipal(
                 ID,
@@ -34,6 +43,34 @@ public class AuthenticationDataFactory {
                 ACCOUNT_NON_LOCKED,
                 ENABLED,
                 AUTHORITY);
+    }
+
+    public static User userWithFailedLoginAttemptsZero(){
+        User user = new User(
+                USERNAME,
+                PASSWORD,
+                EMAIL,
+                DATE_OF_BIRTH,
+                Authority.USER
+        );
+        user.setId(ID);
+        user.setLockTime(null);
+        user.setFailedLoginAttempts(0);
+        return user;
+    }
+
+    public static User userWithMaxFailedLoginAttempts(){
+        User user = new User(
+                USERNAME,
+                PASSWORD,
+                EMAIL,
+                DATE_OF_BIRTH,
+                Authority.USER
+        );
+        user.setId(ID);
+        user.setLockTime(null);
+        user.setFailedLoginAttempts(MAX_FAILED_LOGIN_ATTEMPTS);
+        return user;
     }
 
     public static Authentication authentication(UserPrincipal principal){
@@ -56,6 +93,18 @@ public class AuthenticationDataFactory {
     public static RefreshToken expiredRefreshToken(){
         Instant expiryDate = Instant.now().minusSeconds(1);
         return new RefreshToken(REFRESH_TOKEN_HASH, expiryDate, ID);
+    }
+
+    public static VerifyEmailRequest verifyEmailRequest(){
+        return new VerifyEmailRequest(ID, EMAIL);
+    }
+
+    public static int maxFailedLoginAttempts(){
+        return MAX_FAILED_LOGIN_ATTEMPTS;
+    }
+
+    public static int lockDurationMinutes(){
+        return LOCK_DURATION_MINUTES;
     }
 
 }

@@ -77,10 +77,9 @@ public class RefreshTokenServiceTest {
         RefreshToken refreshToken = AuthenticationDataFactory.expiredRefreshToken();
         String newTokenValue = AuthenticationDataFactory.refreshTokenValue();
         String hash = "new-token-hash";
-        Duration duration = Duration.ofHours(24);
         when(refreshTokenCryptoService.generateRefreshToken()).thenReturn(newTokenValue);
         when(refreshTokenCryptoService.hash(newTokenValue)).thenReturn(hash);
-        when(refreshTokenProperties.getDuration()).thenReturn(duration);
+        when(refreshTokenProperties.getDuration()).thenReturn(Duration.ofHours(24));
 
         refreshTokenService.rotation(refreshToken, response);
 
@@ -94,7 +93,7 @@ public class RefreshTokenServiceTest {
 
         refreshTokenService.rotation(refreshToken, response);
 
-        verifyNoInteractions(refreshTokenCryptoService, refreshTokenProperties, refreshTokenRepository, cookieManager);
+        verifyNoInteractions(refreshTokenCryptoService, refreshTokenRepository, cookieManager);
     }
 
     @Test
