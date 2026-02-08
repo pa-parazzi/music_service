@@ -1,6 +1,5 @@
 package org.musicservice.demo.security.verification;
 
-import jakarta.persistence.EntityManager;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
@@ -22,15 +21,13 @@ public class VerificationTokenService {
     private final VerificationTokenProperties properties;
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final EntityManager entityManager;
 
     @Autowired
-    public VerificationTokenService(VerificationTokenRepository verificationTokenRepository, VerificationTokenProperties properties, UserRepository userRepository, EmailService emailService, EntityManager entityManager) {
+    public VerificationTokenService(VerificationTokenRepository verificationTokenRepository, VerificationTokenProperties properties, UserRepository userRepository, EmailService emailService) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.properties = properties;
         this.userRepository = userRepository;
         this.emailService = emailService;
-        this.entityManager = entityManager;
     }
 
     public VerificationToken findByToken(String token){
@@ -41,9 +38,8 @@ public class VerificationTokenService {
     public void createToken(VerifyEmailRequest request){
         String token = UUID.randomUUID().toString();
         Instant expiryDate = Instant.now().plus(properties.getExpirationHours());
-        User user = entityManager.getReference(User.class, request.userId());
-        VerificationToken newVerificationToken = new VerificationToken(user, token, expiryDate);
-        verificationTokenRepository.save(newVerificationToken);
+        User userProxy = userRepository.getReferenceById(request.userId());
+        verificationTokenRepository.save(new VerificationToken(userProxy, token, expiryDate));
         String activationLink = properties.getActivationUrl() + token;
         emailService.sendActivationEmail(request.email(), activationLink);
     }

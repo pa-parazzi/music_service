@@ -15,9 +15,9 @@ public class EmailService {
         this.javaMailSender = javaMailSender;
     }
 
-    public void sendActivationEmail(String to, String activationLink){
+    public void sendActivationEmail(String email, String activationLink){
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
+        message.setTo(email);
         message.setSubject("Активация аккаунта");
         message.setText("Для активации перейдите по ссылке: " + activationLink);
         javaMailSender.send(message);

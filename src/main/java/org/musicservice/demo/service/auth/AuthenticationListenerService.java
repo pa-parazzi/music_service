@@ -1,5 +1,6 @@
 package org.musicservice.demo.service.auth;
 
+import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true)
 public class AuthenticationListenerService {
 
     private final UserRepository userRepository;
@@ -23,17 +24,26 @@ public class AuthenticationListenerService {
 
     @Transactional
     public void failedLoginProcess(String username){
-        int updateRows = userRepository.incrementFailedAttempts(username);
-        if(updateRows == 0){
-            return;
+        Optional<User> optUser = userRepository.findByUsername(username);
+        if(optUser.isPresent()){
+            User user = optUser.get();
+            int failedAttempts = user.getFailedLoginAttempts();
+            if(failedAttempts >= securityProperties.getMaxFailedAttempts()){
+                user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
+                return;
+            }
+            user.setFailedLoginAttempts(failedAttempts + 1);
         }
-        LocalDateTime lockTime = LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes());
-        userRepository.lockUserIfMaxLoginAttempts(username, lockTime, securityProperties.getMaxFailedAttempts());
     }
 
     @Transactional
     public void resetFailedLogin(String username){
-        userRepository.resetFailedLoginAttempts(username);
+        Optional<User> optUser = userRepository.findByUsername(username);
+        if(optUser.isPresent()){
+            User user = optUser.get();
+            user.setFailedLoginAttempts(0);
+            user.setLockTime(null);
+        }
     }
 
 }

@@ -47,11 +47,9 @@ public class RefreshTokenService {
     @Transactional
     public void rotation(RefreshToken refreshToken, HttpServletResponse response){
         if(isExpired(refreshToken.getExpiryDate())){
-            Long userId = refreshToken.getUserId();
             String newTokenValue = refreshTokenCryptoService.generateRefreshToken();
             String hash = refreshTokenCryptoService.hash(newTokenValue);
-            Instant expiryDate = Instant.now().plus(refreshTokenProperties.getDuration());
-            refreshTokenRepository.rotation(userId, hash, expiryDate);
+            refreshTokenRepository.rotation(refreshToken.getUserId(), hash, expiryDate());
             cookieManager.setCookie(response, newTokenValue);
         }
     }
@@ -79,11 +77,14 @@ public class RefreshTokenService {
         String generatedRefreshToken = refreshTokenCryptoService.generateRefreshToken();
         String hash = refreshTokenCryptoService.hash(generatedRefreshToken);
         cookieManager.setCookie(response, generatedRefreshToken);
-        Instant expiryDate = Instant.now().plus(refreshTokenProperties.getDuration());
-        return refreshTokenRepository.save(new RefreshToken(hash, expiryDate, userId));
+        return refreshTokenRepository.save(new RefreshToken(hash, expiryDate(), userId));
     }
 
-    public boolean isExpired(Instant expiryDate){
+    private Instant expiryDate(){
+        return Instant.now().plus(refreshTokenProperties.getDuration());
+    }
+
+    private boolean isExpired(Instant expiryDate){
         return expiryDate.isBefore(Instant.now());
     }
 
