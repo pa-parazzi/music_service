@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class AuthenticationDataFactory {
         return user;
     }
 
-    public static User userWithMaxFailedLoginAttempts(){
+    public static User userWithMaxFailedLoginAttemptsAndNullLockTime(){
         User user = new User(
                 USERNAME,
                 PASSWORD,
@@ -69,6 +70,20 @@ public class AuthenticationDataFactory {
         );
         user.setId(ID);
         user.setLockTime(null);
+        user.setFailedLoginAttempts(MAX_FAILED_LOGIN_ATTEMPTS);
+        return user;
+    }
+
+    public static User userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes(){
+        User user = new User(
+                USERNAME,
+                PASSWORD,
+                EMAIL,
+                DATE_OF_BIRTH,
+                Authority.USER
+        );
+        user.setId(ID);
+        user.setLockTime(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
         user.setFailedLoginAttempts(MAX_FAILED_LOGIN_ATTEMPTS);
         return user;
     }

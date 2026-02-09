@@ -1,7 +1,10 @@
 package org.musicservice.demo.unit.service.auth;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,9 +32,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,9 +72,9 @@ public class AuthServiceTest {
     @Test
     void processRegistration_ShouldCreateUserAndIssueTokensAndSendVerification(){
         RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
-        User newUser = ValidUserDataFactory.user();
+        User user = ValidUserDataFactory.user();
         String accessToken = AuthenticationDataFactory.accessToken();
-        when(userService.create(registrationRequest)).thenReturn(newUser);
+        when(userService.create(registrationRequest)).thenReturn(user);
         when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(accessToken);
 
         TokenResponse result = authService.processRegistration(registrationRequest, mockMultipartFile, mockHttpServletResponse);
@@ -79,13 +84,20 @@ public class AuthServiceTest {
         verify(registrationValidator).validateUsername(registrationRequest.getUsername());
         verify(registrationValidator).validateEmail(registrationRequest.getEmail());
         verify(userService).create(registrationRequest);
-        verify(avatarService).createOrGetDefault(eq(mockMultipartFile), eq(newUser));
-        verify(verificationTokenService).createToken(any(VerifyEmailRequest.class));
-        verify(refreshTokenService).create(eq(newUser.getId()), eq(mockHttpServletResponse));
-        verify(jwtTokenService).generateToken(any(TokenSubject.class));
-        verifyNoMoreInteractions(registrationValidator, userService, avatarService, verificationTokenService, refreshTokenService, jwtTokenService);
-    }
+        verify(avatarService).createOrGetDefault(mockMultipartFile, user);
 
+        ArgumentCaptor<VerifyEmailRequest> verifyEmailRequestCaptor = ArgumentCaptor.forClass(VerifyEmailRequest.class);
+        verify(verificationTokenService).createToken(verifyEmailRequestCaptor.capture());
+        VerifyEmailRequest verifyEmailRequest = verifyEmailRequestCaptor.getValue();
+        assertEquals(user.getId(), verifyEmailRequest.userId());
+        assertEquals(user.getEmail(), verifyEmailRequest.email());
+
+        ArgumentCaptor<TokenSubject> tokenSubjectCaptor = ArgumentCaptor.forClass(TokenSubject.class);
+        verify(jwtTokenService).generateToken(tokenSubjectCaptor.capture());
+        TokenSubject tokenSubject = tokenSubjectCaptor.getValue();
+        assertEquals(user.getId(), tokenSubject.userId());
+        assertTrue(tokenSubject.roles().contains(user.getRole().getAuthority()));
+    }
 
     @Test
     void processRegistration_ShouldThrowRegistrationException_UsernameAlreadyExists(){
@@ -118,8 +130,10 @@ public class AuthServiceTest {
     void processLogin_ShouldGenerateJwtAndRotateRefreshToken(){
         UserPrincipal principal = AuthenticationDataFactory.principal();
         Long userId = principal.userId();
+        Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         Authentication authentication = AuthenticationDataFactory.authentication(principal);
         String accessToken = AuthenticationDataFactory.accessToken();
+
         when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(accessToken);
 
         TokenResponse result = authService.processLogin(authentication, mockHttpServletResponse);
@@ -130,7 +144,12 @@ public class AuthServiceTest {
         inOrder.verify(refreshTokenService).deleteByUserId(userId, mockHttpServletResponse);
         inOrder.verify(refreshTokenService).create(userId, mockHttpServletResponse);
 
-        verify(jwtTokenService).generateToken(any(TokenSubject.class));
+        ArgumentCaptor<TokenSubject> tokenSubjectCaptor = ArgumentCaptor.forClass(TokenSubject.class);
+        verify(jwtTokenService).generateToken(tokenSubjectCaptor.capture());
+        TokenSubject tokenSubject = tokenSubjectCaptor.getValue();
+        assertEquals(userId, tokenSubject.userId());
+        assertEquals(roles, tokenSubject.roles());
+
         verifyNoMoreInteractions(refreshTokenService, jwtTokenService);
     }
 
@@ -138,6 +157,7 @@ public class AuthServiceTest {
     void refreshAccess_ShouldRotateRefreshTokenAndIssueNewAccessToken(){
         UserPrincipal principal = AuthenticationDataFactory.principal();
         Long userId = principal.userId();
+        Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
         String accessToken = AuthenticationDataFactory.accessToken();
 
@@ -154,7 +174,13 @@ public class AuthServiceTest {
         inOrder.verify(refreshTokenService).verifyRequest(mockHttpServletRequest);
         inOrder.verify(refreshTokenService).rotation(refreshToken, mockHttpServletResponse);
         inOrder.verify(userDetailsService).loadPrincipalById(userId);
-        inOrder.verify(jwtTokenService).generateToken(any(TokenSubject.class));
+
+        ArgumentCaptor<TokenSubject> tokenSubjectCaptor = ArgumentCaptor.forClass(TokenSubject.class);
+        inOrder.verify(jwtTokenService).generateToken(tokenSubjectCaptor.capture());
+        TokenSubject tokenSubject = tokenSubjectCaptor.getValue();
+        assertEquals(userId, tokenSubject.userId());
+        assertEquals(roles, tokenSubject.roles());
+
         verifyNoMoreInteractions(refreshTokenService, userDetailsService, jwtTokenService);
     }
 

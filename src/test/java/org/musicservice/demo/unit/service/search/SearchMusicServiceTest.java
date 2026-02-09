@@ -54,7 +54,7 @@ public class SearchMusicServiceTest {
     }
 
     @Test
-    void searchMusicResult_ShouldReturnEmpty(){
+    void searchMusicResult_ShouldReturnNull_WhenFragmentIsEmpty(){
         String fragment = " ";
 
         SearchMusicResponse result = searchMusicService.searchMusicResult(fragment);
@@ -64,8 +64,7 @@ public class SearchMusicServiceTest {
     }
 
     @Test
-    void searchMusicResult_ShouldReturnNull(){
-
+    void searchMusicResult_ShouldReturnNull_WhenFragmentIsNull(){
         SearchMusicResponse result = searchMusicService.searchMusicResult(null);
 
         assertNull(result);

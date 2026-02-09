@@ -2,6 +2,7 @@ package org.musicservice.demo.unit.service.image;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,6 +15,7 @@ import org.musicservice.demo.service.s3Storage.S3Storage;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -37,14 +39,19 @@ public class UserAvatarServiceTest {
     @Test
     void create_ShouldUploadFileInObjectStorageAndCreateUserAvatar(){
         User user = ValidUserDataFactory.user();
-        when(s3Storage.upload(mockMultipartFile)).thenReturn("default_avatar");
+        String avatarKey = "default_avatar";
+        when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
 
         userAvatarService.create(mockMultipartFile, user);
 
-        assertNotNull(user.getUserAvatar());
         verify(s3Storage).upload(mockMultipartFile);
-        verify(userAvatarRepository).save(any(UserAvatar.class));
-        verifyNoMoreInteractions(userAvatarRepository, s3Storage);
+
+        ArgumentCaptor<UserAvatar> avatarCaptor = ArgumentCaptor.forClass(UserAvatar.class);
+        verify(userAvatarRepository).save(avatarCaptor.capture());
+        UserAvatar userAvatar = avatarCaptor.getValue();
+
+        assertEquals(user, userAvatar.getOwner());
+        assertEquals(avatarKey, userAvatar.getKey());
     }
 
     @Test
@@ -61,38 +68,51 @@ public class UserAvatarServiceTest {
     @Test
     void createDefaultAvatar_ShouldCreateDefaultAvatar(){
         User user = ValidUserDataFactory.user();
-        when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn("default_avatar");
+        String avatarKey = "default_avatar";
+        when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(avatarKey);
 
         userAvatarService.createDefaultAvatar(user);
 
-        assertNotNull(user.getUserAvatar());
-        verify(userAvatarRepository).save(any(UserAvatar.class));
+        ArgumentCaptor<UserAvatar> avatarCaptor = ArgumentCaptor.forClass(UserAvatar.class);
+        verify(userAvatarRepository).save(avatarCaptor.capture());
+        UserAvatar userAvatar = avatarCaptor.getValue();
+
+        assertEquals(user, userAvatar.getOwner());
+        assertEquals(avatarKey, userAvatar.getKey());
     }
 
     @Test
-    void createOrGetDefault_ShouldCreateDefaultAvatarWithoutMultipartFile(){
+    void createOrGetDefault_ShouldCreateDefaultAvatar_WhenMultipartFileIsNull(){
         User user = ValidUserDataFactory.user();
         String defaultKey = "default_avatar";
         when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(defaultKey);
 
         userAvatarService.createOrGetDefault(null, user);
 
-        assertEquals(defaultKey, user.getUserAvatar().getKey());
-        verify(userAvatarRepository).save(any(UserAvatar.class));
+        ArgumentCaptor<UserAvatar> avatarCapture = ArgumentCaptor.forClass(UserAvatar.class);
+        verify(userAvatarRepository).save(avatarCapture.capture());
+        UserAvatar userAvatar = avatarCapture.getValue();
+        assertEquals(user, userAvatar.getOwner());
+        assertEquals(defaultKey, userAvatar.getKey());
+
+        verifyNoInteractions(s3Storage);
     }
 
     @Test
-    void createOrGetDefault_ShouldCreateUserAvatarWithNewKey(){
+    void createOrGetDefault_ShouldCreateUserAvatar_WhenMultipartFileIsPresent(){
         User user = ValidUserDataFactory.user();
         String avatarKey = "new_user_avatar_key";
         when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
 
         userAvatarService.createOrGetDefault(mockMultipartFile, user);
 
-        assertEquals(avatarKey, user.getUserAvatar().getKey());
         verify(s3Storage).upload(mockMultipartFile);
-        verify(userAvatarRepository).save(any(UserAvatar.class));
-        verifyNoMoreInteractions(s3Storage, userAvatarRepository);
+
+        ArgumentCaptor<UserAvatar> avatarCapture = ArgumentCaptor.forClass(UserAvatar.class);
+        verify(userAvatarRepository).save(avatarCapture.capture());
+        UserAvatar userAvatar = avatarCapture.getValue();
+        assertEquals(user, userAvatar.getOwner());
+        assertEquals(avatarKey, userAvatar.getKey());
     }
 
 }

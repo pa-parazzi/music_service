@@ -10,16 +10,13 @@ import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.musicservice.demo.service.auth.AuthenticationListenerService;
 import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -62,7 +59,7 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginProcess_ShouldSetLockTime_WhenReachedMaxFailedLoginAttempts(){
-        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttempts();
+        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndNullLockTime();
         String username = user.getUsername();
         int maxFailedAttempts = AuthenticationDataFactory.maxFailedLoginAttempts();
         int lockDurationMinutes = AuthenticationDataFactory.lockDurationMinutes();
@@ -75,6 +72,34 @@ public class AuthenticationListenerServiceTest {
 
         assertFalse(user.isAccountNonLocked());
         assertTrue(user.getLockTime().isAfter(LocalDateTime.now().plusMinutes(lockDurationMinutes).minusMinutes(1)));
+        assertEquals(maxFailedAttempts, user.getFailedLoginAttempts());
+    }
+
+
+    @Test
+    void resetFailedLogin_ShouldResetFailedLoginAttemptsAndLockTime_WhenUserIsPresent(){
+        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
+        String username = user.getUsername();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        authenticationListenerService.resetFailedLogin(username);
+
+        assertEquals(0, user.getFailedLoginAttempts());
+        assertNull(user.getLockTime());
+    }
+
+    @Test
+    void resetFailedLogin_ShouldNothing_WhenUserIsEmpty(){
+        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
+        int failedAttempts = user.getFailedLoginAttempts();
+        int lockDurationOfMinutes = user.getLockTime().getMinute();
+        String username = user.getUsername();
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        authenticationListenerService.resetFailedLogin(username);
+
+        assertEquals(failedAttempts, user.getFailedLoginAttempts());
+        assertEquals(lockDurationOfMinutes, user.getLockTime().getMinute());
     }
 
 

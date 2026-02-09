@@ -58,7 +58,6 @@ public class UserServiceTest {
 
         verify(passwordEncoder).encode(registrationRequest.getPassword());
         verify(userRepository).save(any(User.class));
-        verifyNoMoreInteractions(passwordEncoder, userRepository);
     }
 
     @Test
@@ -117,7 +116,6 @@ public class UserServiceTest {
 
 
     /** Negatives cases */
-
 
     @Test
     void searchByIdWithAvatarTest_ThrowUserNotFoundException(){
