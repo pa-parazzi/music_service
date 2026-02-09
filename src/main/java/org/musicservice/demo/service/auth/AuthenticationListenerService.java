@@ -25,15 +25,16 @@ public class AuthenticationListenerService {
     @Transactional
     public void failedLoginProcess(String username){
         Optional<User> optUser = userRepository.findByUsername(username);
-        if(optUser.isPresent()){
-            User user = optUser.get();
-            int failedAttempts = user.getFailedLoginAttempts();
-            if(failedAttempts >= securityProperties.getMaxFailedAttempts()){
-                user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
-                return;
-            }
-            user.setFailedLoginAttempts(failedAttempts + 1);
+        if(optUser.isEmpty()){
+            return;
         }
+        User user = optUser.get();
+        int failedAttempts = user.getFailedLoginAttempts();
+        if(failedAttempts + 1 >= securityProperties.getMaxFailedAttempts()){
+            user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
+            return;
+        }
+        user.setFailedLoginAttempts(failedAttempts + 1);
     }
 
     @Transactional
