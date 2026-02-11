@@ -31,4 +31,8 @@ verification-token:
   activation-url: "http://localhost:8080/api/auth/activate?token="
 
 cookie:
-  refresh-token: "refreshToken"
+  refresh-token-name: "refreshToken"
+  http-only: true
+  secure: true
+  path: /
+  same-site: Strict

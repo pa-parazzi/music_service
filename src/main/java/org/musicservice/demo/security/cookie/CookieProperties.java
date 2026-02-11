@@ -10,5 +10,9 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class CookieProperties {
-    private String refreshToken;
+    private String refreshTokenName;
+    private Boolean httpOnly;
+    private Boolean secure;
+    private String path;
+    private String sameSite;
 }

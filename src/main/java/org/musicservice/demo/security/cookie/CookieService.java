@@ -18,7 +18,7 @@ public class CookieService {
 
     // Получаем refresh-token из cookie
     public String getRefreshTokenByCookie(HttpServletRequest request){
-        Cookie cookie = WebUtils.getCookie(request, cookieProperties.getRefreshToken());
+        Cookie cookie = WebUtils.getCookie(request, cookieProperties.getRefreshTokenName());
         if(cookie==null){
             return null;
         }

@@ -21,24 +21,24 @@ public class CookieManager {
 
     // Задает refreshToken в cookie в браузере
     public void setCookie(HttpServletResponse response, String refreshToken){
-        ResponseCookie cookie = ResponseCookie.from(cookieProperties.getRefreshToken(), refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(refreshTokenProperties.getDuration().plusDays(1).getSeconds())
-                .sameSite("Strict")
+        ResponseCookie cookie = ResponseCookie.from(cookieProperties.getRefreshTokenName(), refreshToken)
+                .httpOnly(cookieProperties.getHttpOnly())
+                .secure(cookieProperties.getSecure())
+                .path(cookieProperties.getPath())
+                .maxAge(refreshTokenProperties.getDuration())
+                .sameSite(cookieProperties.getSameSite())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     // Очистка cookie
     public void clearCookie(HttpServletResponse response){
-        ResponseCookie clearCookie = ResponseCookie.from(cookieProperties.getRefreshToken(), "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
+        ResponseCookie clearCookie = ResponseCookie.from(cookieProperties.getRefreshTokenName(), "")
+                .httpOnly(cookieProperties.getHttpOnly())
+                .secure(cookieProperties.getSecure())
+                .path(cookieProperties.getPath())
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite(cookieProperties.getSameSite())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
     }
