@@ -21,10 +21,6 @@ public class ValidUserDataFactory {
     private static final String AVATAR_KEY = "default_avatar.jpg";
     private static final String AVATAR_URL = "https://mus-app-img.storage.yandexcloud.net/default_avatar.jpg";
 
-    public static String username(){
-        return USERNAME;
-    }
-
     public static RegistrationRequest registrationRequest() {
         RegistrationRequest request = new RegistrationRequest();
         request.setUsername(USERNAME);

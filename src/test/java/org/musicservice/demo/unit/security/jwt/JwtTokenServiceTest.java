@@ -7,13 +7,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.properties.JwtTokenProperties;
-
-import java.time.Duration;
-import java.util.List;
+import org.musicservice.demo.support.factory.auth.JwtTokenFactory;
+import org.musicservice.demo.support.factory.auth.TokenSubjectFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -27,18 +25,18 @@ public class JwtTokenServiceTest {
     private JwtTokenService jwtTokenService;
 
     @BeforeEach
-    void setUp(){
+    void setupJwtProperties(){
         jwtTokenProperties = mock(JwtTokenProperties.class);
-        when(jwtTokenProperties.getJwtSecretKey()).thenReturn("secret");
-        when(jwtTokenProperties.getIssuer()).thenReturn("app-name");
-        when(jwtTokenProperties.getLeewaySeconds()).thenReturn(30L);
+        when(jwtTokenProperties.getJwtSecretKey()).thenReturn(JwtTokenFactory.secret());
+        when(jwtTokenProperties.getIssuer()).thenReturn(JwtTokenFactory.issuer());
+        when(jwtTokenProperties.getLeewaySeconds()).thenReturn(JwtTokenFactory.leewaySeconds());
         jwtTokenService = new JwtTokenService(jwtTokenProperties);
     }
 
     @Test
     void generateToken_ShouldContainCorrectClaims(){
-        TokenSubject subject = new TokenSubject(1L, List.of(Authority.USER.getAuthority()));
-        when(jwtTokenProperties.getAccessTokenDuration()).thenReturn(Duration.ofMinutes(15));
+        TokenSubject subject = TokenSubjectFactory.tokenSubject();
+        when(jwtTokenProperties.getAccessTokenDuration()).thenReturn(JwtTokenFactory.duration());
 
         String jwtToken = jwtTokenService.generateToken(subject);
         DecodedJWT decodedJWT = JWT.decode(jwtToken);
@@ -52,9 +50,9 @@ public class JwtTokenServiceTest {
     }
 
     @Test
-    void validateToken_shouldReturnDecodedJWT_whenTokenValid(){
-        TokenSubject subject = new TokenSubject(1L, List.of(Authority.USER.getAuthority()));
-        when(jwtTokenProperties.getAccessTokenDuration()).thenReturn(Duration.ofMinutes(15));
+    void validateToken_ShouldReturnDecodedJWT_whenTokenValid(){
+        TokenSubject subject = TokenSubjectFactory.tokenSubject();
+        when(jwtTokenProperties.getAccessTokenDuration()).thenReturn(JwtTokenFactory.duration());
 
         String jwtTokenValue = jwtTokenService.generateToken(subject);
         DecodedJWT decodedJWT = jwtTokenService.validateToken(jwtTokenValue);

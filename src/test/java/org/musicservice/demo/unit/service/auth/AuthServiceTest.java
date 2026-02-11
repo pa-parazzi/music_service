@@ -1,7 +1,5 @@
 package org.musicservice.demo.unit.service.auth;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -27,6 +25,8 @@ import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.service.validator.RegistrationValidator;
 import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
+import org.musicservice.demo.support.factory.auth.JwtTokenFactory;
+import org.musicservice.demo.support.factory.auth.RefreshTokenFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -73,13 +73,13 @@ public class AuthServiceTest {
     void processRegistration_ShouldCreateUserAndIssueTokensAndSendVerification(){
         RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
         User user = ValidUserDataFactory.user();
-        String accessToken = AuthenticationDataFactory.accessToken();
+        String jwtValue = JwtTokenFactory.value();
         when(userService.create(registrationRequest)).thenReturn(user);
-        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(accessToken);
+        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(jwtValue);
 
         TokenResponse result = authService.processRegistration(registrationRequest, mockMultipartFile, mockHttpServletResponse);
 
-        assertEquals(accessToken, result.accessToken());
+        assertEquals(jwtValue, result.accessToken());
 
         verify(registrationValidator).validateUsername(registrationRequest.getUsername());
         verify(registrationValidator).validateEmail(registrationRequest.getEmail());
@@ -132,13 +132,13 @@ public class AuthServiceTest {
         Long userId = principal.userId();
         Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         Authentication authentication = AuthenticationDataFactory.authentication(principal);
-        String accessToken = AuthenticationDataFactory.accessToken();
+        String jwtValue = JwtTokenFactory.value();
 
-        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(accessToken);
+        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(jwtValue);
 
         TokenResponse result = authService.processLogin(authentication, mockHttpServletResponse);
 
-        assertEquals(accessToken, result.accessToken());
+        assertEquals(jwtValue, result.accessToken());
 
         InOrder inOrder = inOrder(refreshTokenService);
         inOrder.verify(refreshTokenService).deleteByUserId(userId, mockHttpServletResponse);
@@ -158,16 +158,16 @@ public class AuthServiceTest {
         UserPrincipal principal = AuthenticationDataFactory.principal();
         Long userId = principal.userId();
         Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
-        String accessToken = AuthenticationDataFactory.accessToken();
+        RefreshToken refreshToken = RefreshTokenFactory.validRefreshToken();
+        String jwtValue = JwtTokenFactory.value();
 
         when(refreshTokenService.verifyRequest(mockHttpServletRequest)).thenReturn(refreshToken);
         when(userDetailsService.loadPrincipalById(userId)).thenReturn(principal);
-        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(accessToken);
+        when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(jwtValue);
 
         TokenResponse result = authService.refreshAccess(mockHttpServletResponse, mockHttpServletRequest);
 
-        assertEquals(accessToken, result.accessToken());
+        assertEquals(jwtValue, result.accessToken());
 
         InOrder inOrder = inOrder(refreshTokenService, userDetailsService, jwtTokenService);
 

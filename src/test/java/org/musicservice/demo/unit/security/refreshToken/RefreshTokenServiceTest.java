@@ -2,6 +2,7 @@ package org.musicservice.demo.unit.security.refreshToken;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,7 +14,7 @@ import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
-import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
+import org.musicservice.demo.support.factory.auth.RefreshTokenFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -48,8 +49,8 @@ public class RefreshTokenServiceTest {
 
     @Test
     void verifyRequest_ShouldAccessVerifyRequestAndReturnFoundRefreshTokenByHash_WhenRequestNotNull(){
-        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
-        String refreshTokenValue = AuthenticationDataFactory.refreshTokenValue();
+        RefreshToken refreshToken = RefreshTokenFactory.validRefreshToken();
+        String refreshTokenValue = RefreshTokenFactory.refreshTokenValue();
         String hash = refreshToken.getTokenHash();
         when(cookieService.getRefreshTokenByCookie(request)).thenReturn(refreshTokenValue);
         when(refreshTokenCryptoService.hash(refreshTokenValue)).thenReturn(hash);
@@ -66,7 +67,7 @@ public class RefreshTokenServiceTest {
     }
 
     @Test
-    void verifyRequest_ShouldThrowVerifyRefreshTokenException_WhenRequestIsNull(){
+    void verifyRequest_ShouldThrowVerifyRefreshTokenException_WhenRefreshTokenValueIsNull(){
         when(cookieService.getRefreshTokenByCookie(request)).thenReturn(null);
         assertThrows(VerifyRefreshTokenException.class, ()-> refreshTokenService.verifyRequest(request));
         verifyNoInteractions(refreshTokenRepository, refreshTokenCryptoService);
@@ -74,22 +75,29 @@ public class RefreshTokenServiceTest {
 
     @Test
     void rotation_ShouldRotateRefreshToken_WhenExpired(){
-        RefreshToken refreshToken = AuthenticationDataFactory.expiredRefreshToken();
-        String newTokenValue = AuthenticationDataFactory.refreshTokenValue();
-        String hash = "new-token-hash";
+        RefreshToken refreshToken = RefreshTokenFactory.expiredRefreshToken();
+        String newTokenValue = RefreshTokenFactory.refreshTokenValue();
+        String newHash = RefreshTokenFactory.newRefreshTokenHash();
+        Duration duration = RefreshTokenFactory.duration();
         when(refreshTokenCryptoService.generateRefreshToken()).thenReturn(newTokenValue);
-        when(refreshTokenCryptoService.hash(newTokenValue)).thenReturn(hash);
-        when(refreshTokenProperties.getDuration()).thenReturn(Duration.ofHours(24));
+        when(refreshTokenCryptoService.hash(newTokenValue)).thenReturn(newHash);
+        when(refreshTokenProperties.getDuration()).thenReturn(duration);
 
         refreshTokenService.rotation(refreshToken, response);
 
-        verify(refreshTokenRepository).rotation(any(Long.class), eq(hash), any(Instant.class));
+        ArgumentCaptor<Instant> expiryDateCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(refreshTokenRepository).rotation(eq(refreshToken.getUserId()), eq(newHash), expiryDateCaptor.capture());
+        Instant expiryDate = expiryDateCaptor.getValue();
+        assertTrue(expiryDate.isAfter(Instant.now().plus(duration).minusSeconds(1)));
+
+        assertFalse(Boolean.parseBoolean(refreshToken.getTokenHash()), newHash);
+
         verify(cookieManager).setCookie(response, newTokenValue);
     }
 
     @Test
-    void rotation_ShouldNothing_WhenNotExpired(){
-        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
+    void rotation_ShouldNothing_WhenRefreshTokenIsNotExpired(){
+        RefreshToken refreshToken = RefreshTokenFactory.validRefreshToken();
 
         refreshTokenService.rotation(refreshToken, response);
 
@@ -97,9 +105,9 @@ public class RefreshTokenServiceTest {
     }
 
     @Test
-    void dropToken_ShouldDeleteRefreshToken_WhenCookieValueNotNull(){
-        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
-        String refreshTokenValue = AuthenticationDataFactory.refreshTokenValue();
+    void dropToken_ShouldDeleteRefreshToken_WhenCookieValueIsPresent(){
+        RefreshToken refreshToken = RefreshTokenFactory.validRefreshToken();
+        String refreshTokenValue = RefreshTokenFactory.refreshTokenValue();
         String hash = refreshToken.getTokenHash();
         when(cookieService.getRefreshTokenByCookie(request)).thenReturn(refreshTokenValue);
         when(refreshTokenCryptoService.hash(refreshTokenValue)).thenReturn(hash);
@@ -123,20 +131,22 @@ public class RefreshTokenServiceTest {
 
     @Test
     void create_ShouldCreateValidRefreshToken(){
-        RefreshToken refreshToken = AuthenticationDataFactory.validRefreshToken();
-        String tokenValue = AuthenticationDataFactory.refreshTokenValue();
-        String hash = refreshToken.getTokenHash();
-        Long userId = refreshToken.getUserId();
+        String tokenValue = RefreshTokenFactory.refreshTokenValue();
+        String hash = RefreshTokenFactory.newRefreshTokenHash();
+        Long userId = RefreshTokenFactory.userId();
+        Duration duration = RefreshTokenFactory.duration();
 
         when(refreshTokenCryptoService.generateRefreshToken()).thenReturn(tokenValue);
         when(refreshTokenCryptoService.hash(tokenValue)).thenReturn(hash);
-        when(refreshTokenProperties.getDuration()).thenReturn(Duration.ofHours(24));
-        when(refreshTokenRepository.save(any(RefreshToken.class))).thenReturn(refreshToken);
+        when(refreshTokenProperties.getDuration()).thenReturn(duration);
+        when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        RefreshToken result = refreshTokenService.create(userId, response);
+        RefreshToken createdToken = refreshTokenService.create(userId, response);
 
-        assertNotNull(result);
-        assertEquals(hash, result.getTokenHash());
+        assertEquals(userId, createdToken.getUserId());
+        assertTrue(createdToken.getExpiryDate().isAfter(Instant.now().plus(duration).minusSeconds(1)));
+        assertEquals(hash, createdToken.getTokenHash());
+        assertFalse(createdToken.getRevoked());
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 

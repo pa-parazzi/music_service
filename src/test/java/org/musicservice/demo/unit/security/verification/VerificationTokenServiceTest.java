@@ -15,6 +15,7 @@ import org.musicservice.demo.security.reposiroty.VerificationTokenRepository;
 import org.musicservice.demo.security.verification.EmailService;
 import org.musicservice.demo.security.verification.VerificationTokenService;
 import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
+import org.musicservice.demo.support.factory.auth.VerificationEmailFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 
 import java.time.Duration;
@@ -41,7 +42,7 @@ public class VerificationTokenServiceTest {
 
     @Test
     void createToken_ShouldCreateValidToken(){
-        VerifyEmailRequest request = AuthenticationDataFactory.verifyEmailRequest();
+        VerifyEmailRequest request = VerificationEmailFactory.verifyEmailRequest();
         User user = ValidUserDataFactory.user();
         String activateLink = "http://activation_url/";
 
