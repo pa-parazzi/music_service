@@ -29,3 +29,6 @@ refresh-token:
 verification-token:
   expiration-hours: PT24H
   activation-url: "http://localhost:8080/api/auth/activate?token="
+
+cookie:
+  refresh-token: "refreshToken"

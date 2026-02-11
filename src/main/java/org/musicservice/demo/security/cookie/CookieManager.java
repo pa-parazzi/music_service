@@ -11,15 +11,17 @@ import org.springframework.stereotype.Component;
 public class CookieManager {
 
     private final RefreshTokenProperties refreshTokenProperties;
+    private final CookieProperties cookieProperties;
 
     @Autowired
-    public CookieManager(RefreshTokenProperties refreshTokenProperties) {
+    public CookieManager(RefreshTokenProperties refreshTokenProperties, CookieProperties cookieProperties) {
         this.refreshTokenProperties = refreshTokenProperties;
+        this.cookieProperties = cookieProperties;
     }
 
     // Задает refreshToken в cookie в браузере
     public void setCookie(HttpServletResponse response, String refreshToken){
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+        ResponseCookie cookie = ResponseCookie.from(cookieProperties.getRefreshToken(), refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -31,7 +33,7 @@ public class CookieManager {
 
     // Очистка cookie
     public void clearCookie(HttpServletResponse response){
-        ResponseCookie clearCookie = ResponseCookie.from("refreshToken", "")
+        ResponseCookie clearCookie = ResponseCookie.from(cookieProperties.getRefreshToken(), "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
