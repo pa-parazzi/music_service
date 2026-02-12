@@ -35,7 +35,7 @@ public class AuthRestController {
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<TokenResponse> registration(@Valid @RequestPart("user") RegistrationRequest regRequest,
-                                            @RequestPart(required = false) MultipartFile file,
+                                            @RequestPart(name = "file", required = false) MultipartFile file,
                                             HttpServletResponse response){
         return ResponseEntity.ok(authService.processRegistration(regRequest, file, response));
     }

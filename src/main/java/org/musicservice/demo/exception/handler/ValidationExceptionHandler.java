@@ -2,6 +2,7 @@ package org.musicservice.demo.exception.handler;
 
 import org.musicservice.demo.exception.RegistrationException;
 import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.response.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -31,7 +32,7 @@ public class ValidationExceptionHandler {
         }
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(
-                new ApiErrorResponse("VALIDATION_ERROR", "Validation failed",
+                new ApiErrorResponse(ErrorType.VALIDATION_ERROR.name(), "Validation failed",
                         status.value(), System.currentTimeMillis(), errors));
     }
 
@@ -41,7 +42,7 @@ public class ValidationExceptionHandler {
         Map<String, List<String>> fieldsError = new HashMap<>();
         fieldsError.put(e.getCode().getField(), List.of(e.getCode().getErrorCode()));
         return ResponseEntity.status(status).body(
-                new ApiErrorResponse("REGISTRATION_ERROR", e.getMessage(), status.value(), System.currentTimeMillis(), fieldsError));
+                new ApiErrorResponse(ErrorType.REGISTRATION_ERROR.name(), e.getMessage(), status.value(), System.currentTimeMillis(), fieldsError));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -51,7 +52,7 @@ public class ValidationExceptionHandler {
         while(cause!=null){
             if(cause instanceof DateTimeParseException){
                 return ResponseEntity.status(status).body(
-                        new ApiErrorResponse("INVALID_DATE_FORMAT", "формат даты: dd/MM/yyyy",
+                        new ApiErrorResponse(ErrorType.INVALID_DATE_FORMAT.name(), "формат даты: dd/MM/yyyy",
                                 status.value(), System.currentTimeMillis(), Map.of("dateOfBirth", List.of("Invalid LocalDate format")))
                 );
             }
@@ -59,7 +60,7 @@ public class ValidationExceptionHandler {
         }
 
         return ResponseEntity.status(status).body(
-                new ApiErrorResponse("INVALID_BODY_REQUEST", "Не верное тело запроса",
+                new ApiErrorResponse(ErrorType.INVALID_BODY_REQUEST.name(), "Не верное тело запроса",
                         status.value(), System.currentTimeMillis(), Map.of("json serialization", List.of("Invalid request body")))
         );
     }
