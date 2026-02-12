@@ -30,6 +30,26 @@ public class ValidUserDataFactory {
         return request;
     }
 
+    public static User userWithUsernameAlreadyExistsByRegistrationRequest(RegistrationRequest request){
+        return new User(
+                request.getUsername(),
+                PASSWORD,
+                EMAIL,
+                DATE_OF_BIRTH,
+                AUTHORITY
+        );
+    }
+
+    public static User userWithEmailAlreadyExistsByRegistrationRequest(RegistrationRequest request){
+        return new User(
+                "Alex",
+                PASSWORD,
+                registrationRequest().getEmail(),
+                DATE_OF_BIRTH,
+                AUTHORITY
+        );
+    }
+
     public static User userWithAvatar(){
         User user = new User(
                 USERNAME,

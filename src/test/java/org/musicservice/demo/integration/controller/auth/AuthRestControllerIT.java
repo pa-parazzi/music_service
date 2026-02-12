@@ -3,27 +3,33 @@ package org.musicservice.demo.integration.controller.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.RegistrationException;
+import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.response.ErrorType;
+import org.musicservice.demo.exception.response.UniqueFieldErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.cookie.CookieProperties;
 import org.musicservice.demo.security.dto.TokenResponse;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.factory.multipartFile.MultipartFileFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -36,47 +42,41 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private CookieProperties cookieProperties;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private YandexStorageProperties yandexStorageProperties;
-
     @Autowired
     private ObjectMapper objectMapper;
 
-//    @BeforeEach
-//    void cleanData(){
-//        userRepository.deleteAll();
-//    }
+    private final MediaType contentMultipartForm = MediaType.MULTIPART_FORM_DATA;
+
+    @BeforeEach
+    void cleanData(){
+        jdbcTemplate.execute("TRUNCATE TABLE users, refresh_token, verification_token RESTART IDENTITY CASCADE");
+    }
 
     @Test
-    @Transactional
     void shouldRegisterUserWithDefaultAvatarAndReturnAccessToken_WhenMultipartFileFromUserAvatarIsNull() throws Exception{
-        // given
         RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
         String userJson = objectMapper.writeValueAsString(registrationRequest);
         String defaultAvatarKey = yandexStorageProperties.getDefaultAvatarKey();
 
-        MockMultipartFile userPart = userPartSetUp(userJson);
+        MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
 
-        // when
         MvcResult result = mockMvc.perform(multipart("/api/auth/registration")
                 .file(userPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(contentMultipartForm))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
-
-        // then
         String jsonResult = result.getResponse().getContentAsString();
         TokenResponse response = objectMapper.readValue(jsonResult, TokenResponse.class);
 
@@ -102,23 +102,17 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @Transactional
     void shouldRegisterUserWithNewAvatarAndReturnAccessToken_WhenMultipartFileFromUserAvatarIsPresent() throws Exception{
         RegistrationRequest request = ValidUserDataFactory.registrationRequest();
         String userJson = objectMapper.writeValueAsString(request);
 
-        MockMultipartFile userPart = userPartSetUp(userJson);
-
-        MockMultipartFile avatarPart = new MockMultipartFile(
-                "file",
-                "new_avatar.jpg",
-                MediaType.IMAGE_JPEG_VALUE,
-                "new_avatar".getBytes());
+        MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
+        MockMultipartFile avatarPart = MultipartFileFactory.imagePart();
 
         MvcResult result = mockMvc.perform(multipart("/api/auth/registration")
                 .file(userPart)
                 .file(avatarPart)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .contentType(contentMultipartForm))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -144,16 +138,49 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(user.isEnabled()).isFalse();
     }
 
+    @Test
+    void shouldThrowRegistrationException_WhenUsernameAlreadyExists() throws Exception{
+        RegistrationRequest request = ValidUserDataFactory.registrationRequest();
+        User user = ValidUserDataFactory.userWithUsernameAlreadyExistsByRegistrationRequest(request);
+        userRepository.save(user);
 
+        String userJson = objectMapper.writeValueAsString(request);
+        MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
 
+        MvcResult result = mockMvc.perform(multipart("/api/auth/registration")
+                .file(userPart)
+                .contentType(contentMultipartForm))
+                .andExpect(status().isBadRequest())
+                .andReturn();
 
-    private MockMultipartFile userPartSetUp(String json){
-        return new MockMultipartFile(
-                "user",
-                "user.json",
-                MediaType.APPLICATION_JSON_VALUE,
-                json.getBytes(StandardCharsets.UTF_8));
+        String jsonResult = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+
+        assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.USERNAME.getField())).isTrue();
     }
 
+    @Test
+    void shouldThrowRegistrationException_WhenEmailAlreadyExists() throws Exception{
+        RegistrationRequest request = ValidUserDataFactory.registrationRequest();
+        User user = ValidUserDataFactory.userWithEmailAlreadyExistsByRegistrationRequest(request);
+        userRepository.save(user);
 
+        String userJson = objectMapper.writeValueAsString(request);
+        MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
+
+        MvcResult result = mockMvc.perform(multipart("/api/auth/registration")
+                        .file(userPart)
+                        .contentType(contentMultipartForm))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+
+        assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.EMAIL.getField())).isTrue();
+    }
 }
