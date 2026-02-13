@@ -51,7 +51,7 @@ public class AuthRestController {
     @PostMapping("/logout")
     public ResponseEntity<HttpStatus> logout(HttpServletRequest request, HttpServletResponse response){
         refreshTokenService.dropToken(request, response);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")

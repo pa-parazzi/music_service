@@ -1,23 +1,26 @@
 package org.musicservice.demo.integration.controller.auth;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.exception.RegistrationException;
 import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.response.AuthErrorCode;
 import org.musicservice.demo.exception.response.ErrorType;
 import org.musicservice.demo.exception.response.UniqueFieldErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.cookie.CookieProperties;
 import org.musicservice.demo.security.dto.TokenResponse;
+import org.musicservice.demo.security.properties.RefreshTokenProperties;
+import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
+import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.factory.cookie.CookieDataFactory;
 import org.musicservice.demo.support.factory.multipartFile.MultipartFileFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +34,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,6 +61,12 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     private YandexStorageProperties yandexStorageProperties;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RefreshTokenCryptoService refreshTokenCryptoService;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private RefreshTokenProperties refreshTokenProperties;
 
     private final MediaType contentMultipartForm = MediaType.MULTIPART_FORM_DATA;
 
@@ -141,8 +154,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldThrowRegistrationException_WhenUsernameAlreadyExists() throws Exception{
         RegistrationRequest request = ValidUserDataFactory.registrationRequest();
-        User user = ValidUserDataFactory.userWithUsernameAlreadyExistsByRegistrationRequest(request);
-        userRepository.save(user);
+        userRepository.save(ValidUserDataFactory.userWithUsernameAlreadyExistsByRegistrationRequest(request, passwordEncoder));
 
         String userJson = objectMapper.writeValueAsString(request);
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
@@ -164,8 +176,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldThrowRegistrationException_WhenEmailAlreadyExists() throws Exception{
         RegistrationRequest request = ValidUserDataFactory.registrationRequest();
-        User user = ValidUserDataFactory.userWithEmailAlreadyExistsByRegistrationRequest(request);
-        userRepository.save(user);
+        userRepository.save(ValidUserDataFactory.userWithEmailAlreadyExistsByRegistrationRequest(request, passwordEncoder));
 
         String userJson = objectMapper.writeValueAsString(request);
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
@@ -183,4 +194,147 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.EMAIL.getField())).isTrue();
     }
+
+    @Test
+    void shouldSuccessLoginAndReturnAccessToken() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
+
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
+        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
+        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+
+        Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
+
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login").cookie(cookieRequest)
+                .content(loginRequestJson)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        TokenResponse tokenResponse = objectMapper.readValue(jsonResult, TokenResponse.class);
+        assertThat(tokenResponse.accessToken()).isNotBlank();
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookieResponse).isNotNull();
+        assertThat(cookieResponse.getValue()).isNotEqualTo(cookieRequest.getValue());
+
+        assertThat(refreshTokenRepository.findByTokenHash(hash)).isEmpty();
+    }
+
+    @Test
+    void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
+        loginRequest.setUsername("Michael45");
+
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
+        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
+        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+
+        Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
+
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login").cookie(cookieRequest)
+                        .content(loginRequestJson)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+
+        ApiErrorResponse errorResponseBody = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+
+        assertThat(errorResponseBody.code()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.name());
+        assertThat(errorResponseBody.message()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.getMessage());
+        assertThat(errorResponseBody.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookieResponse).isNull();
+    }
+
+    @Test
+    void shouldFailedLogin_WhenPasswordInvalid() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
+        loginRequest.setPassword("newPass1234");
+
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
+        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
+        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+
+        Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
+
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login").cookie(cookieRequest)
+                        .content(loginRequestJson)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+
+        ApiErrorResponse errorResponseBody = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+
+        assertThat(errorResponseBody.code()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.name());
+        assertThat(errorResponseBody.message()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.getMessage());
+        assertThat(errorResponseBody.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookieResponse).isNull();
+    }
+
+    @Test
+    void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
+        Duration durationRefToken = refreshTokenProperties.getDuration();
+        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(durationRefToken), user.getId()));
+
+        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) durationRefToken.getSeconds(), refreshTokenValue);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/logout").cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookieResponse).isNotNull();
+        assertThat(cookieResponse.getValue()).isEmpty();
+        assertThat(cookieResponse.getMaxAge()).isEqualTo(0);
+
+        assertThat(refreshTokenRepository.findByTokenHash(hash)).isEmpty();
+    }
+
+    @Test
+    void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
+        Duration durationRefToken = refreshTokenProperties.getDuration();
+        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(durationRefToken), user.getId()));
+
+        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) durationRefToken.getSeconds(), refreshTokenValue);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/refresh")
+                .cookie(cookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        TokenResponse tokenResponse = objectMapper.readValue(responseJson, TokenResponse.class);
+        assertThat(tokenResponse.accessToken()).isNotBlank();
+    }
+
+
+
+
 }
