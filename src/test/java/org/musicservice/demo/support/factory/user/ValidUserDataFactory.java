@@ -34,8 +34,8 @@ public class ValidUserDataFactory {
 
     public static LoginRequest loginRequest(User user){
         LoginRequest request = new LoginRequest();
-        request.setUsername(user.getUsername());
-        request.setPassword(user.getPassword());
+        request.setUsername(USERNAME);
+        request.setPassword(PASSWORD);
         return request;
     }
 

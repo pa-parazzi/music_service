@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.auth.RefreshToken;
@@ -16,8 +17,10 @@ import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.cookie.CookieProperties;
 import org.musicservice.demo.security.dto.TokenResponse;
 import org.musicservice.demo.security.properties.RefreshTokenProperties;
+import org.musicservice.demo.security.properties.VerificationTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
+import org.musicservice.demo.security.verification.MailService;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.cookie.CookieDataFactory;
@@ -31,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -38,6 +42,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -66,7 +72,11 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
+    private VerificationTokenProperties verificationTokenProperties;
+    @Autowired
     private RefreshTokenProperties refreshTokenProperties;
+    @MockitoBean
+    private MailService mailService;
 
     private final MediaType contentMultipartForm = MediaType.MULTIPART_FORM_DATA;
 
@@ -111,7 +121,15 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(registrationRequest.getEmail()).isEqualTo(user.getEmail());
         assertThat(registrationRequest.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
         assertThat(user.isEnabled()).isFalse();
-        
+
+        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> activationLinkCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mailService).sendActivationEmail(emailCaptor.capture(), activationLinkCaptor.capture());
+        String email = emailCaptor.getValue();
+        String activationLink = activationLinkCaptor.getValue();
+
+        assertThat(email).isEqualTo(user.getEmail());
+        assertThat(activationLink.startsWith(verificationTokenProperties.getActivationUrl())).isTrue();
     }
 
     @Test
@@ -134,13 +152,6 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         assertThat(response.accessToken()).isNotBlank();
 
-        Cookie cookie = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookie).isNotNull();
-        assertThat(cookie.getValue()).isNotBlank();
-        assertThat(cookie.isHttpOnly()).isEqualTo(cookieProperties.getHttpOnly());
-        assertThat(cookie.getSecure()).isEqualTo(cookieProperties.getSecure());
-        assertThat(cookie.getPath()).isEqualTo(cookieProperties.getPath());
-
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
 
         assertThat(yandexStorageProperties.getDefaultAvatarKey()).isNotEqualTo(user.getUserAvatar().getKey());
@@ -149,6 +160,22 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(request.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
         assertThat(passwordEncoder.matches(request.getPassword(), user.getPassword())).isTrue();
         assertThat(user.isEnabled()).isFalse();
+
+        Cookie cookie = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookie).isNotNull();
+        assertThat(cookie.getValue()).isNotBlank();
+        assertThat(cookie.isHttpOnly()).isEqualTo(cookieProperties.getHttpOnly());
+        assertThat(cookie.getSecure()).isEqualTo(cookieProperties.getSecure());
+        assertThat(cookie.getPath()).isEqualTo(cookieProperties.getPath());
+
+        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> activationLinkCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mailService).sendActivationEmail(emailCaptor.capture(), activationLinkCaptor.capture());
+        String email = emailCaptor.getValue();
+        String activationLink = activationLinkCaptor.getValue();
+
+        assertThat(email).isEqualTo(user.getEmail());
+        assertThat(activationLink.startsWith(verificationTokenProperties.getActivationUrl())).isTrue();
     }
 
     @Test
@@ -171,6 +198,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.USERNAME.getField())).isTrue();
+        verifyNoInteractions(mailService);
     }
 
     @Test
@@ -193,6 +221,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.EMAIL.getField())).isTrue();
+        verifyNoInteractions(mailService);
     }
 
     @Test
