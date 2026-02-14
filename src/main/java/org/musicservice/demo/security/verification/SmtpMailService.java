@@ -6,15 +6,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailService {
+public class SmtpMailService implements MailService {
 
     private final JavaMailSender javaMailSender;
 
     @Autowired
-    public EmailService(JavaMailSender javaMailSender) {
+    public SmtpMailService(JavaMailSender javaMailSender) {
         this.javaMailSender = javaMailSender;
     }
 
+    @Override
     public void sendActivationEmail(String email, String activationLink){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);

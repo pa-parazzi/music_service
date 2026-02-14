@@ -20,14 +20,14 @@ public class VerificationTokenService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final VerificationTokenProperties properties;
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final MailService mailService;
 
     @Autowired
-    public VerificationTokenService(VerificationTokenRepository verificationTokenRepository, VerificationTokenProperties properties, UserRepository userRepository, EmailService emailService) {
+    public VerificationTokenService(VerificationTokenRepository verificationTokenRepository, VerificationTokenProperties properties, UserRepository userRepository, MailService mailService) {
         this.verificationTokenRepository = verificationTokenRepository;
         this.properties = properties;
         this.userRepository = userRepository;
-        this.emailService = emailService;
+        this.mailService = mailService;
     }
 
     public VerificationToken findByToken(String token){
@@ -41,7 +41,7 @@ public class VerificationTokenService {
         User userProxy = userRepository.getReferenceById(request.userId());
         verificationTokenRepository.save(new VerificationToken(userProxy, token, expiryDate));
         String activationLink = properties.getActivationUrl() + token;
-        emailService.sendActivationEmail(request.email(), activationLink);
+        mailService.sendActivationEmail(request.email(), activationLink);
     }
 
     @Transactional
@@ -58,5 +58,4 @@ public class VerificationTokenService {
         verificationTokenRepository.delete(verificationToken);
         return "Ваш аккаунт активирован!";
     }
-
 }
