@@ -34,11 +34,9 @@ public class Album{
 
     public Album(){}
 
-    public Album(String title, Artist artist, List<Sound> soundList, AlbumImage image) {
+    public Album(String title, Artist artist) {
         this.title = title;
         this.artist = artist;
-        this.soundList = soundList;
-        this.image = image;
     }
 
     @Override
