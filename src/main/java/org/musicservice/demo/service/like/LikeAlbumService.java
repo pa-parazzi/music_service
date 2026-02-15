@@ -1,7 +1,8 @@
 package org.musicservice.demo.service.like;
 
 import jakarta.persistence.EntityManager;
-import org.musicservice.demo.dto.like.LikedAlbumResponse;
+import org.musicservice.demo.dto.like.LikedAlbumId;
+import org.musicservice.demo.dto.like.LikedAlbums;
 import org.musicservice.demo.dto.like.UserGetLikesRequest;
 import org.musicservice.demo.dto.like.UserLikeRequest;
 import org.musicservice.demo.mapper.like.LikeAlbumMapper;
@@ -43,8 +44,9 @@ public class LikeAlbumService {
         likeAlbumRepository.deleteByUserIdAndAlbumId(request.userId(), request.targetId());
     }
 
-    public List<LikedAlbumResponse> getAllLikedAlbums(UserGetLikesRequest request){
-        return likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId()).stream().map(likeAlbumMapper::toResponse).toList();
+    public LikedAlbums getAllLikedAlbums(UserGetLikesRequest request){
+        List<LikedAlbumId> likedAlbumsIdsList = likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId()).stream().map(likeAlbumMapper::toResponse).toList();
+        return new LikedAlbums(likedAlbumsIdsList);
     }
 
 }

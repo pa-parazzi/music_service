@@ -11,18 +11,18 @@ async function loadTrackCollection(){
 
     const userId = window.currentUser.id;
 
-    const likeResponses = await fetch('/sound/like/get', {
+    const likedSoundsIdsResponses = await fetch('/sound/like/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
     });
 
-    const likeList = await likeResponses.json();
+    const likedSounds= await likedSoundsIdsResponses.json();
 
     const trackCollectionResponse = await fetch('/collection/tracks', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(likeList)
+        body: JSON.stringify(likedSounds)
     });
 
     const collectionData = await trackCollectionResponse.json();

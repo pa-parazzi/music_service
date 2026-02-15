@@ -1,6 +1,7 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.like.LikedAlbumResponse;
+import org.musicservice.demo.dto.like.LikedAlbumId;
+import org.musicservice.demo.dto.like.LikedAlbums;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
@@ -29,8 +30,8 @@ public class AlbumService {
         this.albumMapper = albumMapper;
     }
 
-    public CollectionAlbumsResponse getAlbumCollectionByUserLikes(List<LikedAlbumResponse> responses){
-        List<Long> orderIds = responses.stream().map(LikedAlbumResponse::getAlbumId).toList(); // порядок элементов сохранен
+    public CollectionAlbumsResponse getAlbumCollectionByUserLikes(LikedAlbums likedAlbums){
+        List<Long> orderIds = likedAlbums.likedAlbumsIds().stream().map(LikedAlbumId::getAlbumId).toList(); // порядок элементов сохранен
         List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
         List<AlbumResponse> response = orderIds.stream().map(mapById::get).toList();

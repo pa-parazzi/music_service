@@ -1,7 +1,7 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.like.LikedAlbumResponse;
-import org.musicservice.demo.dto.like.LikedSoundResponse;
+import org.musicservice.demo.dto.like.LikedAlbums;
+import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.service.music.AlbumService;
@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/collection")
@@ -29,13 +27,13 @@ public class MusicCollectionController {
     }
 
     @PostMapping("/tracks")
-    public ResponseEntity<CollectionTracksResponse> viewTrackCollection(@RequestBody List<LikedSoundResponse> responses) {
-        return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(responses));
+    public ResponseEntity<CollectionTracksResponse> viewTrackCollection(@RequestBody LikedSounds likedSounds) {
+        return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(likedSounds));
     }
 
     @PostMapping("/albums")
-    public ResponseEntity<CollectionAlbumsResponse> viewAlbumCollection(@RequestBody List<LikedAlbumResponse> responses) {
-        return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(responses));
+    public ResponseEntity<CollectionAlbumsResponse> viewAlbumCollection(@RequestBody LikedAlbums albumsIds) {
+        return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(albumsIds));
     }
 
 }

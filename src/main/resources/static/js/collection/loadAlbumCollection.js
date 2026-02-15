@@ -17,18 +17,18 @@ async function loadAlbumCollection(){
 
     const userId = window.currentUser.id;
 
-    const albumLikesResponses = await fetch('/album/like/get', {
+    const likedAlbumsIdsResponse = await fetch('/album/like/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
     });
 
-    const likeList = await albumLikesResponses.json();
+    const likedAlbums = await likedAlbumsIdsResponse.json();
 
     const albumCollectionResponse = await fetch('/collection/albums', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(likeList)
+        body: JSON.stringify(likedAlbums)
     });
 
     const albumData = await albumCollectionResponse.json();

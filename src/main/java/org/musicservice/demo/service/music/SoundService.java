@@ -1,6 +1,7 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.like.LikedSoundResponse;
+import org.musicservice.demo.dto.like.LikedSoundId;
+import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.mapper.music.SoundMapper;
@@ -32,8 +33,8 @@ public class SoundService {
         return soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toResponse).toList();
     }
 
-    public CollectionTracksResponse getTrackCollectionByUserLikes(List<LikedSoundResponse> responses){
-        List<Long> soundOrderIds = responses.stream().map(LikedSoundResponse::getSoundId).toList();
+    public CollectionTracksResponse getTrackCollectionByUserLikes(LikedSounds likedSounds){
+        List<Long> soundOrderIds = likedSounds.likedSoundsIds().stream().map(LikedSoundId::getSoundId).toList();
         Long[] orderIds = soundOrderIds.toArray(Long[]::new);
         List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
         return new CollectionTracksResponse(response);

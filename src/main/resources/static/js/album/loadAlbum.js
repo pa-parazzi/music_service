@@ -39,7 +39,7 @@ async function loadAlbum() {
 
         const userId = window.currentUser.id;
 
-        const likeAlbumResponse = await fetch('/album/like/get', {
+        const likedAlbumsIdsResponse = await fetch('/album/like/get', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({userId})
@@ -49,12 +49,13 @@ async function loadAlbum() {
 
         const albumId = album.albumId;
 
-        if(likeAlbumResponse.ok){
+        if(likedAlbumsIdsResponse.ok){
 
-            const likes = await likeAlbumResponse.json();
+            const json = await likedAlbumsIdsResponse.json();
+            const likedAlbumsIdsList = json.likedAlbumsIds;
 
             const likedAlbums = new Set(
-                likes.map(l => l.albumId)
+                likedAlbumsIdsList.map(l => l.albumId)
             );
 
             if (likedAlbums.has(albumId)) {
@@ -74,7 +75,7 @@ async function loadAlbum() {
             };
 
             if (albumLikeBtn.classList.contains("liked")) {
-                const responseDeleteLike = await fetch('/album/like/delete', {
+                await fetch('/album/like/delete', {
                     method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(likeRequest)
@@ -82,7 +83,7 @@ async function loadAlbum() {
                 albumLikeBtn.classList.toggle("liked", false);
                 albumLikeBtn.textContent = "⊕";
             } else if (!albumLikeBtn.classList.contains("liked")) {
-                const responseLike = await fetch('/album/like/create', {
+                await fetch('/album/like/create', {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(likeRequest)
