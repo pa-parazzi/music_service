@@ -32,7 +32,7 @@ public class ValidUserDataFactory {
         return request;
     }
 
-    public static LoginRequest loginRequest(User user){
+    public static LoginRequest loginRequest(){
         LoginRequest request = new LoginRequest();
         request.setUsername(USERNAME);
         request.setPassword(PASSWORD);
