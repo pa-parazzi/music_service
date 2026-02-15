@@ -1,0 +1,139 @@
+package org.musicservice.demo.integration.controller.rest.like;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.musicservice.demo.dto.like.LikedAlbums;
+import org.musicservice.demo.dto.like.UserGetLikesRequest;
+import org.musicservice.demo.dto.like.UserLikeRequest;
+import org.musicservice.demo.entity.like.LikeAlbum;
+import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.repository.like.LikeAlbumRepository;
+import org.musicservice.demo.repository.music.AlbumRepository;
+import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.user.UserRepository;
+import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.test.web.servlet.MvcResult;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class LikeAlbumControllerIT {
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ArtistRepository artistRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
+    @Autowired
+    private LikeAlbumRepository likeAlbumRepository;
+
+    @BeforeEach
+    void cleanupDb(){
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, like_album RESTART IDENTITY CASCADE");
+    }
+
+    @Test
+    void shouldReturnStatusIsOkAndLikedAlbums_WhenUserHasLikedAlbum() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
+        String contentJson = objectMapper.writeValueAsString(userRequest);
+
+        Artist artist = artistRepository.save(MusicFactoryIT.artist());
+        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album));
+
+        MvcResult result = mockMvc.perform(post("/album/like/get")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(contentJson))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resultJson = result.getResponse().getContentAsString();
+        LikedAlbums resultLikedAlbums = objectMapper.readValue(resultJson, LikedAlbums.class);
+        assertThat(resultLikedAlbums.likedAlbumsIds().getFirst().getAlbumId()).isEqualTo(album.getId());
+    }
+
+    @Test
+    void shouldReturnStatusIsOkAndResultIsEmpty_WhenUserDoesNotHaveLikedAlbums() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
+        String contentJson = objectMapper.writeValueAsString(userRequest);
+
+        Artist artist = artistRepository.save(MusicFactoryIT.artist());
+        albumRepository.save(MusicFactoryIT.album(artist));
+
+        MvcResult result = mockMvc.perform(post("/album/like/get")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(contentJson))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String resultJson = result.getResponse().getContentAsString();
+        LikedAlbums resultLikedAlbums = objectMapper.readValue(resultJson, LikedAlbums.class);
+        assertThat(resultLikedAlbums.likedAlbumsIds()).isEmpty();
+    }
+
+    @Test
+    void shouldCreateLikeForAlbumAndReturnStatusIsAccept() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        Artist artist = artistRepository.save(MusicFactoryIT.artist());
+        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        UserLikeRequest likeRequest = new UserLikeRequest(user.getId(), album.getId());
+
+        String jsonRequest = objectMapper.writeValueAsString(likeRequest);
+
+        mockMvc.perform(post("/album/like/create")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted());
+
+        assertThat(likeAlbumRepository.count()).isEqualTo(1);
+
+        LikeAlbum likeAlbum = likeAlbumRepository.findAll().getFirst();
+        assertThat(likeAlbum.getAlbum().getId()).isEqualTo(album.getId());
+        assertThat(likeAlbum.getUser().getId()).isEqualTo(user.getId());
+    }
+
+    @Test
+    void shouldSuccessDeleteLikeAlbumAndReturnStatusIsAccept() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        Artist artist = artistRepository.save(MusicFactoryIT.artist());
+        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        LikeAlbum likeAlbum = likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album));
+        UserLikeRequest likeRequest = new UserLikeRequest(user.getId(), album.getId());
+
+        String jsonRequest = objectMapper.writeValueAsString(likeRequest);
+
+        mockMvc.perform(delete("/album/like/delete")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isAccepted());
+
+        assertThat(likeAlbumRepository.findById(likeAlbum.getId())).isEmpty();
+    }
+
+}
