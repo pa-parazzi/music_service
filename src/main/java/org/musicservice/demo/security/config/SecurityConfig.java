@@ -46,7 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/album/like/create", "/album/like/delete", "/album/like/get").permitAll()
                         .requestMatchers("/sound/like/create", "/sound/like/delete", "/sound/like/get").permitAll()
                         .requestMatchers("/collection/tracks", "/collection/albums").permitAll()
-                        .requestMatchers("/lk/profile").authenticated()
+                        .requestMatchers("/user/profile").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

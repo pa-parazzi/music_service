@@ -88,7 +88,7 @@ async function loadProfile() {
     window.currentUser = null;
 
     try {
-        const response = await apiFetch('/lk/profile', {
+        const response = await apiFetch('/user/profile', {
             method: "GET"
         });
 

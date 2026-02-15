@@ -75,7 +75,7 @@ async function loadAlbum() {
 
             if (albumLikeBtn.classList.contains("liked")) {
                 const responseDeleteLike = await fetch('/album/like/delete', {
-                    method: "POST",
+                    method: "DELETE",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(likeRequest)
                 });

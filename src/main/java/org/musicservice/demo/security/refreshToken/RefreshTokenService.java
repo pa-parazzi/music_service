@@ -58,6 +58,7 @@ public class RefreshTokenService {
     public void dropToken(HttpServletRequest request, HttpServletResponse response){
         String refreshTokenValue = cookieService.getRefreshTokenByCookie(request);
         if(refreshTokenValue==null){
+            cookieManager.clearCookie(response);
             return;
         }
         String hash = refreshTokenCryptoService.hash(refreshTokenValue);
