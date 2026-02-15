@@ -1,7 +1,6 @@
 package org.musicservice.demo.support.factory.auth;
 
 import org.musicservice.demo.entity.auth.RefreshToken;
-import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -38,14 +37,6 @@ public class RefreshTokenFactory {
 
     public static RefreshToken expiredRefreshToken(){
         return new RefreshToken(REFRESH_TOKEN_HASH, EXPIRED_DATE, USER_ID);
-    }
-
-    public static String generateNewRefreshTokenValue(RefreshTokenCryptoService service){
-        return service.generateRefreshToken();
-    }
-
-    public static String hash(RefreshTokenCryptoService service, String value){
-        return service.hash(value);
     }
 }
 

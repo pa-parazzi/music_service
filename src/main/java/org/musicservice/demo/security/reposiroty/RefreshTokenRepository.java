@@ -24,4 +24,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Modifying
     @Query("update RefreshToken t set t.tokenHash=:hash, t.expiryDate=:expiryDate, t.revoked=false where t.userId=:userId")
     void rotation(@Param("userId") Long userId, @Param("hash") String hash, @Param("expiryDate") Instant expiryDate);
+
+    Optional<RefreshToken> findByUserId(Long userId);
 }

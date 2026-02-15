@@ -9,10 +9,7 @@ import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.exception.response.ApiErrorResponse;
-import org.musicservice.demo.exception.response.AuthErrorCode;
-import org.musicservice.demo.exception.response.ErrorType;
-import org.musicservice.demo.exception.response.UniqueFieldErrorCode;
+import org.musicservice.demo.exception.response.*;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.cookie.CookieProperties;
 import org.musicservice.demo.security.dto.TokenResponse;
@@ -24,6 +21,7 @@ import org.musicservice.demo.security.verification.MailService;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.cookie.CookieDataFactory;
+import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.multipartFile.MultipartFileFactory;
 import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +38,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -101,35 +100,18 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        TokenResponse response = objectMapper.readValue(jsonResult, TokenResponse.class);
-
-        assertThat(response.accessToken()).isNotBlank();
+        TokenResponse tokenResponse = objectMapper.readValue(jsonResult, TokenResponse.class);
+        assertThatAccessTokenIsNotNull(tokenResponse);
 
         Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-
-        assertThat(cookieResponse).isNotNull();
-        assertThat(cookieResponse.getValue()).isNotBlank();
-        assertThat(cookieResponse.isHttpOnly()).isEqualTo(cookieProperties.getHttpOnly());
-        assertThat(cookieResponse.getSecure()).isEqualTo(cookieProperties.getSecure());
-        assertThat(cookieResponse.getPath()).isEqualTo(cookieProperties.getPath());
+        assertCookieResponse(cookieResponse);
 
         User user = userRepository.findByUsername(registrationRequest.getUsername()).orElseThrow();
 
-        assertThat(registrationRequest.getUsername()).isEqualTo(user.getUsername());
-        assertThat(defaultAvatarKey).isEqualTo(user.getUserAvatar().getKey());
-        assertThat(passwordEncoder.matches(registrationRequest.getPassword(), user.getPassword())).isTrue();
-        assertThat(registrationRequest.getEmail()).isEqualTo(user.getEmail());
-        assertThat(registrationRequest.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
-        assertThat(user.isEnabled()).isFalse();
+        assertRegistrationFieldsUser(registrationRequest, user);
+        assertUserAvatarKey(defaultAvatarKey, user);
 
-        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> activationLinkCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mailService).sendActivationEmail(emailCaptor.capture(), activationLinkCaptor.capture());
-        String email = emailCaptor.getValue();
-        String activationLink = activationLinkCaptor.getValue();
-
-        assertThat(email).isEqualTo(user.getEmail());
-        assertThat(activationLink.startsWith(verificationTokenProperties.getActivationUrl())).isTrue();
+        assertActivationEmailSent(user);
     }
 
     @Test
@@ -148,34 +130,17 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        TokenResponse response = objectMapper.readValue(jsonResult, TokenResponse.class);
-
-        assertThat(response.accessToken()).isNotBlank();
+        TokenResponse tokenResponse = objectMapper.readValue(jsonResult, TokenResponse.class);
+        assertThatAccessTokenIsNotNull(tokenResponse);
 
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
-
-        assertThat(yandexStorageProperties.getDefaultAvatarKey()).isNotEqualTo(user.getUserAvatar().getKey());
-        assertThat(request.getUsername()).isEqualTo(user.getUsername());
-        assertThat(request.getEmail()).isEqualTo(user.getEmail());
-        assertThat(request.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
-        assertThat(passwordEncoder.matches(request.getPassword(), user.getPassword())).isTrue();
-        assertThat(user.isEnabled()).isFalse();
+        assertRegistrationFieldsUser(request, user);
+        assertThat(user.getUserAvatar().getKey()).isNotEqualTo(yandexStorageProperties.getDefaultAvatarKey());
 
         Cookie cookie = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookie).isNotNull();
-        assertThat(cookie.getValue()).isNotBlank();
-        assertThat(cookie.isHttpOnly()).isEqualTo(cookieProperties.getHttpOnly());
-        assertThat(cookie.getSecure()).isEqualTo(cookieProperties.getSecure());
-        assertThat(cookie.getPath()).isEqualTo(cookieProperties.getPath());
+        assertCookieResponse(cookie);
 
-        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> activationLinkCaptor = ArgumentCaptor.forClass(String.class);
-        verify(mailService).sendActivationEmail(emailCaptor.capture(), activationLinkCaptor.capture());
-        String email = emailCaptor.getValue();
-        String activationLink = activationLinkCaptor.getValue();
-
-        assertThat(email).isEqualTo(user.getEmail());
-        assertThat(activationLink.startsWith(verificationTokenProperties.getActivationUrl())).isTrue();
+        assertActivationEmailSent(user);
     }
 
     @Test
@@ -194,10 +159,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         String jsonResult = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertApiErrorResponseWhenRegistrationError(errorResponse, UniqueFieldErrorCode.USERNAME.getField());
 
-        assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
-        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.USERNAME.getField())).isTrue();
         verifyNoInteractions(mailService);
     }
 
@@ -217,26 +180,22 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         String jsonResult = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertApiErrorResponseWhenRegistrationError(errorResponse, UniqueFieldErrorCode.EMAIL.getField());
 
-        assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
-        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.fieldsError().containsKey(UniqueFieldErrorCode.EMAIL.getField())).isTrue();
         verifyNoInteractions(mailService);
     }
 
     @Test
-    void shouldSuccessLoginAndReturnAccessToken() throws Exception{
+    void shouldSuccessLoginAndReturnAccessToken() throws Exception {
         User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
-        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
-        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+        RefreshToken usedRefreshToken = RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
-
-        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         MvcResult result = mockMvc.perform(post("/api/auth/login").cookie(cookieRequest)
                 .content(loginRequestJson)
@@ -246,25 +205,25 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         String jsonResult = result.getResponse().getContentAsString();
         TokenResponse tokenResponse = objectMapper.readValue(jsonResult, TokenResponse.class);
-        assertThat(tokenResponse.accessToken()).isNotBlank();
+        assertThatAccessTokenIsNotNull(tokenResponse);
 
-        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookieResponse).isNotNull();
+        Cookie cookieResponse = extractValidRefreshCookie(result);
+        assertCookieResponse(cookieResponse);
         assertThat(cookieResponse.getValue()).isNotEqualTo(cookieRequest.getValue());
 
-        assertThat(refreshTokenRepository.findByTokenHash(hash)).isEmpty();
+        RefreshToken actualRefreshToken = refreshTokenRepository.findByUserId(user.getId()).orElseThrow();
+        assertThat(usedRefreshToken.getTokenHash()).isNotEqualTo(actualRefreshToken.getTokenHash());
     }
 
     @Test
     void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
         User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
-        loginRequest.setUsername("Michael45");
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
+        loginRequest.setUsername("invalid username");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
-        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
-        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+        RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
 
@@ -278,26 +237,22 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         String jsonResult = result.getResponse().getContentAsString();
 
-        ApiErrorResponse errorResponseBody = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
-
-        assertThat(errorResponseBody.code()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.name());
-        assertThat(errorResponseBody.message()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.getMessage());
-        assertThat(errorResponseBody.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertApiErrorResponseWhenBadCredentials(errorResponse);
 
         Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookieResponse).isNull();
+        assertCookieResponseIsNull(cookieResponse);
     }
 
     @Test
     void shouldFailedLogin_WhenPasswordInvalid() throws Exception{
         User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest(user);
+        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
         loginRequest.setPassword("newPass1234");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
-        Duration refreshTokenDuration = refreshTokenProperties.getDuration();
-        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));
+        RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
 
@@ -312,46 +267,52 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         String jsonResult = result.getResponse().getContentAsString();
 
         ApiErrorResponse errorResponseBody = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
-
-        assertThat(errorResponseBody.code()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.name());
-        assertThat(errorResponseBody.message()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.getMessage());
-        assertThat(errorResponseBody.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertApiErrorResponseWhenBadCredentials(errorResponseBody);
 
         Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookieResponse).isNull();
+        assertCookieResponseIsNull(cookieResponse);
     }
 
     @Test
-    void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie() throws Exception{
+    void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsPresent() throws Exception{
         User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
-        Duration durationRefToken = refreshTokenProperties.getDuration();
-        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(durationRefToken), user.getId()));
+        RefreshToken refreshToken = RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
-        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) durationRefToken.getSeconds(), refreshTokenValue);
+        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
 
         MvcResult result = mockMvc.perform(post("/api/auth/logout").cookie(cookie))
                 .andExpect(status().isOk())
                 .andReturn();
 
         Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
-        assertThat(cookieResponse).isNotNull();
-        assertThat(cookieResponse.getValue()).isEmpty();
-        assertThat(cookieResponse.getMaxAge()).isEqualTo(0);
+        assertClearingCookie(cookieResponse);
 
-        assertThat(refreshTokenRepository.findByTokenHash(hash)).isEmpty();
+        assertThat(refreshTokenRepository.findByTokenHash(refreshToken.getTokenHash())).isEmpty();
     }
 
     @Test
-    void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest() throws Exception{
+    void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsMissing() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+
+        MvcResult result = mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertClearingCookie(cookieResponse);
+        assertThat(refreshTokenRepository.findByUserId(user.getId())).isEmpty();
+    }
+
+    @Test
+    void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest_WhenCookieRequestIsValid() throws Exception{
         User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        String hash = refreshTokenCryptoService.hash(refreshTokenValue);
-        Duration durationRefToken = refreshTokenProperties.getDuration();
-        refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(durationRefToken), user.getId()));
+        RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
-        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) durationRefToken.getSeconds(), refreshTokenValue);
+        Cookie cookie = CookieDataFactory.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh")
                 .cookie(cookie))
@@ -360,10 +321,107 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         String responseJson = result.getResponse().getContentAsString();
         TokenResponse tokenResponse = objectMapper.readValue(responseJson, TokenResponse.class);
+        assertThatAccessTokenIsNotNull(tokenResponse);
+    }
+
+    @Test
+    void shouldReturnStatusUnauthorized_WhenCookieRequestIsMissing() throws Exception{
+        userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+
+        MvcResult result = mockMvc.perform(post("/api/auth/refresh"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(responseJson, ApiErrorResponse.class);
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(errorResponse.code()).isEqualTo(RefreshTokenErrorCode.MISSING.name());
+        assertThat(errorResponse.message()).isEqualTo(RefreshTokenErrorCode.MISSING.getMessage());
+    }
+
+    @Test
+    void shouldReturnStatusUnauthorized_WhenCookieInvalid() throws Exception{
+        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        RefreshTokenFactoryIT.createNewRefreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
+
+        Cookie cookie = CookieDataFactory.cookie(cookieProperties,(int) refreshTokenProperties.getDuration().getSeconds(), "invalid value");
+
+        MvcResult result = mockMvc.perform(post("/api/auth/refresh").cookie(cookie))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String responseJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(responseJson, ApiErrorResponse.class);
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(errorResponse.code()).isEqualTo(RefreshTokenErrorCode.INVALID.name());
+        assertThat(errorResponse.message()).isEqualTo(RefreshTokenErrorCode.INVALID.getMessage());
+    }
+
+    private void assertThatAccessTokenIsNotNull(TokenResponse tokenResponse){
         assertThat(tokenResponse.accessToken()).isNotBlank();
     }
 
+    private void assertCookieResponse(Cookie cookieResponse){
+        assertThat(cookieResponse).isNotNull();
+        assertThat(cookieResponse.getValue()).isNotBlank();
+        assertThat(cookieResponse.isHttpOnly()).isEqualTo(cookieProperties.getHttpOnly());
+        assertThat(cookieResponse.getSecure()).isEqualTo(cookieProperties.getSecure());
+        assertThat(cookieResponse.getPath()).isEqualTo(cookieProperties.getPath());
+    }
 
+    private void assertRegistrationFieldsUser(RegistrationRequest request, User user){
+        assertThat(request.getUsername()).isEqualTo(user.getUsername());
+        assertThat(passwordEncoder.matches(request.getPassword(), user.getPassword())).isTrue();
+        assertThat(request.getEmail()).isEqualTo(user.getEmail());
+        assertThat(request.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
+        assertThat(user.isEnabled()).isFalse();
+    }
 
+    private void assertUserAvatarKey(String expectedKey, User user){
+        assertThat(expectedKey).isEqualTo(user.getUserAvatar().getKey());
+    }
+
+    private void assertActivationEmailSent(User user){
+        ArgumentCaptor<String> emailCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> activationLinkCaptor = ArgumentCaptor.forClass(String.class);
+        verify(mailService).sendActivationEmail(emailCaptor.capture(), activationLinkCaptor.capture());
+        String email = emailCaptor.getValue();
+        String activationLink = activationLinkCaptor.getValue();
+
+        assertThat(email).isEqualTo(user.getEmail());
+        assertThat(activationLink.startsWith(verificationTokenProperties.getActivationUrl())).isTrue();
+    }
+
+    private void assertApiErrorResponseWhenRegistrationError(ApiErrorResponse errorResponse, String field){
+        assertThat(errorResponse.code()).isEqualTo(ErrorType.REGISTRATION_ERROR.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(errorResponse.fieldsError().containsKey(field)).isTrue();
+    }
+
+    private void assertApiErrorResponseWhenBadCredentials(ApiErrorResponse errorResponse){
+        assertThat(errorResponse.code()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.name());
+        assertThat(errorResponse.message()).isEqualTo(AuthErrorCode.BAD_CREDENTIALS.getMessage());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    private void assertCookieResponseIsNull(Cookie cookieResponse){
+        assertThat(cookieResponse).isNull();
+    }
+
+    private void assertClearingCookie(Cookie cookieResponse){
+        assertThat(cookieResponse).isNotNull();
+        assertThat(cookieResponse.getValue()).isEmpty();
+        assertThat(cookieResponse.getMaxAge()).isEqualTo(0);
+    }
+
+    private Cookie extractValidRefreshCookie(MvcResult result){
+        return Arrays.stream(result.getResponse().getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieProperties.getRefreshTokenName()))
+                .filter(cookie -> cookie.getMaxAge() > 0)
+                .findFirst()
+                .orElseThrow();
+    }
 
 }
