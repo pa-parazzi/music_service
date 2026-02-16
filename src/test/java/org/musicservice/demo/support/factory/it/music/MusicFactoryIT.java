@@ -8,20 +8,35 @@ import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MusicFactoryIT {
 
-    public static Artist artist(){
+    public static Artist artist() {
         return new Artist("Muse");
     }
 
-    public static Album album(Artist artist){
+    public static List<Album> albumList(Artist artist) {
+        return List.of(album(artist), album2(artist), album3(artist));
+    }
+
+    public static Album album(Artist artist) {
         return new Album("Black Holes and Revelations", artist);
     }
 
-    public static List<Sound> soundList(Artist artist, Album album){
+    public static Album album2(Artist artist) {
+        return new Album("The Resistance", artist);
+    }
+
+    public static Album album3(Artist artist) {
+        return new Album("Absolution", artist);
+    }
+
+    public static AlbumImage albumImage(Album album) {
+        return new AlbumImage("some_image.jpg", album);
+    }
+
+    public static List<Sound> soundList(Artist artist, Album album) {
         Sound sound1 = new Sound("Supermassive Black Hole", 280,
                 artist, album, album.getTitle() + "/supermassive_black_hole.mp3");
         Sound sound2 = new Sound("Take a Bow", 380,
@@ -31,16 +46,12 @@ public class MusicFactoryIT {
         return List.of(sound1, sound2, sound3);
     }
 
-    public static AlbumImage albumImage(Album album){
-        return new AlbumImage("black_holes_and_revelations.jpg", album);
-    }
-
-    public static LikeAlbum likeAlbum(User user, Album album){
+    public static LikeAlbum likeAlbum (User user, Album album){
         return new LikeAlbum(user, album);
     }
 
-    public static LikeSound likeSound(User user, Sound sound){
+    public static LikeSound likeSound (User user, Sound sound){
         return new LikeSound(user, sound);
     }
-
 }
+
