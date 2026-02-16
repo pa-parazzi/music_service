@@ -31,7 +31,7 @@ document.getElementById("search-form").addEventListener("submit", async (e) => {
     }
 
     const response = await fetch("/search?fragment=" + encodeURIComponent(query), {
-        method: "POST"
+        method: "GET"
     });
 
     const data = await response.json();
