@@ -16,6 +16,10 @@ public class MusicFactoryIT {
         return new Artist("Muse");
     }
 
+    public static Artist artist2() {
+        return new Artist("Tri Face");
+    }
+
     public static List<Album> albumList(Artist artist) {
         return List.of(album(artist), album2(artist), album3(artist));
     }
@@ -25,7 +29,7 @@ public class MusicFactoryIT {
     }
 
     public static Album album2(Artist artist) {
-        return new Album("The Resistance", artist);
+        return new Album("Mercy", artist);
     }
 
     public static Album album3(Artist artist) {
