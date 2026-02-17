@@ -23,7 +23,7 @@ export async function playAlbums(
         const albumTracksCache = new Map();
 
         btn.addEventListener('click', async () => {
-            // 👉 если это НОВЫЙ альбом
+            // если это НОВЫЙ альбом
             if (currentAlbum !== album) {
 
                 resetAlbumButton();
@@ -35,7 +35,8 @@ export async function playAlbums(
                 // 🔹 загружаем ТОЛЬКО если ещё не загружали
                 if (!albumTracksCache.has(albumId)) {
                     const response = await fetch(`/api/sound/album/${albumId}`);
-                    const tracks = await response.json();
+                    const tracksJson = await response.json();
+                    const tracks = tracksJson.soundList;
                     albumTracksCache.set(albumId, tracks);
                 }
 
@@ -44,7 +45,7 @@ export async function playAlbums(
                 playTrack(currentTrackIndex);
                 return;
             }
-            // 👉 Тот же альбом → toggle play / pause
+            // Тот же альбом → toggle play / pause
             togglePlayPause();
         });
     });

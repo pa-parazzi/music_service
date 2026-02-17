@@ -23,7 +23,8 @@ async function loadArtist() {
         artistName.alt = escapeHtml(artist.name);
 
         const soundListResponse = await fetch(`/api/sound/artist/${id}`);
-        const soundList = await soundListResponse.json();
+        const soundListJson = await soundListResponse.json();
+        const soundList = soundListJson.soundList;
 
         await initSoundListWithLikes({
             trackList: artistTrackList,

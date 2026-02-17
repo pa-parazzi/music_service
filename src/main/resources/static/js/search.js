@@ -20,7 +20,7 @@ let currentTrackIndex = 0;
 let isPlaying = false;
 
 document.getElementById("search-form").addEventListener("submit", async (e) => {
-    e.preventDefault(); // ⛔️ не перезагружаем страницу
+    e.preventDefault(); // не перезагружаем страницу
     const query = document.getElementById("search-input").value.trim();
 
     if (!query) {

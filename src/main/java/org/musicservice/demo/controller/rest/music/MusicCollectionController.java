@@ -3,7 +3,7 @@ package org.musicservice.demo.controller.rest.music;
 import org.musicservice.demo.dto.like.LikedAlbums;
 import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
-import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
+import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.service.music.AlbumService;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class MusicCollectionController {
     }
 
     @PostMapping("/tracks")
-    public ResponseEntity<CollectionTracksResponse> viewTrackCollection(@RequestBody LikedSounds likedSounds) {
+    public ResponseEntity<TrackListResponse> viewTrackCollection(@RequestBody LikedSounds likedSounds) {
         return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(likedSounds));
     }
 

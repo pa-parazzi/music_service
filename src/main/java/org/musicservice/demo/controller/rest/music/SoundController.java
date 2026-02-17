@@ -1,12 +1,13 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/sound")
@@ -20,12 +21,12 @@ public class SoundController {
     }
 
     @GetMapping("/album/{id}")
-    public ResponseEntity<List<SoundResponse>> getTracksByAlbum(@PathVariable("id") Long id){
+    public ResponseEntity<TrackListResponse> getTracksByAlbum(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(soundService.getSoundListByAlbumId(id));
     }
 
     @GetMapping("/artist/{id}")
-    public ResponseEntity<List<SoundResponse>> getTracksByArtist(@PathVariable("id") Long id){
+    public ResponseEntity<TrackListResponse> getTracksByArtist(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(soundService.getSoundListByArtistId(id));
     }
 }

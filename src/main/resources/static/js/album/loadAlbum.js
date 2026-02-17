@@ -94,7 +94,8 @@ async function loadAlbum() {
         });
 
         const soundListResponse = await fetch(`/api/sound/album/${albumId}`);
-        const soundList = await soundListResponse.json();
+        const soundListJson = await soundListResponse.json();
+        const soundList = soundListJson.soundList;
 
         await initSoundListWithLikes({
             trackList: document.getElementById("tracklist"),
