@@ -6,6 +6,7 @@ import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
 import org.musicservice.demo.exception.ApiNotFoundException;
+import org.musicservice.demo.exception.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ public class AlbumService {
     }
 
     public CollectionAlbumsResponse getAlbumCollectionByUserLikes(LikedAlbums likedAlbums){
+        if(likedAlbums.likedAlbumsIds().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
         List<Long> orderIds = likedAlbums.likedAlbumsIds().stream().map(LikedAlbumId::getAlbumId).toList(); // порядок элементов сохранен
         List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));

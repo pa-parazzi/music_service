@@ -3,6 +3,7 @@ package org.musicservice.demo.service.search;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.search.SearchMusicResponse;
+import org.musicservice.demo.exception.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
@@ -28,7 +29,7 @@ public class SearchMusicService {
     }
 
     public SearchMusicResponse searchMusicResult(String fragment){
-        if(isEmpty(fragment)) return null;
+        if(isEmpty(fragment)) throw new NoSuchMusicResultException("Ничего не найдено");
         List<ArtistResponse> artists = artistRepository.findAllByNameStartingWith(fragment);
         List<AlbumResponse> albumResponses = albumRepository.findAllByTitleStartingWith(fragment).stream().map(albumMapper::toAlbumResponse).toList();
         return new SearchMusicResponse(artists, albumResponses);
