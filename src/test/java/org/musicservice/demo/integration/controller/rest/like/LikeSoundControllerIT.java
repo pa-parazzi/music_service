@@ -18,7 +18,7 @@ import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,7 +65,7 @@ public class LikeSoundControllerIT {
 
     @Test
     void shouldReturnLikedSoundsIdsByOrderCreatedAtAndStatusIsOk_WhenUserHasLikedSounds() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
@@ -93,7 +93,7 @@ public class LikeSoundControllerIT {
 
     @Test
     void shouldReturnIsEmptyStatusIsOk_WhenUserDoesNotLikedSounds() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
@@ -114,7 +114,7 @@ public class LikeSoundControllerIT {
 
     @Test
     void shouldCreateLikeSoundAndReturnStatusIsAccept() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
@@ -137,7 +137,7 @@ public class LikeSoundControllerIT {
 
     @Test
     void shouldDeleteLikeSoundAndReturnStatusIsAccept() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));

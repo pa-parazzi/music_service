@@ -6,17 +6,20 @@ import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.response.AuthErrorCode;
 import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.support.factory.it.user.UserAvatarFactoryIT;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public class UserControllerIT {
 
     @Autowired
@@ -58,9 +61,8 @@ public class UserControllerIT {
 
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
-        user.setUserAvatar(userAvatar);
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        user.setUserAvatar(userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user)));
         UserMainResponse expectedUserResponse = userMapper.toMainResponse(user);
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
@@ -74,5 +76,40 @@ public class UserControllerIT {
         assertThat(actualUserResponse).isEqualTo(expectedUserResponse);
     }
 
+    @Test
+    void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
+        user.setUserAvatar(userAvatar);
 
+        MvcResult result = mockMvc.perform(get("/user/profile"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
+        assertThatApiErrorContractHttpStatusIsUnauthorized(errorResponse);
+    }
+
+    @Test
+    void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
+        user.setUserAvatar(userAvatar);
+        String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
+
+        MvcResult result = mockMvc.perform(get("/user/profile")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken + "invalid.token"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
+        assertThatApiErrorContractHttpStatusIsUnauthorized(errorResponse);
+    }
+
+    private void assertThatApiErrorContractHttpStatusIsUnauthorized(ApiErrorResponse errorResponse){
+        assertThat(errorResponse.code()).isEqualTo(AuthErrorCode.BAD_AUTHENTICATION_REQUEST.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
 }

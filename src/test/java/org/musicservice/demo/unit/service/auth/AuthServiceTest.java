@@ -27,7 +27,7 @@ import org.musicservice.demo.service.validator.RegistrationValidator;
 import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
 import org.musicservice.demo.support.factory.auth.JwtTokenFactory;
 import org.musicservice.demo.support.factory.auth.RefreshTokenFactory;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
@@ -71,8 +71,8 @@ public class AuthServiceTest {
 
     @Test
     void processRegistration_ShouldCreateUserAndIssueTokensAndSendVerification(){
-        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
-        User user = ValidUserDataFactory.user();
+        RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
+        User user = UserDataFactory.user();
         String jwtValue = JwtTokenFactory.value();
         when(userService.create(registrationRequest)).thenReturn(user);
         when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(jwtValue);
@@ -101,7 +101,7 @@ public class AuthServiceTest {
 
     @Test
     void processRegistration_ShouldThrowRegistrationException_UsernameAlreadyExists(){
-        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
+        RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
         String username = registrationRequest.getUsername();
 
         doThrow(new RegistrationException("Validation error", UniqueFieldErrorCode.USERNAME)).when(registrationValidator).validateUsername(username);
@@ -115,7 +115,7 @@ public class AuthServiceTest {
 
     @Test
     void processRegistration_ShouldThrowRegistrationException_EmailAlreadyExists(){
-        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
+        RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
         String email = registrationRequest.getEmail();
 
         doThrow(new RegistrationException("Validation error", UniqueFieldErrorCode.EMAIL)).when(registrationValidator).validateEmail(email);

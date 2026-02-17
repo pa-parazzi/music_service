@@ -23,7 +23,7 @@ import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.cookie.CookieDataFactory;
 import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.multipartFile.MultipartFileFactory;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -84,7 +84,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldRegisterUserWithDefaultAvatarAndReturnAccessToken_WhenMultipartFileFromUserAvatarIsNull() throws Exception{
-        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
+        RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
         String userJson = objectMapper.writeValueAsString(registrationRequest);
         String defaultAvatarKey = yandexStorageProperties.getDefaultAvatarKey();
 
@@ -114,7 +114,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldRegisterUserWithNewAvatarAndReturnAccessToken_WhenMultipartFileFromUserAvatarIsPresent() throws Exception{
-        RegistrationRequest request = ValidUserDataFactory.registrationRequest();
+        RegistrationRequest request = UserDataFactory.registrationRequest();
         String userJson = objectMapper.writeValueAsString(request);
 
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
@@ -143,8 +143,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldThrowRegistrationException_WhenUsernameAlreadyExists() throws Exception{
-        RegistrationRequest request = ValidUserDataFactory.registrationRequest();
-        userRepository.save(ValidUserDataFactory.userWithUsernameAlreadyExistsByRegistrationRequest(request, passwordEncoder));
+        RegistrationRequest request = UserDataFactory.registrationRequest();
+        userRepository.save(UserDataFactory.userWithUsernameAlreadyExistsByRegistrationRequest(request, passwordEncoder));
 
         String userJson = objectMapper.writeValueAsString(request);
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
@@ -164,8 +164,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldThrowRegistrationException_WhenEmailAlreadyExists() throws Exception{
-        RegistrationRequest request = ValidUserDataFactory.registrationRequest();
-        userRepository.save(ValidUserDataFactory.userWithEmailAlreadyExistsByRegistrationRequest(request, passwordEncoder));
+        RegistrationRequest request = UserDataFactory.registrationRequest();
+        userRepository.save(UserDataFactory.userWithEmailAlreadyExistsByRegistrationRequest(request, passwordEncoder));
 
         String userJson = objectMapper.writeValueAsString(request);
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
@@ -185,8 +185,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLoginAndReturnAccessToken() throws Exception {
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = UserDataFactory.loginRequest();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
@@ -215,8 +215,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = UserDataFactory.loginRequest();
         loginRequest.setUsername("invalid username");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
@@ -244,8 +244,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldFailedLogin_WhenPasswordInvalid() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = ValidUserDataFactory.loginRequest();
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = UserDataFactory.loginRequest();
         loginRequest.setPassword("newPass1234");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
@@ -273,7 +273,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsPresent() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshToken refreshToken = RefreshTokenFactoryIT.createNewRefreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
@@ -292,7 +292,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsMissing() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
 
         MvcResult result = mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
@@ -305,7 +305,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest_WhenCookieRequestIsValid() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshTokenFactoryIT.createNewRefreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
@@ -324,7 +324,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusUnauthorized_WhenCookieRequestIsMissing() throws Exception{
-        userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh"))
                 .andExpect(status().isUnauthorized())
@@ -339,7 +339,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusUnauthorized_WhenCookieInvalid() throws Exception{
-        User user = userRepository.save(ValidUserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshTokenFactoryIT.createNewRefreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
