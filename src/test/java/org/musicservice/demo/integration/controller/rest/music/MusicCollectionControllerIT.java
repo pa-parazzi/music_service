@@ -9,12 +9,14 @@ import org.musicservice.demo.dto.like.LikedSoundId;
 import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
-import org.musicservice.demo.dto.music.sound.CollectionTracksResponse;
+import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.response.ErrorType;
 import org.musicservice.demo.mapper.like.LikeAlbumMapper;
 import org.musicservice.demo.mapper.like.LikeSoundMapper;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
@@ -29,6 +31,7 @@ import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -98,8 +101,8 @@ public class MusicCollectionControllerIT {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        CollectionTracksResponse collectionTracksResponse = objectMapper.readValue(jsonResult, CollectionTracksResponse.class);
-        List<SoundResponse> soundListResponse = collectionTracksResponse.soundList();
+        TrackListResponse trackListResponse = objectMapper.readValue(jsonResult, TrackListResponse.class);
+        List<SoundResponse> soundListResponse = trackListResponse.soundList();
         List<Long> soundsIdsResponse = soundListResponse.stream().map(SoundResponse::getId).toList();
         assertThat(soundsIdsResponse).containsExactlyElementsOf(orderedSoundsIds);
     }
@@ -129,6 +132,40 @@ public class MusicCollectionControllerIT {
         List<AlbumResponse> albums = collectionAlbumsResponse.albums();
         List<Long> actualAlbumsIds = albums.stream().map(AlbumResponse::getAlbumId).toList();
         assertThat(actualAlbumsIds).containsExactlyElementsOf(orderedAlbumsIds);
+    }
+
+    @Test
+    void shouldReturnStatusIsNoContent_WhenLikedTracksIsEmpty() throws Exception{
+        LikedSounds likedSounds = new LikedSounds(List.of());
+        String contentJson = objectMapper.writeValueAsString(likedSounds);
+
+        MvcResult result = mockMvc.perform(post("/collection/tracks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(contentJson))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(ErrorType.INVALID_MUSIC_CONTENT.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.NO_CONTENT.value());
+    }
+
+    @Test
+    void shouldReturnStatusIsNoContent_WhenLikedAlbumsIsEmpty() throws Exception{
+        LikedAlbums likedAlbums = new LikedAlbums(List.of());
+        String contentJson = objectMapper.writeValueAsString(likedAlbums);
+
+        MvcResult result = mockMvc.perform(post("/collection/albums")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(contentJson))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(ErrorType.INVALID_MUSIC_CONTENT.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.NO_CONTENT.value());
     }
 
 }

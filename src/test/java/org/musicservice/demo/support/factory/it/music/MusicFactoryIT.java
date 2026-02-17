@@ -50,6 +50,34 @@ public class MusicFactoryIT {
         return List.of(sound1, sound2, sound3);
     }
 
+    public static List<Sound> soundListByAlbum(Artist artist, Album album) {
+        Sound sound1 = new Sound("Supermassive Black Hole", 280,
+                artist, album, album.getTitle() + "/supermassive_black_hole.mp3");
+        Sound sound2 = new Sound("Take a Bow", 380,
+                artist, album, album.getTitle() + "/take_a_bow.mp3");
+        Sound sound3 = new Sound("Starlight", 345,
+                artist, album, album.getTitle() + "/starlight.mp3");
+        Sound sound4 = new Sound("Map of the Problematique", 358,
+                artist, album, album.getTitle() +"/map_of_the_problematique.mp3");
+        Sound sound5 = new Sound("Soldier's Poem", 198,
+                artist, album, album.getTitle() +"/soldier's_poem.mp3");
+        return List.of(sound1, sound2, sound3, sound4, sound5);
+    }
+
+    public static List<Sound> soundListByArtist(Artist artist, Album album) {
+        Sound sound1 = new Sound("Madness", 190,
+                artist, album, album.getTitle() + "/madness.mp3");
+        Sound sound2 = new Sound("Plug in Baby", 263,
+                artist, album, album.getTitle() + "/plug_in_baby.mp3");
+        Sound sound3 = new Sound("Starlight", 345,
+                artist, album, album.getTitle() + "/starlight.mp3");
+        Sound sound4 = new Sound("Psycho", 242,
+                artist, album, album.getTitle() + "/psycho.mp3");
+        Sound sound5 = new Sound("Undisclosed Desires", 295,
+                artist, album, album.getTitle() + "/undisclosed_desires.mp3");
+        return List.of(sound1, sound2, sound3, sound4, sound5);
+    }
+
     public static LikeAlbum likeAlbum (User user, Album album){
         return new LikeAlbum(user, album);
     }
