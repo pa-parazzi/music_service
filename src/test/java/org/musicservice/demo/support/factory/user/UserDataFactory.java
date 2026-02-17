@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 
 
-public class ValidUserDataFactory {
+public class UserDataFactory {
 
     private static final Long ID = 1L;
     private static final String USERNAME = "Alice";
@@ -44,6 +44,11 @@ public class ValidUserDataFactory {
         User user = new User(USERNAME, password, EMAIL, DATE_OF_BIRTH, AUTHORITY);
         user.setEnabled(true);
         return user;
+    }
+
+    public static User userWithoutId(PasswordEncoder encoder){
+        String password = encodePassword(encoder, PASSWORD);
+        return new User(USERNAME, password, EMAIL, DATE_OF_BIRTH, AUTHORITY);
     }
 
     public static User userWithUsernameAlreadyExistsByRegistrationRequest(RegistrationRequest request, PasswordEncoder encoder){

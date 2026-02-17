@@ -1,5 +1,6 @@
 package org.musicservice.demo.controller.auth;
 
+import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.security.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class ActivationTokenController {
     }
 
     @GetMapping("/activate")
-    public ResponseEntity<String> activate(@RequestParam("token") String token){
+    public ResponseEntity<ResponseToEmailVerification> activate(@RequestParam(required = false, value = "token") String token){
         return ResponseEntity.ok(verificationTokenService.verify(token));
     }
 }

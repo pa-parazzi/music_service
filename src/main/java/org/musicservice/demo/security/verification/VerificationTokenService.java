@@ -1,7 +1,10 @@
 package org.musicservice.demo.security.verification;
 
+import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.VerifyEmailTokenException;
+import org.musicservice.demo.exception.response.VerificationTokenErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.properties.VerificationTokenProperties;
@@ -31,7 +34,7 @@ public class VerificationTokenService {
     }
 
     public VerificationToken findByToken(String token){
-        return verificationTokenRepository.findByToken(token).orElse(null);
+        return verificationTokenRepository.findByToken(token).orElseThrow(() -> new VerifyEmailTokenException(VerificationTokenErrorCode.MISSING));
     }
 
     @Transactional
@@ -45,17 +48,20 @@ public class VerificationTokenService {
     }
 
     @Transactional
-    public String verify(String token){
+    public ResponseToEmailVerification verify(String token){
+        if(token==null) throw new VerifyEmailTokenException(VerificationTokenErrorCode.MISSING);
         VerificationToken verificationToken = findByToken(token);
-        if(verificationToken==null){
-            return "Ваш токен активации истек"; // TODO: Добавить возможность "запросить новый токен"
-        } else if(verificationToken.getExpiryDate().isBefore(Instant.now())){
+        if(isExpired(verificationToken)){
             verificationTokenRepository.delete(verificationToken);
-            return "Ваш токен активации истек";
+            throw new VerifyEmailTokenException(VerificationTokenErrorCode.EXPIRED);
         }
         Long userId = verificationToken.getUser().getId();
         userRepository.enableUser(userId);
         verificationTokenRepository.delete(verificationToken);
-        return "Ваш аккаунт активирован!";
+        return new ResponseToEmailVerification("Ваш аккаунт активирован!");
+    }
+
+    private boolean isExpired(VerificationToken verificationToken){
+        return verificationToken.getExpiryDate().isBefore(Instant.now());
     }
 }

@@ -13,9 +13,8 @@ import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.s3Storage.S3Storage;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,7 +37,7 @@ public class UserAvatarServiceTest {
 
     @Test
     void create_ShouldUploadFileInObjectStorageAndCreateUserAvatar(){
-        User user = ValidUserDataFactory.user();
+        User user = UserDataFactory.user();
         String avatarKey = "default_avatar";
         when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
 
@@ -56,7 +55,7 @@ public class UserAvatarServiceTest {
 
     @Test
     void create_ShouldThrowUploadObjectStorageException(){
-        User user = ValidUserDataFactory.user();
+        User user = UserDataFactory.user();
 
         doThrow(new UploadObjectStorageException("Ошибка загрузки файла в s3")).when(s3Storage).upload(mockMultipartFile);
 
@@ -67,7 +66,7 @@ public class UserAvatarServiceTest {
 
     @Test
     void createDefaultAvatar_ShouldCreateDefaultAvatar(){
-        User user = ValidUserDataFactory.user();
+        User user = UserDataFactory.user();
         String avatarKey = "default_avatar";
         when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(avatarKey);
 
@@ -83,7 +82,7 @@ public class UserAvatarServiceTest {
 
     @Test
     void createOrGetDefault_ShouldCreateDefaultAvatar_WhenMultipartFileIsNull(){
-        User user = ValidUserDataFactory.user();
+        User user = UserDataFactory.user();
         String defaultKey = "default_avatar";
         when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(defaultKey);
 
@@ -100,7 +99,7 @@ public class UserAvatarServiceTest {
 
     @Test
     void createOrGetDefault_ShouldCreateUserAvatar_WhenMultipartFileIsPresent(){
-        User user = ValidUserDataFactory.user();
+        User user = UserDataFactory.user();
         String avatarKey = "new_user_avatar_key";
         when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
 

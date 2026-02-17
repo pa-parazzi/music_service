@@ -13,7 +13,7 @@ import org.musicservice.demo.exception.UserNotFoundException;
 import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.user.UserService;
-import org.musicservice.demo.support.factory.user.ValidUserDataFactory;
+import org.musicservice.demo.support.factory.user.UserDataFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -42,7 +42,7 @@ public class UserServiceTest {
 
     @Test
     void createUserTest_ReturnValidUser(){
-        RegistrationRequest registrationRequest = ValidUserDataFactory.registrationRequest();
+        RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
         String encodingPassword = "encoded";
 
         when(passwordEncoder.encode(registrationRequest.getPassword())).thenReturn(encodingPassword);
@@ -62,7 +62,7 @@ public class UserServiceTest {
 
     @Test
     void searchByIdWithAvatarTest_ReturnValidUser(){
-        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        User expectedUser = UserDataFactory.userWithAvatar();
         Long userId = expectedUser.getId();
 
         when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
@@ -79,9 +79,9 @@ public class UserServiceTest {
 
     @Test
     void viewMainResponseByIdTest_ReturnValidResponse(){
-        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        User expectedUser = UserDataFactory.userWithAvatar();
         Long userId = expectedUser.getId();
-        UserMainResponse expectedResponse = ValidUserDataFactory.userMainResponse(expectedUser);
+        UserMainResponse expectedResponse = UserDataFactory.userMainResponse(expectedUser);
 
         when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
         when(userMapper.toMainResponse(expectedUser)).thenReturn(expectedResponse);
@@ -99,7 +99,7 @@ public class UserServiceTest {
 
     @Test
     void searchByUsernameWithAvatarTest_ReturnValidUser(){
-        User expectedUser = ValidUserDataFactory.userWithAvatar();
+        User expectedUser = UserDataFactory.userWithAvatar();
         String username = expectedUser.getUsername();
 
         when(userRepository.searchByUsernameWithAvatar(username)).thenReturn(Optional.of(expectedUser));
