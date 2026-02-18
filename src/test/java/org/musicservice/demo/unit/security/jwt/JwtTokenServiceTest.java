@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.properties.JwtTokenProperties;
-import org.musicservice.demo.support.factory.auth.JwtTokenFactory;
-import org.musicservice.demo.support.factory.auth.TokenSubjectFactory;
+import org.musicservice.demo.support.factory.unit.auth.JwtTokenFactory;
+import org.musicservice.demo.support.factory.unit.auth.TokenSubjectFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;

@@ -13,7 +13,7 @@ import org.musicservice.demo.exception.UserNotFoundException;
 import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.user.UserService;
-import org.musicservice.demo.support.factory.user.UserDataFactory;
+import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;

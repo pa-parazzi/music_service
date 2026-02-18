@@ -14,8 +14,8 @@ import org.musicservice.demo.security.properties.VerificationTokenProperties;
 import org.musicservice.demo.security.reposiroty.VerificationTokenRepository;
 import org.musicservice.demo.security.verification.MailService;
 import org.musicservice.demo.security.verification.VerificationTokenService;
-import org.musicservice.demo.support.factory.auth.VerificationTokenFactory;
-import org.musicservice.demo.support.factory.user.UserDataFactory;
+import org.musicservice.demo.support.factory.unit.auth.VerificationTokenFactory;
+import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 
 import java.time.Duration;
 import java.time.Instant;

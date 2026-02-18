@@ -8,6 +8,7 @@ import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.exception.response.ApiErrorResponse;
 import org.musicservice.demo.exception.response.ErrorType;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ArtistControllerIT {
+public class ArtistControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

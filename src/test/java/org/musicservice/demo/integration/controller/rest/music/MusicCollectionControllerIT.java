@@ -26,8 +26,9 @@ import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.repository.user.UserRepository;
+import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
-import org.musicservice.demo.support.factory.user.UserDataFactory;
+import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class MusicCollectionControllerIT {
+public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -82,7 +83,7 @@ public class MusicCollectionControllerIT {
 
     @Test
     void shouldReturnCollectionTracksOrderByCreatedAtAndStatusIsOk() throws Exception{
-        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
@@ -109,7 +110,7 @@ public class MusicCollectionControllerIT {
 
     @Test
     void shouldReturnCollectionAlbumsOrderByCreatedAtAndStatusIsOk() throws Exception{
-        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist));
         albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));

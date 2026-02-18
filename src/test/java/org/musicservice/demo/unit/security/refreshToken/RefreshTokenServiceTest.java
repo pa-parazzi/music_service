@@ -14,7 +14,7 @@ import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
-import org.musicservice.demo.support.factory.auth.RefreshTokenFactory;
+import org.musicservice.demo.support.factory.unit.auth.RefreshTokenFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -126,7 +126,9 @@ public class RefreshTokenServiceTest {
 
         refreshTokenService.dropToken(request, response);
 
-        verifyNoInteractions(refreshTokenCryptoService, refreshTokenRepository, cookieManager);
+        verify(cookieManager).clearCookie(response);
+        verifyNoMoreInteractions(cookieManager);
+        verifyNoInteractions(refreshTokenCryptoService, refreshTokenRepository);
     }
 
     @Test

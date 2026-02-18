@@ -9,12 +9,13 @@ import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.search.SearchMusicResponse;
 import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.exception.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.service.search.SearchMusicService;
-import org.musicservice.demo.support.factory.music.AlbumDataFactory;
-import org.musicservice.demo.support.factory.music.ArtistDataFactory;
+import org.musicservice.demo.support.factory.unit.music.AlbumDataFactory;
+import org.musicservice.demo.support.factory.unit.music.ArtistDataFactory;
 
 import java.util.List;
 
@@ -57,17 +58,15 @@ public class SearchMusicServiceTest {
     void searchMusicResult_ShouldReturnNull_WhenFragmentIsEmpty(){
         String fragment = " ";
 
-        SearchMusicResponse result = searchMusicService.searchMusicResult(fragment);
+        assertThrows(NoSuchMusicResultException.class, ()-> searchMusicService.searchMusicResult(fragment));
 
-        assertNull(result);
         verifyNoInteractions(artistRepository, albumRepository, albumMapper);
     }
 
     @Test
     void searchMusicResult_ShouldReturnNull_WhenFragmentIsNull(){
-        SearchMusicResponse result = searchMusicService.searchMusicResult(null);
+        assertThrows(NoSuchMusicResultException.class, ()-> searchMusicService.searchMusicResult(null));
 
-        assertNull(result);
         verifyNoInteractions(artistRepository, albumRepository, albumMapper);
     }
 }

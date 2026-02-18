@@ -9,7 +9,7 @@ import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.musicservice.demo.service.auth.AuthenticationListenerService;
-import org.musicservice.demo.support.factory.auth.AuthenticationDataFactory;
+import org.musicservice.demo.support.factory.unit.auth.AuthenticationDataFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

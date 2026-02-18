@@ -13,6 +13,7 @@ import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class AlbumControllerIT {
+public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

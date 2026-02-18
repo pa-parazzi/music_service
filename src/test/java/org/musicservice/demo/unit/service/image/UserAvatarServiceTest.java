@@ -13,7 +13,7 @@ import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.s3Storage.S3Storage;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
-import org.musicservice.demo.support.factory.user.UserDataFactory;
+import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;

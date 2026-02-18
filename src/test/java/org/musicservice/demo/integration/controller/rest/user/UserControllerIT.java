@@ -13,8 +13,9 @@ import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.jwt.JwtTokenService;
+import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.user.UserAvatarFactoryIT;
-import org.musicservice.demo.support.factory.user.UserDataFactory;
+import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,14 +29,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
-public class UserControllerIT {
+public class UserControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,7 +60,7 @@ public class UserControllerIT {
 
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
-        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
         user.setUserAvatar(userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user)));
         UserMainResponse expectedUserResponse = userMapper.toMainResponse(user);
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
@@ -78,7 +77,7 @@ public class UserControllerIT {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
-        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         user.setUserAvatar(userAvatar);
 
@@ -93,7 +92,7 @@ public class UserControllerIT {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
-        User user = userRepository.save(UserDataFactory.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         user.setUserAvatar(userAvatar);
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
