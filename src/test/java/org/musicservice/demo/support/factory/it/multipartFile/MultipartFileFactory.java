@@ -1,4 +1,4 @@
-package org.musicservice.demo.support.factory.multipartFile;
+package org.musicservice.demo.support.factory.it.multipartFile;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;

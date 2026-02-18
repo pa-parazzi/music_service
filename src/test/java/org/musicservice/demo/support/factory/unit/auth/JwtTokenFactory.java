@@ -1,4 +1,4 @@
-package org.musicservice.demo.support.factory.auth;
+package org.musicservice.demo.support.factory.unit.auth;
 
 import java.time.Duration;
 

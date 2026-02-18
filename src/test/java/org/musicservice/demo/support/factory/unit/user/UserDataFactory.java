@@ -1,4 +1,4 @@
-package org.musicservice.demo.support.factory.user;
+package org.musicservice.demo.support.factory.unit.user;
 
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.dto.image.UserAvatarResponse;
@@ -30,47 +30,6 @@ public class UserDataFactory {
         request.setEmail(EMAIL);
         request.setDateOfBirth(DATE_OF_BIRTH);
         return request;
-    }
-
-    public static LoginRequest loginRequest(){
-        LoginRequest request = new LoginRequest();
-        request.setUsername(USERNAME);
-        request.setPassword(PASSWORD);
-        return request;
-    }
-
-    public static User userWithoutIdAndEnabledAccount(PasswordEncoder encoder){
-        String password = encodePassword(encoder, PASSWORD);
-        User user = new User(USERNAME, password, EMAIL, DATE_OF_BIRTH, AUTHORITY);
-        user.setEnabled(true);
-        return user;
-    }
-
-    public static User userWithoutId(PasswordEncoder encoder){
-        String password = encodePassword(encoder, PASSWORD);
-        return new User(USERNAME, password, EMAIL, DATE_OF_BIRTH, AUTHORITY);
-    }
-
-    public static User userWithUsernameAlreadyExistsByRegistrationRequest(RegistrationRequest request, PasswordEncoder encoder){
-        String password = encodePassword(encoder, PASSWORD);
-        return new User(
-                request.getUsername(),
-                password,
-                EMAIL,
-                DATE_OF_BIRTH,
-                AUTHORITY
-        );
-    }
-
-    public static User userWithEmailAlreadyExistsByRegistrationRequest(RegistrationRequest request, PasswordEncoder encoder){
-        String password = encodePassword(encoder, PASSWORD);
-        return new User(
-                "Alex",
-                password,
-                request.getEmail(),
-                DATE_OF_BIRTH,
-                AUTHORITY
-        );
     }
 
     public static User userWithAvatar(){
@@ -111,10 +70,6 @@ public class UserDataFactory {
         avatarResponse.setUrl(AVATAR_URL);
         userResponse.setAvatar(avatarResponse);
         return userResponse;
-    }
-
-    private static String encodePassword(PasswordEncoder encoder, String password){
-        return encoder.encode(password);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.musicservice.demo.support.factory.music;
+package org.musicservice.demo.support.factory.unit.music;
 
 import org.musicservice.demo.dto.image.AlbumImageResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
