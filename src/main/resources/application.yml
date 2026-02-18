@@ -1,8 +1,7 @@
 security:
   login:
-    max-failed-attempts: 3      # Максимальное число неудачных попыток входа
-    lock-duration-minutes: 15   # Время в минутах, на которое блокируется аккаунт при достижении максимального числа попыток входа
-
+    max-failed-attempts: 3
+    lock-duration: PT15M
 
 yandex:
   access-key: "YCAJEZWueSbh5sYY5pVWj1y2E"
@@ -24,7 +23,7 @@ jwt:
   access-token-duration: PT1M
 
 refresh-token:
-  duration: P30D
+  duration: P7D
 
 verification-token:
   expiration-hours: PT24H

@@ -6,8 +6,8 @@ import lombok.Setter;
 import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.entity.image.UserAvatar;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -37,12 +37,13 @@ public class User {
 
     // Хранит время блокировки аккаунта, null - аккаунт активен
     @Column(name = "lock_time")
-    private LocalDateTime lockTime;
+    private Instant lockTime;
 
     // Флаг, показывает активирован ли аккаунт (через email)
     @Column(name="enabled")
     private boolean enabled;
 
+    @Column(name = "role_name")
     @Enumerated(value = EnumType.STRING)
     private Authority role;
 
@@ -52,17 +53,17 @@ public class User {
     public User(){}
 
     // Конструктор для регистрации пользователя
-    public User(String username, String password, String email, LocalDate dateOfBirth, Authority role){
+    public User(String username, String password, String email, LocalDate dateOfBirth){
         this.username = username;
         this.password = password;
         this.email = email;
         this.dateOfBirth = dateOfBirth;
-        this.role = role;
+        this.role = Authority.USER;
     }
 
     // Учетная запись не заблокирована?
     public boolean isAccountNonLocked(){
-        return lockTime == null || lockTime.isBefore(LocalDateTime.now());
+        return lockTime == null || lockTime.isBefore(Instant.now());
     }
 
     @Override

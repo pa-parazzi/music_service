@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -31,7 +31,7 @@ public class AuthenticationListenerService {
         User user = optUser.get();
         int failedAttempts = user.getFailedLoginAttempts();
         if(failedAttempts + 1 >= securityProperties.getMaxFailedAttempts()){
-            user.setLockTime(LocalDateTime.now().plusMinutes(securityProperties.getLockDurationMinutes()));
+            user.setLockTime(Instant.now().plus(securityProperties.getLockDuration()));
             return;
         }
         user.setFailedLoginAttempts(failedAttempts + 1);

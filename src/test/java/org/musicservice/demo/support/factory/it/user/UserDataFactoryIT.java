@@ -28,7 +28,7 @@ public class UserDataFactoryIT {
 
     public static User userWithoutIdAndEnabledAccount(PasswordEncoder encoder){
         String password = encodePassword(encoder, "PASSWORD");
-        User user = new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4), Authority.USER);
+        User user = new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4));
         user.setEnabled(true);
         return user;
     }
@@ -39,8 +39,7 @@ public class UserDataFactoryIT {
                 request.getUsername(),
                 password,
                 "EMAIL",
-                LocalDate.of(1997, 2,4),
-                Authority.USER
+                LocalDate.of(1997, 2,4)
         );
     }
 
@@ -50,14 +49,13 @@ public class UserDataFactoryIT {
                 "Alex",
                 password,
                 request.getEmail(),
-                LocalDate.of(1997, 2,4),
-                Authority.USER
+                LocalDate.of(1997, 2,4)
         );
     }
 
     public static User userWithoutId(PasswordEncoder encoder){
         String password = encodePassword(encoder, "PASSWORD");
-        return new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4), Authority.USER);
+        return new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4));
     }
 
     private static String encodePassword(PasswordEncoder encoder, String password){

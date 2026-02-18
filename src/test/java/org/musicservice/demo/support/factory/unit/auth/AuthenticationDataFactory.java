@@ -8,8 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class AuthenticationDataFactory {
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(2000, 1, 1);
 
     private static final int MAX_FAILED_LOGIN_ATTEMPTS = 3;
-    private static final int LOCK_DURATION_MINUTES = 15;
+    private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
 
     public static UserPrincipal principal(){
         return new UserPrincipal(
@@ -46,8 +47,8 @@ public class AuthenticationDataFactory {
         return MAX_FAILED_LOGIN_ATTEMPTS;
     }
 
-    public static int lockDurationMinutes(){
-        return LOCK_DURATION_MINUTES;
+    public static Duration lockDurationMinutes(){
+        return LOCK_DURATION;
     }
 
     public static User userWithFailedLoginAttemptsZero(){
@@ -55,8 +56,7 @@ public class AuthenticationDataFactory {
                 USERNAME,
                 PASSWORD,
                 EMAIL,
-                DATE_OF_BIRTH,
-                Authority.USER
+                DATE_OF_BIRTH
         );
         user.setId(ID);
         user.setLockTime(null);
@@ -69,8 +69,7 @@ public class AuthenticationDataFactory {
                 USERNAME,
                 PASSWORD,
                 EMAIL,
-                DATE_OF_BIRTH,
-                Authority.USER
+                DATE_OF_BIRTH
         );
         user.setId(ID);
         user.setLockTime(null);
@@ -83,11 +82,10 @@ public class AuthenticationDataFactory {
                 USERNAME,
                 PASSWORD,
                 EMAIL,
-                DATE_OF_BIRTH,
-                Authority.USER
+                DATE_OF_BIRTH
         );
         user.setId(ID);
-        user.setLockTime(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
+        user.setLockTime(Instant.now().plus(LOCK_DURATION));
         user.setFailedLoginAttempts(MAX_FAILED_LOGIN_ATTEMPTS);
         return user;
     }

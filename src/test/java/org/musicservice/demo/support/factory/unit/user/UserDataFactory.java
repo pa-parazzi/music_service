@@ -19,7 +19,6 @@ public class UserDataFactory {
     private static final String PASSWORD = "qwerty12345";
     private static final String EMAIL = "igor.bocharov.88@gmail.com";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(2000, 1, 1);
-    private static final Authority AUTHORITY = Authority.USER;
     private static final String AVATAR_KEY = "default_avatar.jpg";
     private static final String AVATAR_URL = "https://mus-app-img.storage.yandexcloud.net/default_avatar.jpg";
 
@@ -37,8 +36,7 @@ public class UserDataFactory {
                 USERNAME,
                 PASSWORD,
                 EMAIL,
-                DATE_OF_BIRTH,
-                AUTHORITY
+                DATE_OF_BIRTH
         );
         user.setId(ID);
 
@@ -54,8 +52,7 @@ public class UserDataFactory {
                 USERNAME,
                 PASSWORD,
                 EMAIL,
-                DATE_OF_BIRTH,
-                AUTHORITY
+                DATE_OF_BIRTH
         );
         user.setId(ID);
         return user;
