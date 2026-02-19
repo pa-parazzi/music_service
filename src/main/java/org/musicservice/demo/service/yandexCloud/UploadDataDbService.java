@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class UploadMusic {
+public class UploadDataDbService {
 
     private final ArtistRepository artistRepository;
     private final AlbumRepository albumRepository;
@@ -23,7 +23,7 @@ public class UploadMusic {
     private final AlbumImageRepository albumImageRepository;
 
     @Autowired
-    public UploadMusic(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, AlbumImageRepository albumImageRepository) {
+    public UploadDataDbService(ArtistRepository artistRepository, AlbumRepository albumRepository, SoundRepository soundRepository, AlbumImageRepository albumImageRepository) {
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
         this.soundRepository = soundRepository;

@@ -9,25 +9,31 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 @Service
-public class YandexUploadMusic {
+public class UploadObjectStorageService {
 
     private final S3Client s3Client;
 
     @Autowired
-    public YandexUploadMusic(S3Client s3Client) {
+    public UploadObjectStorageService(S3Client s3Client) {
         this.s3Client = s3Client;
     }
 
-    public void uploadMusicForBucket(String bucket, String key, String fileUrl) {
+    public void upload(String bucket, String key, String fileUrl) {
         HttpURLConnection connection = null;
         try{
-            URL url = new URL(fileUrl);
+            URI uri = new URI(fileUrl);
+            URL url = uri.toURL();
             connection = (HttpURLConnection) url.openConnection();
             connection.setInstanceFollowRedirects(true); // разрешаем редиректы
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
             connection.connect();
+            System.out.println("connect, connection content length: " + connection.getContentLengthLong());
 
             int responseCode = connection.getResponseCode();
             if(responseCode!= HttpURLConnection.HTTP_OK){
@@ -41,13 +47,17 @@ public class YandexUploadMusic {
                             .contentType("audio/mpeg") // для mp3
                             .build(),
                     RequestBody.fromInputStream(inputStream, connection.getContentLengthLong()));
+            System.out.println("Загружаю объект в бакет");
         }
 
         } catch (IOException e) {
             throw new RuntimeException("Ошибка загрузки треков в бакет : " + e.getMessage());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         } finally {
             if(connection!=null){
                 connection.disconnect();
+                System.out.println("disconnect");
             }
         }
     }

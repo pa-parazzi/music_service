@@ -30,7 +30,7 @@ public class UserService {
     @Transactional
     public User create(RegistrationRequest regRequest){
         String password = passwordEncoder.encode(regRequest.getPassword());
-        User user = new User(regRequest.getUsername(), password, regRequest.getEmail(), regRequest.getDateOfBirth(), Authority.USER);
+        User user = new User(regRequest.getUsername(), password, regRequest.getEmail(), regRequest.getDateOfBirth());
         return userRepository.save(user);
     }
 

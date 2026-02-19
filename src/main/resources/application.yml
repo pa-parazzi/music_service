@@ -4,8 +4,8 @@ security:
     lock-duration: PT15M
 
 yandex:
-  access-key: "YCAJEZWueSbh5sYY5pVWj1y2E"
-  secret-key: "YCNjDrXSEl9jH62FRplhdZsiNHpwfH0orTSXhqY5"
+  access-key: "YCAJETJeReRBYAuBuw3x3Ig4E"
+  secret-key: "YCNMTXRdtBDNhwKrdC20eQnID9YM9TQq8deDBec5"
   buckets:
     music: "mus-app-tracks"
     img: "mus-app-img"
