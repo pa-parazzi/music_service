@@ -1,6 +1,7 @@
 package org.musicservice.demo.controller.admin;
 
 import org.musicservice.demo.dto.user.UserMainResponse;
+import org.musicservice.demo.exception.UploadObjectStorageException;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.service.yandexCloud.multithreading.UploadData;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,11 @@ public class AdminController {
 
     @PostMapping("/upload")
     public ResponseEntity<Void> uploadData() throws IOException {
-        uploadData.upload();
+        try{
+            uploadData.upload();
+        } catch (UploadObjectStorageException e){
+            throw new UploadObjectStorageException("Sucks - " + e.getCause());
+        }
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

@@ -23,44 +23,37 @@ public class UploadObjectStorageService {
         this.s3Client = s3Client;
     }
 
-    public void upload(String bucket, String key, String fileUrl) {
+    public void uploadInObjectStorage(String bucket, String key, String fileUrl) {
         HttpURLConnection connection = null;
-        try{
+        try {
             URI uri = new URI(fileUrl);
             URL url = uri.toURL();
             connection = (HttpURLConnection) url.openConnection();
             connection.setInstanceFollowRedirects(true); // разрешаем редиректы
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(30000);
             connection.connect();
-            System.out.println("connect, connection content length: " + connection.getContentLengthLong());
+            System.out.println("content - " + connection.getContentLengthLong());
 
             int responseCode = connection.getResponseCode();
-            if(responseCode!= HttpURLConnection.HTTP_OK){
+            if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new RuntimeException("Ошибка чтения url : " + fileUrl + " - " + responseCode);
             }
 
-        try(InputStream inputStream = connection.getInputStream()) {
-            s3Client.putObject(PutObjectRequest.builder()
-                            .bucket(bucket)
-                            .key(key)
-                            .contentType("audio/mpeg") // для mp3
-                            .build(),
-                    RequestBody.fromInputStream(inputStream, connection.getContentLengthLong()));
-            System.out.println("Загружаю объект в бакет");
-        }
-
+            try (InputStream inputStream = connection.getInputStream()) {
+                s3Client.putObject(PutObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(key)
+                                .contentType("audio/mpeg") // для mp3
+                                .build(),
+                        RequestBody.fromInputStream(inputStream, connection.getContentLengthLong()));
+            }
         } catch (IOException e) {
             throw new RuntimeException("Ошибка загрузки треков в бакет : " + e.getMessage());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         } finally {
-            if(connection!=null){
+            if (connection != null) {
                 connection.disconnect();
-                System.out.println("disconnect");
             }
         }
     }
-
-
 }

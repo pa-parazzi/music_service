@@ -1,7 +1,7 @@
 package org.musicservice.demo.jamendoIntegration;
 
 import org.musicservice.demo.dto.jamendo.JamendoResponse;
-import org.musicservice.demo.dto.jamendo.UploadMusicResponse;
+import org.musicservice.demo.dto.jamendo.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -31,7 +31,7 @@ public class JamendoClient {
         this.jamendoProperties = jamendoProperties;
     }
 
-    public List<UploadMusicResponse> getMusicData(){
+    public List<MusicResponse> getMusicData(){
         return Objects.requireNonNull(webClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/tracks/")

@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.yandexCloud;
 
-import org.musicservice.demo.dto.jamendo.UploadMusicResponse;
+import org.musicservice.demo.dto.jamendo.MusicResponse;
 import org.musicservice.demo.entity.image.AlbumImage;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -30,7 +30,7 @@ public class UploadDataDbService {
         this.albumImageRepository = albumImageRepository;
     }
 
-    public Artist getArtist(UploadMusicResponse response) {
+    public Artist getArtist(MusicResponse response) {
         return artistRepository.findByName(response.getArtist_name()).orElseGet(() -> {
             Artist artist = new Artist();
             artist.setName(response.getArtist_name());
@@ -38,7 +38,7 @@ public class UploadDataDbService {
         });
     }
 
-    public Album getAlbum(UploadMusicResponse response) {
+    public Album getAlbum(MusicResponse response) {
         return albumRepository.findByTitle(response.getAlbum_name())
                 .orElseGet(() -> {
                     Album newAlbum = new Album();
@@ -47,7 +47,7 @@ public class UploadDataDbService {
                 });
     }
 
-    public AlbumImage getAlbumImage(UploadMusicResponse response) {
+    public AlbumImage getAlbumImage(MusicResponse response) {
         return albumImageRepository.findByKey(response.getImgKey())
                 .orElseGet(() -> {
                     AlbumImage albumImage = new AlbumImage();
@@ -56,7 +56,7 @@ public class UploadDataDbService {
                 });
     }
 
-    public Sound getSound(UploadMusicResponse response) {
+    public Sound getSound(MusicResponse response) {
         return soundRepository.findByTitle(response.getName())
                 .orElseGet(() -> {
                     Sound newSound = new Sound();
@@ -68,7 +68,7 @@ public class UploadDataDbService {
     }
 
     @Transactional
-    public void insertMusicData(UploadMusicResponse response) {
+    public void insertMusicData(MusicResponse response) {
         Artist artist = getArtist(response);
 
         Album album = getAlbum(response);

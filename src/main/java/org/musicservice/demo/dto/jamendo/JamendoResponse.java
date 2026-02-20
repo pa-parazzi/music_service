@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JamendoResponse {
-    private List<UploadMusicResponse> results;
+    private List<MusicResponse> results;
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-public class UploadMusicResponse {
+public class MusicResponse {
 
     private String name;
     private Integer duration;

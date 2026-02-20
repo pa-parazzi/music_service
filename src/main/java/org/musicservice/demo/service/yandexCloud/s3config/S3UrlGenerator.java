@@ -35,18 +35,4 @@ public class S3UrlGenerator {
     public String generatePublicUrl(String bucket, String key) {
         return String.format("https://%s.storage.yandexcloud.net/%s", bucket, key);
     }
-
-    public String generatePresignedUploadUrlImg(String bucketName, String key, MultipartFile file){
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(file.getContentType())
-                .build();
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(15))
-                .putObjectRequest(putObjectRequest)
-                .build();
-        URL presignUrl = presigner.presignPutObject(presignRequest).url();
-        return presignUrl.toString();
-    }
 }
