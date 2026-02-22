@@ -1,7 +1,6 @@
 package org.musicservice.demo.security.authHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.musicservice.demo.exception.response.ApiErrorResponse;
@@ -29,7 +28,7 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
     }
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         AuthErrorCode errorCode = switch (authException) {
             case BadCredentialsException e -> AuthErrorCode.BAD_CREDENTIALS;

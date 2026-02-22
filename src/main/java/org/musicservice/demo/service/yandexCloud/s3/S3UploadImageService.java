@@ -3,6 +3,7 @@ package org.musicservice.demo.service.yandexCloud.s3;
 import org.musicservice.demo.exception.UploadObjectStorageException;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -14,6 +15,7 @@ import java.io.InputStream;
 import java.util.UUID;
 
 @Service
+@Primary
 public class S3UploadImageService implements ObjectStorageService {
 
     private final YandexStorageProperties yandexStorageProperties;
