@@ -1,8 +1,7 @@
-package org.musicservice.demo.service.s3Storage;
+package org.musicservice.demo.service.yandexCloud.s3;
 
 import org.springframework.web.multipart.MultipartFile;
 
-
-public interface ObjectStorage {
+public interface ObjectStorageService {
     String upload(MultipartFile file);
 }

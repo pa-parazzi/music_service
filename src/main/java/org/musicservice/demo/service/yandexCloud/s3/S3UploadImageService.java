@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.s3Storage;
+package org.musicservice.demo.service.yandexCloud.s3;
 
 import org.musicservice.demo.exception.UploadObjectStorageException;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
@@ -14,13 +14,13 @@ import java.io.InputStream;
 import java.util.UUID;
 
 @Service
-public class S3Storage implements ObjectStorage{
+public class S3UploadImageService implements ObjectStorageService {
 
     private final YandexStorageProperties yandexStorageProperties;
     private final S3Client s3Client;
 
     @Autowired
-    public S3Storage(YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
+    public S3UploadImageService(YandexStorageProperties yandexStorageProperties, S3Client s3Client) {
         this.yandexStorageProperties = yandexStorageProperties;
         this.s3Client = s3Client;
     }

@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.yandexCloud;
+package org.musicservice.demo.service.uploadData;
 
 import org.musicservice.demo.dto.jamendo.MusicResponse;
 import org.musicservice.demo.entity.image.AlbumImage;
@@ -48,10 +48,10 @@ public class UploadDataDbService {
     }
 
     public AlbumImage getAlbumImage(MusicResponse response) {
-        return albumImageRepository.findByKey(response.getImgKey())
+        return albumImageRepository.findByKey(response.getAlbumImgKey())
                 .orElseGet(() -> {
                     AlbumImage albumImage = new AlbumImage();
-                    albumImage.setKey(response.getImgKey());
+                    albumImage.setKey(response.getAlbumImgKey());
                     return albumImage;
                 });
     }
@@ -82,17 +82,14 @@ public class UploadDataDbService {
         sound.setArtist(artist);
         sound.setAlbum(album);
 
-
         if(!album.getSoundList().contains(sound)){
             album.getSoundList().add(sound);
         }
 
-        if(!albumImage.getAlbum().equals(album)){
-            albumImage.setAlbum(album);
-        }
-
         artistRepository.save(artist);
         albumRepository.save(album);
+        albumImageRepository.save(albumImage);
+        soundRepository.save(sound);
     }
 
 }
