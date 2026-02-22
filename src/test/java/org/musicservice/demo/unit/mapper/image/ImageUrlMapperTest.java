@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.mapper.image.ImageUrlMapper;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
-import org.musicservice.demo.service.yandexCloud.s3config.S3UrlGenerator;
 
 import java.util.Map;
 
@@ -21,25 +20,21 @@ public class ImageUrlMapperTest {
 
     @Mock
     private YandexStorageProperties yandexStorageProperties;
-    @Mock
-    private S3UrlGenerator s3UrlGenerator;
 
     @InjectMocks
     private ImageUrlMapper imageUrlMapper;
 
     @Test
-    void mapUrl_ShouldGeneratePublicUrl(){
-        String imgKey = "image_key";
-        String url = String.format("http://storage.mus-app-image/%s", imgKey);
+    void mapUrl_ShouldGenerateValidPublicUrl(){
         String bucketKey = "img";
-        Map<String, String> imgBucketMap = Map.of(bucketKey, "mus-app-image");
-        when(yandexStorageProperties.getBuckets()).thenReturn(imgBucketMap);
-        when(s3UrlGenerator.generatePublicUrl(imgBucketMap.get(bucketKey), imgKey)).thenReturn(url);
+        Map<String, String> imgBucket = Map.of(bucketKey, "mus-app-img");
+        String imgKey = "test_image.jpg";
+        String url = String.format("https://%s.storage.yandexcloud.net/%s", imgBucket.get(bucketKey), imgKey);
+        when(yandexStorageProperties.getBuckets()).thenReturn(imgBucket);
 
         String result = imageUrlMapper.mapUrl(imgKey);
 
         assertEquals(url, result);
         verify(yandexStorageProperties).getBuckets();
-        verify(s3UrlGenerator).generatePublicUrl(imgBucketMap.get(bucketKey), imgKey);
     }
 }

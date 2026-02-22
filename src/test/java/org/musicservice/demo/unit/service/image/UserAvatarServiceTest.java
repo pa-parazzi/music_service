@@ -11,7 +11,7 @@ import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.exception.UploadObjectStorageException;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.service.image.UserAvatarService;
-import org.musicservice.demo.service.s3Storage.S3Storage;
+import org.musicservice.demo.service.yandexCloud.s3.S3UploadImageService;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 import org.springframework.mock.web.MockMultipartFile;
@@ -25,7 +25,7 @@ public class UserAvatarServiceTest {
     @Mock
     private UserAvatarRepository userAvatarRepository;
     @Mock
-    private S3Storage s3Storage;
+    private S3UploadImageService s3UploadImageService;
     @Mock
     private YandexStorageProperties yandexStorageProperties;
 
@@ -39,11 +39,11 @@ public class UserAvatarServiceTest {
     void create_ShouldUploadFileInObjectStorageAndCreateUserAvatar(){
         User user = UserDataFactory.user();
         String avatarKey = "default_avatar";
-        when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
+        when(s3UploadImageService.upload(mockMultipartFile)).thenReturn(avatarKey);
 
         userAvatarService.create(mockMultipartFile, user);
 
-        verify(s3Storage).upload(mockMultipartFile);
+        verify(s3UploadImageService).upload(mockMultipartFile);
 
         ArgumentCaptor<UserAvatar> avatarCaptor = ArgumentCaptor.forClass(UserAvatar.class);
         verify(userAvatarRepository).save(avatarCaptor.capture());
@@ -57,7 +57,7 @@ public class UserAvatarServiceTest {
     void create_ShouldThrowUploadObjectStorageException(){
         User user = UserDataFactory.user();
 
-        doThrow(new UploadObjectStorageException("Ошибка загрузки файла в s3")).when(s3Storage).upload(mockMultipartFile);
+        doThrow(new UploadObjectStorageException("Ошибка загрузки файла в s3")).when(s3UploadImageService).upload(mockMultipartFile);
 
         assertThrows(UploadObjectStorageException.class, ()-> userAvatarService.create(mockMultipartFile, user));
 
@@ -94,18 +94,18 @@ public class UserAvatarServiceTest {
         assertEquals(user, userAvatar.getOwner());
         assertEquals(defaultKey, userAvatar.getKey());
 
-        verifyNoInteractions(s3Storage);
+        verifyNoInteractions(s3UploadImageService);
     }
 
     @Test
     void createOrGetDefault_ShouldCreateUserAvatar_WhenMultipartFileIsPresent(){
         User user = UserDataFactory.user();
         String avatarKey = "new_user_avatar_key";
-        when(s3Storage.upload(mockMultipartFile)).thenReturn(avatarKey);
+        when(s3UploadImageService.upload(mockMultipartFile)).thenReturn(avatarKey);
 
         userAvatarService.createOrGetDefault(mockMultipartFile, user);
 
-        verify(s3Storage).upload(mockMultipartFile);
+        verify(s3UploadImageService).upload(mockMultipartFile);
 
         ArgumentCaptor<UserAvatar> avatarCapture = ArgumentCaptor.forClass(UserAvatar.class);
         verify(userAvatarRepository).save(avatarCapture.capture());

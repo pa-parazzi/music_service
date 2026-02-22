@@ -20,7 +20,7 @@
 <main class="main-content">
     <section class="import-section">
         <h2>Импорт музыкальных данных</h2>
-        <button id="importBtn" class="button">🚀 Запустить импорт</button>
+        <button id="importBtn" class="button">Загрузить объекты в Yandex object storage</button>
         <div id="importStatus" class="upload-status"></div>
     </section>
 </main>
@@ -33,7 +33,7 @@
         const statusDiv = document.getElementById("importStatus");
 
         importBtn.addEventListener("click", async () => {
-            statusDiv.textContent = "⏳ Импорт начался...";
+            statusDiv.textContent = "Импорт начался...";
 
             try {
                 const response = await apiFetch('/admin/upload', {
@@ -41,14 +41,14 @@
                 });
 
                 if (response.ok) {
-                    statusDiv.textContent = "✅ Импорт успешно завершён!";
+                    statusDiv.textContent = "Импорт успешно завершён!";
                 } else {
                     const errText = await response.text();
-                    statusDiv.textContent = "❌ Ошибка при импорте: " + (errText || response.status);
+                    statusDiv.textContent = "Ошибка при импорте: " + (errText || response.status);
                 }
             } catch (error) {
                 console.error("Ошибка при запуске импорта:", error);
-                statusDiv.textContent = "❌ Не удалось запустить импорт.";
+                statusDiv.textContent = "Не удалось запустить импорт.";
             }
         });
     });
