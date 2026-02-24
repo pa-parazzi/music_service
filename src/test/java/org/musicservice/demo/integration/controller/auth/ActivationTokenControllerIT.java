@@ -53,7 +53,7 @@ public class ActivationTokenControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldEnableUserAccountAndReturnResponseToEmailVerificationAndStatusIsOk() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutId(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
         VerificationToken verificationToken = verificationTokenRepository.save(VerificationTokenFactoryIT.validVerificationToken(user, verificationTokenProperties));
         String token = verificationToken.getToken();
 
@@ -73,7 +73,7 @@ public class ActivationTokenControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenTokenIsEmpty() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutId(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
         String token = " ";
 
         MvcResult result = mockMvc.perform(get("/api/auth/activate").param("token", token))
@@ -91,7 +91,7 @@ public class ActivationTokenControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenTokenIsNull() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutId(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
 
         MvcResult result = mockMvc.perform(get("/api/auth/activate"))
                 .andExpect(status().isUnauthorized())
@@ -108,7 +108,7 @@ public class ActivationTokenControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenTokenIsExpired() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutId(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
         VerificationToken expiredVerificationToken = verificationTokenRepository.save(VerificationTokenFactoryIT.expiredVerificationToken(user));
         String token = expiredVerificationToken.getToken();
 

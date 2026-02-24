@@ -2,7 +2,7 @@ package org.musicservice.demo.controller.rest.like;
 
 import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikeRequest;
+import org.musicservice.demo.dto.like.UserLikedMusicRequest;
 import org.musicservice.demo.service.like.LikeSoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,13 +26,13 @@ public class LikeSoundController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> likeSound(@RequestBody UserLikeRequest request){
+    public ResponseEntity<HttpStatus> likeSound(@RequestBody UserLikedMusicRequest request){
         likeSoundService.create(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<HttpStatus> dropLike(@RequestBody UserLikeRequest request){
+    public ResponseEntity<HttpStatus> dropLike(@RequestBody UserLikedMusicRequest request){
         likeSoundService.delete(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }

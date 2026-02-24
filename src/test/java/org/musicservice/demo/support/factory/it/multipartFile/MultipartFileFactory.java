@@ -6,15 +6,13 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class MultipartFileFactory {
 
     public static MockMultipartFile userPart(String json){
         return new MockMultipartFile(
-                "user",
-                "user.json",
+                "userWithEncodedPassword",
+                "userWithEncodedPassword.json",
                 MediaType.APPLICATION_JSON_VALUE,
                 json.getBytes(StandardCharsets.UTF_8));
     }

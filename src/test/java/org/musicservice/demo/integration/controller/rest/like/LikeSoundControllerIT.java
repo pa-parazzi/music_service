@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.like.LikedSoundId;
 import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikeRequest;
+import org.musicservice.demo.dto.like.UserLikedMusicRequest;
 import org.musicservice.demo.entity.like.LikeSound;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -66,7 +66,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnLikedSoundsIdsByOrderCreatedAtAndStatusIsOk_WhenUserHasLikedSounds() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
@@ -94,7 +94,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnIsEmptyStatusIsOk_WhenUserDoesNotLikedSounds() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
@@ -115,13 +115,13 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldCreateLikeSoundAndReturnStatusIsAccept() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
         Sound likedSound = soundList.getFirst();
 
-        UserLikeRequest userRequest = new UserLikeRequest(user.getId(), likedSound.getId());
+        UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
         mockMvc.perform(post("/sound/like/create")
@@ -138,14 +138,14 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldDeleteLikeSoundAndReturnStatusIsAccept() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
         Sound likedSound = soundList.get(1);
         LikeSound likeSound = likeSoundRepository.save(MusicFactoryIT.likeSound(user, likedSound));
 
-        UserLikeRequest userRequest = new UserLikeRequest(user.getId(), likedSound.getId());
+        UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
         mockMvc.perform(delete("/sound/like/delete")

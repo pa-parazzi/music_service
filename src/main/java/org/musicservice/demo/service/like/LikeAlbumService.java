@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.musicservice.demo.dto.like.LikedAlbumId;
 import org.musicservice.demo.dto.like.LikedAlbums;
 import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikeRequest;
+import org.musicservice.demo.dto.like.UserLikedMusicRequest;
 import org.musicservice.demo.mapper.like.LikeAlbumMapper;
 import org.musicservice.demo.entity.like.LikeAlbum;
 import org.musicservice.demo.entity.music.Album;
@@ -32,7 +32,7 @@ public class LikeAlbumService {
     }
 
     @Transactional
-    public void create(UserLikeRequest request){
+    public void create(UserLikedMusicRequest request){
         User user = entityManager.getReference(User.class, request.userId());
         Album album = entityManager.getReference(Album.class, request.targetId());
         LikeAlbum likeAlbum = new LikeAlbum(user, album);
@@ -40,7 +40,7 @@ public class LikeAlbumService {
     }
 
     @Transactional
-    public void delete(UserLikeRequest request){
+    public void delete(UserLikedMusicRequest request){
         likeAlbumRepository.deleteByUserIdAndAlbumId(request.userId(), request.targetId());
     }
 
@@ -48,5 +48,4 @@ public class LikeAlbumService {
         List<LikedAlbumId> likedAlbumsIdsList = likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId()).stream().map(likeAlbumMapper::toResponse).toList();
         return new LikedAlbums(likedAlbumsIdsList);
     }
-
 }

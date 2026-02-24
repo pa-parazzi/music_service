@@ -1,6 +1,5 @@
 package org.musicservice.demo.support.factory.it.user;
 
-import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.user.User;
@@ -26,9 +25,9 @@ public class UserDataFactoryIT {
         return request;
     }
 
-    public static User userWithoutIdAndEnabledAccount(PasswordEncoder encoder){
+    public static User userWithEnabledAccount(PasswordEncoder encoder){
         String password = encodePassword(encoder, "PASSWORD");
-        User user = new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4));
+        User user = new User("USERNAME", password, "test@mail.com", LocalDate.of(1997, 2,4));
         user.setEnabled(true);
         return user;
     }
@@ -38,7 +37,7 @@ public class UserDataFactoryIT {
         return new User(
                 request.getUsername(),
                 password,
-                "EMAIL",
+                "test@mail.com",
                 LocalDate.of(1997, 2,4)
         );
     }
@@ -53,9 +52,13 @@ public class UserDataFactoryIT {
         );
     }
 
-    public static User userWithoutId(PasswordEncoder encoder){
+    public static User userWithEncodedPassword(PasswordEncoder encoder){
         String password = encodePassword(encoder, "PASSWORD");
-        return new User("USERNAME", password, "EMAIL", LocalDate.of(1997, 2,4));
+        return new User("USERNAME", password, "test@mail.com", LocalDate.of(1997, 2,4));
+    }
+
+    public static User user(){
+        return new User("USERNAME", "PASSWORD", "test@mail.com", LocalDate.of(1997, 2,4));
     }
 
     private static String encodePassword(PasswordEncoder encoder, String password){
