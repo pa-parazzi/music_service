@@ -9,7 +9,6 @@ import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.exception.response.ApiErrorResponse;
 import org.musicservice.demo.exception.response.ErrorType;
-import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
@@ -24,6 +23,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -45,8 +47,6 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
     private AlbumRepository albumRepository;
     @Autowired
     private AlbumImageRepository albumImageRepository;
-    @Autowired
-    private AlbumMapper albumMapper;
 
     @BeforeEach
     void cleanupDb(){
@@ -56,17 +56,22 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldReturnValidMainAlbumResponseAndStatusIsOk() throws Exception {
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist));
-        albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));
-        MainAlbumResponse expectedResponse = new MainAlbumResponse(albumList.stream().map(albumMapper::toAlbumResponse).toList());
+        Artist artist2 = artistRepository.save(MusicFactoryIT.artist2());
+        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        Album album2 = albumRepository.save(MusicFactoryIT.album2(artist2));
+        Album album3 = albumRepository.save(MusicFactoryIT.album3(artist));
+        List<Album> albums = List.of(album, album2, album3);
+        albums.forEach(el -> el.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(el))));
+        Map<Long, Album> albumsByIdMap = albums.stream().collect(Collectors.toMap(Album::getId, Function.identity()));
 
         MvcResult result = mockMvc.perform(get("/api/album"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        MainAlbumResponse actualResponse = objectMapper.readValue(jsonResult, MainAlbumResponse.class);
-        assertThat(actualResponse).isEqualTo(expectedResponse);
+        MainAlbumResponse response = objectMapper.readValue(jsonResult, MainAlbumResponse.class);
+        List<AlbumResponse> albumResponseList = response.albums();
+        albumResponseList.forEach(albumResponse -> assertAlbumResponse(albumResponse, albumsByIdMap.get(albumResponse.getAlbumId())));
     }
 
     @Test
@@ -74,15 +79,14 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
-        AlbumResponse expectedAlbum = albumMapper.toAlbumResponse(album);
 
         MvcResult result = mockMvc.perform(get("/api/album/{id}", album.getId()))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        AlbumResponse actualResponse = objectMapper.readValue(resultJson, AlbumResponse.class);
-        assertThat(actualResponse).isEqualTo(expectedAlbum);
+        AlbumResponse response = objectMapper.readValue(resultJson, AlbumResponse.class);
+        assertAlbumResponse(response, album);
     }
 
     @Test
@@ -99,6 +103,14 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
         ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
         assertThat(errorResponse.code()).isEqualTo(ErrorType.API_ERROR.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    private void assertAlbumResponse(AlbumResponse response, Album album){
+        assertThat(response.getAlbumId()).isEqualTo(album.getId());
+        assertThat(response.getTitle()).isEqualTo(album.getTitle());
+        assertThat(response.getArtist().id()).isEqualTo(album.getArtist().getId());
+        assertThat(response.getArtist().name()).isEqualTo(album.getArtist().getName());
+        assertThat(response.getAlbumImage().getKey()).isEqualTo(album.getImage().getKey());
     }
 
 }

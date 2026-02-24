@@ -9,6 +9,7 @@ import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
 
 import java.util.List;
+import java.util.UUID;
 
 public class MusicFactoryIT {
 
@@ -37,7 +38,12 @@ public class MusicFactoryIT {
     }
 
     public static AlbumImage albumImage(Album album) {
-        return new AlbumImage("some_image.jpg", album);
+        return new AlbumImage(UUID.randomUUID().toString() + ".jpg", album);
+    }
+
+    public static Sound sound(Artist artist, Album album){
+        return new Sound("Supermassive Black Hole", 280,
+                artist, album, album.getTitle() + "/supermassive_black_hole.mp3");
     }
 
     public static List<Sound> soundList(Artist artist, Album album) {

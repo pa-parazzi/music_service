@@ -49,8 +49,6 @@ public class UserControllerIT extends AbstractIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private UserMapper userMapper;
-    @Autowired
     private JwtTokenService jwtTokenService;
 
     @BeforeEach
@@ -60,9 +58,8 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         user.setUserAvatar(userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user)));
-        UserMainResponse expectedUserResponse = userMapper.toMainResponse(user);
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
         MvcResult result = mockMvc.perform(get("/user/profile")
@@ -71,13 +68,15 @@ public class UserControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        UserMainResponse actualUserResponse = objectMapper.readValue(resultJson, UserMainResponse.class);
-        assertThat(actualUserResponse).isEqualTo(expectedUserResponse);
+        UserMainResponse response = objectMapper.readValue(resultJson, UserMainResponse.class);
+        assertThat(response.getId()).isEqualTo(user.getId());
+        assertThat(response.getUsername()).isEqualTo(user.getUsername());
+        assertThat(response.getAvatar().getKey()).isEqualTo(user.getUserAvatar().getKey());
     }
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         user.setUserAvatar(userAvatar);
 
@@ -87,12 +86,12 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
         String resultJson = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
-        assertThatApiErrorContractHttpStatusIsUnauthorized(errorResponse);
+        assertApiErrorResponse(errorResponse);
     }
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithoutIdAndEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         user.setUserAvatar(userAvatar);
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
@@ -104,10 +103,10 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
         String resultJson = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
-        assertThatApiErrorContractHttpStatusIsUnauthorized(errorResponse);
+        assertApiErrorResponse(errorResponse);
     }
 
-    private void assertThatApiErrorContractHttpStatusIsUnauthorized(ApiErrorResponse errorResponse){
+    private void assertApiErrorResponse(ApiErrorResponse errorResponse){
         assertThat(errorResponse.code()).isEqualTo(AuthErrorCode.BAD_AUTHENTICATION_REQUEST.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
