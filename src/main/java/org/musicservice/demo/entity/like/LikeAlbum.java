@@ -3,6 +3,8 @@ package org.musicservice.demo.entity.like;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.CreationTimestamp;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.user.User;
 
@@ -26,7 +28,8 @@ public class LikeAlbum {
     @JoinColumn(name = "album_id", referencedColumnName = "id")
     private Album album;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     public LikeAlbum(){}
@@ -34,5 +37,19 @@ public class LikeAlbum {
     public LikeAlbum(User user, Album album) {
         this.user = user;
         this.album = album;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        LikeAlbum that = (LikeAlbum) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
