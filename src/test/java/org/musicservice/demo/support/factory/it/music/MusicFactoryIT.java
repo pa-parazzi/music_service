@@ -21,6 +21,10 @@ public class MusicFactoryIT {
         return new Artist("Tri Face");
     }
 
+    public static Artist artist3() {
+        return new Artist("Tears for Fears");
+    }
+
     public static List<Album> albumList(Artist artist) {
         return List.of(album(artist), album2(artist), album3(artist));
     }
@@ -37,6 +41,10 @@ public class MusicFactoryIT {
         return new Album("Absolution", artist);
     }
 
+    public static Album album4(Artist artist) {
+        return new Album("Acrobat", artist);
+    }
+
     public static AlbumImage albumImage(Album album) {
         return new AlbumImage(UUID.randomUUID().toString() + ".jpg", album);
     }
@@ -46,14 +54,18 @@ public class MusicFactoryIT {
                 artist, album, album.getTitle() + "/supermassive_black_hole.mp3");
     }
 
-    public static List<Sound> soundList(Artist artist, Album album) {
-        Sound sound1 = new Sound("Supermassive Black Hole", 280,
-                artist, album, album.getTitle() + "/supermassive_black_hole.mp3");
-        Sound sound2 = new Sound("Take a Bow", 380,
+    public static Sound sound2(Artist artist, Album album){
+        return new Sound("Take a Bow", 380,
                 artist, album, album.getTitle() + "/take_a_bow.mp3");
-        Sound sound3 = new Sound("Starlight", 345,
+    }
+
+    public static Sound sound3(Artist artist, Album album){
+        return new Sound("Starlight", 345,
                 artist, album, album.getTitle() + "/starlight.mp3");
-        return List.of(sound1, sound2, sound3);
+    }
+
+    public static List<Sound> soundList(Artist artist, Album album) {
+        return List.of(sound(artist, album), sound2(artist, album), sound3(artist, album));
     }
 
     public static List<Sound> soundListByAlbum(Artist artist, Album album) {
