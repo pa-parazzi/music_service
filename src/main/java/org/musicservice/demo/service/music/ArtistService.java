@@ -19,6 +19,6 @@ public class ArtistService {
     }
 
     public ArtistResponse viewArtistById(Long artistId){
-        return artistRepository.searchById(artistId).orElseThrow(() -> new ApiNotFoundException("Artist with id: " + artistId + " not found"));
+        return artistRepository.findArtistResponseById(artistId).orElseThrow(() -> new ApiNotFoundException("Artist with id: " + artistId + " not found"));
     }
 }

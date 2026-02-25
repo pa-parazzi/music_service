@@ -13,8 +13,8 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     Optional<Artist> findByName(String name);
 
-    List<ArtistResponse> findAllByNameStartingWith(String fragment);
+    List<ArtistResponse> findAllArtistResponseByNameStartingWith(String fragment);
 
-    Optional<ArtistResponse> searchById(Long id);
+    Optional<ArtistResponse> findArtistResponseById(Long id);
 
 }

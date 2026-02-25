@@ -30,7 +30,7 @@ public class SearchMusicService {
 
     public SearchMusicResponse searchMusicResult(String fragment){
         if(isEmpty(fragment)) throw new NoSuchMusicResultException("Ничего не найдено");
-        List<ArtistResponse> artists = artistRepository.findAllByNameStartingWith(fragment);
+        List<ArtistResponse> artists = artistRepository.findAllArtistResponseByNameStartingWith(fragment);
         List<AlbumResponse> albumResponses = albumRepository.findAllByTitleStartingWith(fragment).stream().map(albumMapper::toAlbumResponse).toList();
         return new SearchMusicResponse(artists, albumResponses);
     }

@@ -43,7 +43,7 @@ public class SearchMusicServiceTest {
         List<ArtistResponse> artistResponseList = List.of(ArtistDataFactory.artistResponse());
         List<Album> albumList = List.of(album);
 
-        when(artistRepository.findAllByNameStartingWith(fragment)).thenReturn(artistResponseList);
+        when(artistRepository.findAllArtistResponseByNameStartingWith(fragment)).thenReturn(artistResponseList);
         when(albumRepository.findAllByTitleStartingWith(fragment)).thenReturn(albumList);
         when(albumMapper.toAlbumResponse(album)).thenReturn(albumResponse);
 

@@ -22,14 +22,14 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserPrincipal
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = repository.searchByUsernameWithAvatar(username).orElseThrow(() ->
+        User user = repository.findByUsernameWithAvatar(username).orElseThrow(() ->
                 new UsernameNotFoundException("User with username: " + username + " not found"));
         return UserPrincipalMapper.from(user);
     }
 
     @Override
     public UserPrincipal loadPrincipalById(Long id) {
-        User user = repository.searchByIdWithAvatar(id).orElseThrow(()->
+        User user = repository.findByIdWithAvatar(id).orElseThrow(()->
                 new UserNotFoundException("User with id: " + id + " not found"));
         return UserPrincipalMapper.from(user);
     }

@@ -36,8 +36,8 @@ public class AlbumService {
         List<Long> orderIds = likedAlbums.likedAlbumsIds().stream().map(LikedAlbumId::getAlbumId).toList(); // порядок элементов сохранен
         List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
-        List<AlbumResponse> response = orderIds.stream().map(mapById::get).toList();
-        return new CollectionAlbumsResponse(response);
+        List<AlbumResponse> orderedResponse = orderIds.stream().map(mapById::get).toList();
+        return new CollectionAlbumsResponse(orderedResponse);
     }
 
     public MainAlbumResponse getAllAlbumsByMainResponse(){

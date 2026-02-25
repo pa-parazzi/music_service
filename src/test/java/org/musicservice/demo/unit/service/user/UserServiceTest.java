@@ -65,7 +65,7 @@ public class UserServiceTest {
         User expectedUser = UserDataFactory.userWithAvatar();
         Long userId = expectedUser.getId();
 
-        when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
+        when(userRepository.findByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
 
         User result = userService.searchByIdWithAvatar(userId);
 
@@ -73,7 +73,7 @@ public class UserServiceTest {
         assertEquals(expectedUser.getUsername(), result.getUsername());
         assertNotNull(result.getUserAvatar());
 
-        verify(userRepository).searchByIdWithAvatar(userId);
+        verify(userRepository).findByIdWithAvatar(userId);
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -83,7 +83,7 @@ public class UserServiceTest {
         Long userId = expectedUser.getId();
         UserMainResponse expectedResponse = UserDataFactory.userMainResponse(expectedUser);
 
-        when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
+        when(userRepository.findByIdWithAvatar(userId)).thenReturn(Optional.of(expectedUser));
         when(userMapper.toMainResponse(expectedUser)).thenReturn(expectedResponse);
 
         UserMainResponse result = userService.viewMainResponseById(userId);
@@ -92,7 +92,7 @@ public class UserServiceTest {
         assertEquals(expectedResponse.getUsername(), result.getUsername());
         assertNotNull(result.getAvatar());
 
-        verify(userRepository).searchByIdWithAvatar(userId);
+        verify(userRepository).findByIdWithAvatar(userId);
         verify(userMapper).toMainResponse(expectedUser);
         verifyNoMoreInteractions(userRepository, userMapper);
     }
@@ -102,7 +102,7 @@ public class UserServiceTest {
         User expectedUser = UserDataFactory.userWithAvatar();
         String username = expectedUser.getUsername();
 
-        when(userRepository.searchByUsernameWithAvatar(username)).thenReturn(Optional.of(expectedUser));
+        when(userRepository.findByUsernameWithAvatar(username)).thenReturn(Optional.of(expectedUser));
 
         User result = userService.searchByUsernameWithAvatar(username);
 
@@ -110,7 +110,7 @@ public class UserServiceTest {
         assertEquals(username, result.getUsername());
         assertNotNull(result.getUserAvatar());
 
-        verify(userRepository).searchByUsernameWithAvatar(username);
+        verify(userRepository).findByUsernameWithAvatar(username);
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -121,11 +121,11 @@ public class UserServiceTest {
     void searchByIdWithAvatarTest_ThrowUserNotFoundException(){
         Long userId = 1L;
 
-        when(userRepository.searchByIdWithAvatar(userId)).thenReturn(Optional.empty());
+        when(userRepository.findByIdWithAvatar(userId)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, ()-> userService.searchByIdWithAvatar(userId));
 
-        verify(userRepository).searchByIdWithAvatar(userId);
+        verify(userRepository).findByIdWithAvatar(userId);
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -133,11 +133,11 @@ public class UserServiceTest {
     void searchByUsernameWithAvatar_ThrowUserNotFoundException(){
         String username = "name";
 
-        when(userRepository.searchByUsernameWithAvatar(username)).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameWithAvatar(username)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, ()-> userService.searchByUsernameWithAvatar(username));
 
-        verify(userRepository).searchByUsernameWithAvatar(username);
+        verify(userRepository).findByUsernameWithAvatar(username);
         verifyNoMoreInteractions(userRepository);
     }
 

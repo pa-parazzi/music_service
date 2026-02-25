@@ -26,7 +26,7 @@ public class ArtistServiceTest {
     void viewArtistById_ShouldThrowsApiNotFoundException(){
         Long artistId = 1L;
 
-        when(artistRepository.searchById(artistId)).thenReturn(Optional.empty());
+        when(artistRepository.findArtistResponseById(artistId)).thenReturn(Optional.empty());
 
         assertThrows(ApiNotFoundException.class, ()-> artistService.viewArtistById(artistId));
     }

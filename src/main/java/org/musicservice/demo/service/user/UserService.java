@@ -1,6 +1,5 @@
 package org.musicservice.demo.service.user;
 
-import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.user.User;
@@ -39,11 +38,11 @@ public class UserService {
     }
 
     public User searchByIdWithAvatar(Long id){
-        return userRepository.searchByIdWithAvatar(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found"));
+        return userRepository.findByIdWithAvatar(id).orElseThrow(() -> new UserNotFoundException("User with id: " + id + " not found"));
     }
 
     public User searchByUsernameWithAvatar(String username){
-        return userRepository.searchByUsernameWithAvatar(username).orElseThrow(() -> new UserNotFoundException("User with username: " + username + " not found"));
+        return userRepository.findByUsernameWithAvatar(username).orElseThrow(() -> new UserNotFoundException("User with username: " + username + " not found"));
     }
 
 

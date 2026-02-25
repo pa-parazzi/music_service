@@ -47,7 +47,7 @@ public class LikeAlbumRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void findAllByUserIdOrderByCreatedAtDesc_ShouldReturnValidSortedListByDesc() {
+    void findAllByUserIdOrderByCreatedAtDesc_ShouldReturnsValidSortedListByDesc() {
         User user = entityManager.persistAndFlush(UserDataFactoryIT.user());
         Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
         Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
@@ -64,7 +64,7 @@ public class LikeAlbumRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void findAllByUserIdOrderByCreatedAtDesc_ShouldReturnEmptyList(){
+    void findAllByUserIdOrderByCreatedAtDesc_ShouldReturnsEmptyList(){
         assertThat(repository.findAllByUserIdOrderByCreatedAtDesc(15L)).isEmpty();
     }
 }
