@@ -52,7 +52,9 @@ public class LikeSoundRepositoryIT extends AbstractIntegrationTest {
         Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
         List<Sound> soundList = MusicFactoryIT.soundList(artist, album);
         soundList.forEach(sound -> entityManager.persistAndFlush(sound));
-        soundList.forEach(sound -> entityManager.persistAndFlush(new LikeSound(user, sound)));
+        entityManager.persistAndFlush(MusicFactoryIT.likeSound(user, soundList.get(2)));
+        entityManager.persistAndFlush(MusicFactoryIT.likeSound(user, soundList.get(0)));
+        entityManager.persistAndFlush(MusicFactoryIT.likeSound(user, soundList.get(1)));
         entityManager.clear();
 
         List<LikeSound> actualOrder = repository.findAllByUserIdOrderByCreatedAtDesc(user.getId());

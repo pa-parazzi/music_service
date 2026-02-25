@@ -54,9 +54,9 @@ public class LikeAlbumRepositoryIT extends AbstractIntegrationTest {
         Album album2 = entityManager.persistAndFlush(MusicFactoryIT.album2(artist));
         Album album3 = entityManager.persistAndFlush(MusicFactoryIT.album3(artist));
 
-        entityManager.persistAndFlush(new LikeAlbum(user, album));
-        entityManager.persistAndFlush(new LikeAlbum(user, album2));
-        entityManager.persistAndFlush(new LikeAlbum(user, album3));
+        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album3));
+        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album));
+        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album2));
         entityManager.clear();
 
         List<LikeAlbum> actualOrder = repository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
