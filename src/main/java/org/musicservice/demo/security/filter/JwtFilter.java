@@ -50,9 +50,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.clearContext();
                 }
             }
-        } else if(request.getRequestURI().equals("/api/auth/refresh")){
-            filterChain.doFilter(request, response);
-            return;
         }
         filterChain.doFilter(request, response);
     }
