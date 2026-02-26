@@ -37,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -185,12 +186,16 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLoginAndReturnAccessToken() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = UserDataFactoryIT.loginRequest();
+        User user = UserDataFactoryIT.user();
+        String password = UUID.randomUUID().toString();
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEnabled(true);
+        userRepository.save(user);
+        LoginRequest loginRequest = UserDataFactoryIT.loginRequest(user.getUsername(), password);
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshToken usedRefreshToken = RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshToken usedRefreshToken = RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
@@ -214,13 +219,42 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = UserDataFactoryIT.loginRequest();
-        loginRequest.setUsername("invalid username");
+    void shouldReturnApiErrorResponse_WhenAccountIsNotEnabled() throws Exception {
+        User user = UserDataFactoryIT.user();
+        String password = UUID.randomUUID().toString();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+        LoginRequest loginRequest = UserDataFactoryIT.loginRequest(user.getUsername(), password);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshToken usedRefreshToken = RefreshTokenFactoryIT.refreshToken(
+                refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
+
+        Cookie cookieRequest = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login").cookie(cookieRequest)
+                        .content(loginRequestJson)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        String jsonResult = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(AuthErrorCode.ACCOUNT_NOT_ACTIVATED.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+
+        Cookie cookieResponse = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
+        assertThat(cookieResponse).isNull();
+    }
+
+    @Test
+    void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        LoginRequest loginRequest = UserDataFactoryIT.loginRequest("invalid username", user.getPassword());
+
+        String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
+        RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
@@ -245,11 +279,10 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldFailedLogin_WhenPasswordInvalid() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        LoginRequest loginRequest = UserDataFactoryIT.loginRequest();
-        loginRequest.setPassword("newPass1234");
+        LoginRequest loginRequest = UserDataFactoryIT.loginRequest(user.getUsername(), "newPass1234");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
@@ -275,7 +308,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsPresent() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshToken refreshToken = RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshToken refreshToken = RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookie = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
@@ -307,7 +340,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest_WhenCookieRequestIsValid() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookie = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
@@ -341,7 +374,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     void shouldReturnStatusUnauthorized_WhenCookieInvalid() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshTokenFactoryIT.createNewRefreshToken(
+        RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookie = CookieDataFactoryIT.cookie(cookieProperties,(int) refreshTokenProperties.getDuration().getSeconds(), "invalid value");
