@@ -1,4 +1,4 @@
-package org.musicservice.demo.security.verification;
+package org.musicservice.demo.security.verificationToken;
 
 import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.VerificationToken;
@@ -8,7 +8,6 @@ import org.musicservice.demo.exception.response.VerificationTokenErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.properties.VerificationTokenProperties;
-import org.musicservice.demo.security.reposiroty.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

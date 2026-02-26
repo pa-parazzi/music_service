@@ -13,7 +13,7 @@ import org.musicservice.demo.security.cookie.CookieService;
 import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
-import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
+import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 import org.musicservice.demo.support.factory.unit.auth.RefreshTokenFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;

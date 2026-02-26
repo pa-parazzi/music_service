@@ -2,10 +2,12 @@ package org.musicservice.demo.support.factory.it.user;
 
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class UserDataFactoryIT {
 
@@ -59,6 +61,10 @@ public class UserDataFactoryIT {
 
     public static User user(){
         return new User("USERNAME", "PASSWORD", "test@mail.com", LocalDate.of(1997, 2,4));
+    }
+
+    public static UserAvatar userAvatar(User user){
+        return new UserAvatar(user, UUID.randomUUID().toString() + ".jpg");
     }
 
     private static String encodePassword(PasswordEncoder encoder, String password){

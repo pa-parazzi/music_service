@@ -10,7 +10,7 @@ import org.musicservice.demo.exception.response.ApiErrorResponse;
 import org.musicservice.demo.exception.response.VerificationTokenErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.VerificationTokenProperties;
-import org.musicservice.demo.security.reposiroty.VerificationTokenRepository;
+import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.verificationToken.VerificationTokenFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;

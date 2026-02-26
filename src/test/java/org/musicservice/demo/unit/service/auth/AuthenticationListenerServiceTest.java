@@ -9,7 +9,7 @@ import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.properties.LoginSecurityProperties;
 import org.musicservice.demo.service.auth.AuthenticationListenerService;
-import org.musicservice.demo.support.factory.unit.auth.AuthenticationDataFactory;
+import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,9 +34,9 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginProcess_ShouldIncrementFailedAttempt(){
-        User user = AuthenticationDataFactory.userWithFailedLoginAttemptsZero();
+        User user = UserDataFactory.userWithFailedLoginAttemptsZero();
         String username = user.getUsername();
-        int maxFailedAttempts = AuthenticationDataFactory.maxFailedLoginAttempts();
+        int maxFailedAttempts = UserDataFactory.maxFailedLoginAttempts();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(securityProperties.getMaxFailedAttempts()).thenReturn(maxFailedAttempts);
@@ -48,7 +48,7 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginProcess_ShouldNothing_WhenUserIsEmpty(){
-        User user = AuthenticationDataFactory.userWithFailedLoginAttemptsZero();
+        User user = UserDataFactory.userWithFailedLoginAttemptsZero();
         String username = user.getUsername();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
@@ -60,10 +60,10 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void failedLoginProcess_ShouldSetLockTime_WhenReachedMaxFailedLoginAttempts(){
-        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndNullLockTime();
+        User user = UserDataFactory.userWithMaxFailedLoginAttemptsAndNullLockTime();
         String username = user.getUsername();
-        int maxFailedAttempts = AuthenticationDataFactory.maxFailedLoginAttempts();
-        Duration lockDuration = AuthenticationDataFactory.lockDurationMinutes();
+        int maxFailedAttempts = UserDataFactory.maxFailedLoginAttempts();
+        Duration lockDuration = UserDataFactory.lockDurationMinutes();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(securityProperties.getMaxFailedAttempts()).thenReturn(maxFailedAttempts);
@@ -79,7 +79,7 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void resetFailedLogin_ShouldResetFailedLoginAttemptsAndLockTime_WhenUserIsPresent(){
-        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
+        User user = UserDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
         String username = user.getUsername();
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
@@ -91,7 +91,7 @@ public class AuthenticationListenerServiceTest {
 
     @Test
     void resetFailedLogin_ShouldNothing_WhenUserIsEmpty(){
-        User user = AuthenticationDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
+        User user = UserDataFactory.userWithMaxFailedLoginAttemptsAndLockTimeWhereLockDurationMinutes();
         int failedAttempts = user.getFailedLoginAttempts();
         Instant lockDuration = user.getLockTime();
         String username = user.getUsername();

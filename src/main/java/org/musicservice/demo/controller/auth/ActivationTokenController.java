@@ -1,7 +1,7 @@
 package org.musicservice.demo.controller.auth;
 
 import org.musicservice.demo.dto.user.ResponseToEmailVerification;
-import org.musicservice.demo.security.verification.VerificationTokenService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -23,13 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthRestController {
 
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
 
     @Autowired
-    public AuthRestController(AuthService authService, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService) {
+    public AuthRestController(AuthService authService, RefreshTokenService refreshTokenService) {
         this.authService = authService;
-        this.authenticationManager = authenticationManager;
         this.refreshTokenService = refreshTokenService;
     }
 
@@ -43,9 +41,7 @@ public class AuthRestController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest,
                                                HttpServletResponse response) {
-            Authentication authentication = authenticationManager.authenticate
-                    (new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            return ResponseEntity.ok(authService.processLogin(authentication, response));
+            return ResponseEntity.ok(authService.processLogin(loginRequest, response));
     }
 
     @PostMapping("/logout")

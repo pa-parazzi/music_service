@@ -1,4 +1,4 @@
-package org.musicservice.demo.security.reposiroty;
+package org.musicservice.demo.security.refreshToken;
 
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;

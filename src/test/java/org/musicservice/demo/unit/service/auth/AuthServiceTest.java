@@ -7,6 +7,7 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
@@ -19,18 +20,19 @@ import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.userDetails.UserDetailsServiceImpl;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
-import org.musicservice.demo.security.verification.VerificationTokenService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenService;
 import org.musicservice.demo.service.auth.AuthService;
 import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.service.validator.RegistrationValidator;
-import org.musicservice.demo.support.factory.unit.auth.AuthenticationDataFactory;
 import org.musicservice.demo.support.factory.unit.auth.JwtTokenFactory;
 import org.musicservice.demo.support.factory.unit.auth.RefreshTokenFactory;
 import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -42,6 +44,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTest {
 
+    @Mock
+    private AuthenticationManager authenticationManager;
     @Mock
     private UserService userService;
     @Mock
@@ -112,7 +116,6 @@ public class AuthServiceTest {
         verifyNoInteractions(userService, avatarService, verificationTokenService, refreshTokenService, jwtTokenService);
     }
 
-
     @Test
     void processRegistration_ShouldThrowRegistrationException_EmailAlreadyExists(){
         RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
@@ -128,17 +131,25 @@ public class AuthServiceTest {
 
     @Test
     void processLogin_ShouldGenerateJwtAndRotateRefreshToken(){
-        UserPrincipal principal = AuthenticationDataFactory.principal();
+        LoginRequest loginRequest = UserDataFactory.loginRequest();
+        UserPrincipal principal = UserDataFactory.principal();
+        Authentication authentication = UserDataFactory.authentication(principal);
         Long userId = principal.userId();
         Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-        Authentication authentication = AuthenticationDataFactory.authentication(principal);
         String jwtValue = JwtTokenFactory.value();
 
+        when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authentication);
         when(jwtTokenService.generateToken(any(TokenSubject.class))).thenReturn(jwtValue);
 
-        TokenResponse result = authService.processLogin(authentication, mockHttpServletResponse);
+        TokenResponse result = authService.processLogin(loginRequest, mockHttpServletResponse);
 
         assertEquals(jwtValue, result.accessToken());
+
+        ArgumentCaptor<UsernamePasswordAuthenticationToken> usernamePasswordAuthenticationTokenCaptor = ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
+        verify(authenticationManager).authenticate(usernamePasswordAuthenticationTokenCaptor.capture());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = usernamePasswordAuthenticationTokenCaptor.getValue();
+        assertEquals(loginRequest.getUsername(), usernamePasswordAuthenticationToken.getPrincipal());
+        assertEquals(loginRequest.getPassword(), usernamePasswordAuthenticationToken.getCredentials());
 
         InOrder inOrder = inOrder(refreshTokenService);
         inOrder.verify(refreshTokenService).deleteByUserId(userId, mockHttpServletResponse);
@@ -155,7 +166,7 @@ public class AuthServiceTest {
 
     @Test
     void refreshAccess_ShouldRotateRefreshTokenAndIssueNewAccessToken(){
-        UserPrincipal principal = AuthenticationDataFactory.principal();
+        UserPrincipal principal = UserDataFactory.principal();
         Long userId = principal.userId();
         Collection<String> roles = principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
         RefreshToken refreshToken = RefreshTokenFactory.validRefreshToken();

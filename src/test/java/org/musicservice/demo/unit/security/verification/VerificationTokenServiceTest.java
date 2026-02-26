@@ -11,9 +11,9 @@ import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.properties.VerificationTokenProperties;
-import org.musicservice.demo.security.reposiroty.VerificationTokenRepository;
-import org.musicservice.demo.security.verification.MailService;
-import org.musicservice.demo.security.verification.VerificationTokenService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
+import org.musicservice.demo.security.verificationToken.MailService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenService;
 import org.musicservice.demo.support.factory.unit.auth.VerificationTokenFactory;
 import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 

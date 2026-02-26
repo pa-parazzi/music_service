@@ -1,7 +1,6 @@
-package org.musicservice.demo.security.reposiroty;
+package org.musicservice.demo.security.verificationToken;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;

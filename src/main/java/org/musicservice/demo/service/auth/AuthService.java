@@ -2,6 +2,7 @@ package org.musicservice.demo.service.auth;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
@@ -12,11 +13,13 @@ import org.musicservice.demo.security.jwt.JwtTokenService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.userDetails.UserDetailsServiceImpl;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
-import org.musicservice.demo.security.verification.VerificationTokenService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenService;
 import org.musicservice.demo.service.image.UserAvatarService;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.service.validator.RegistrationValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class AuthService {
 
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final UserAvatarService avatarService;
     private final RegistrationValidator registrationValidator;
@@ -38,7 +42,8 @@ public class AuthService {
     private final JwtTokenService jwtTokenService;
 
     @Autowired
-    public AuthService(UserService userService, UserAvatarService avatarService, RegistrationValidator registrationValidator, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService, UserDetailsServiceImpl userDetailsService, JwtTokenService jwtTokenService) {
+    public AuthService(AuthenticationManager authenticationManager, UserService userService, UserAvatarService avatarService, RegistrationValidator registrationValidator, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService, UserDetailsServiceImpl userDetailsService, JwtTokenService jwtTokenService) {
+        this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.avatarService = avatarService;
         this.registrationValidator = registrationValidator;
@@ -62,7 +67,9 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenResponse processLogin(Authentication authentication, HttpServletResponse response){
+    public TokenResponse processLogin(LoginRequest loginRequest, HttpServletResponse response){
+        Authentication authentication = authenticationManager.authenticate
+                (new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         Long userId = principal.userId();
         refreshTokenService.deleteByUserId(userId, response);

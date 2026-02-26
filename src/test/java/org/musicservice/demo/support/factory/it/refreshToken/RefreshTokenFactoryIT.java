@@ -4,7 +4,7 @@ import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.properties.RefreshTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
-import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
+import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 
 import java.time.Duration;
 import java.time.Instant;

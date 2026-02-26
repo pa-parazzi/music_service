@@ -8,7 +8,6 @@ import org.musicservice.demo.security.cookie.CookieManager;
 import org.musicservice.demo.security.cookie.CookieService;
 import org.musicservice.demo.exception.VerifyRefreshTokenException;
 import org.musicservice.demo.security.properties.RefreshTokenProperties;
-import org.musicservice.demo.security.reposiroty.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
