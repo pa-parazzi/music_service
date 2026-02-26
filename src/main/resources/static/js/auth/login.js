@@ -76,7 +76,6 @@ form.addEventListener("submit", async (event) => {
             return;
         }
 
-        // SUCCESS
         const data = await response.json();
         localStorage.setItem("jwt", data.accessToken);
 

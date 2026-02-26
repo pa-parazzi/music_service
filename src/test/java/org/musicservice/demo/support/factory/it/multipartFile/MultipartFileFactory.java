@@ -11,8 +11,8 @@ public class MultipartFileFactory {
 
     public static MockMultipartFile userPart(String json){
         return new MockMultipartFile(
-                "userWithEncodedPassword",
-                "userWithEncodedPassword.json",
+                "user",
+                "user.json",
                 MediaType.APPLICATION_JSON_VALUE,
                 json.getBytes(StandardCharsets.UTF_8));
     }

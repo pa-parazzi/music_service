@@ -77,7 +77,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
         List<Long> expectedOrderAlbumIds = likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream().map(likeAlbum -> likeAlbum.getAlbum().getId()).toList();
 
-        MvcResult result = mockMvc.perform(post("/album/like/get")
+        MvcResult result = mockMvc.perform(post("/api/like_album/get")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(contentJson))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         albumRepository.save(MusicFactoryIT.album(artist));
 
-        MvcResult result = mockMvc.perform(post("/album/like/get")
+        MvcResult result = mockMvc.perform(post("/api/like_album/get")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentJson))
                 .andExpect(status().isOk())
@@ -118,7 +118,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
 
         String jsonRequest = objectMapper.writeValueAsString(likeRequest);
 
-        mockMvc.perform(post("/album/like/create")
+        mockMvc.perform(post("/api/like_album/create")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
@@ -140,7 +140,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
 
         String jsonRequest = objectMapper.writeValueAsString(likeRequest);
 
-        mockMvc.perform(delete("/album/like/delete")
+        mockMvc.perform(delete("/api/like_album/delete")
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());

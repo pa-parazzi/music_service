@@ -8,7 +8,7 @@ public class FrontendController {
 
     @GetMapping("/album/{id}")
     public String album(){
-        return "forward:/music/AlbumIndex.html";
+        return "forward:/music/albumIndex.html";
     }
 
     @GetMapping("/artist/{id}")

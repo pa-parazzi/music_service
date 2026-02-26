@@ -1,4 +1,4 @@
-package org.musicservice.demo.jamendoIntegration;
+package org.musicservice.demo.integration.jamendo;
 
 import lombok.Getter;
 import lombok.Setter;

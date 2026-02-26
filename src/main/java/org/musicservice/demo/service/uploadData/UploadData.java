@@ -2,7 +2,7 @@ package org.musicservice.demo.service.uploadData;
 
 import jakarta.transaction.Transactional;
 import org.musicservice.demo.dto.jamendo.MusicResponse;
-import org.musicservice.demo.jamendoIntegration.JamendoClient;
+import org.musicservice.demo.integration.jamendo.JamendoClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

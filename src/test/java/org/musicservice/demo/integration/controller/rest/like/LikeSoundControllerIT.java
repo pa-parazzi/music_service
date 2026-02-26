@@ -80,7 +80,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
         List<Long> expectedOrderSoundIds = likeSoundRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream().map(likeSound -> likeSound.getSound().getId()).toList();
 
-        MvcResult result = mockMvc.perform(post("/sound/like/get")
+        MvcResult result = mockMvc.perform(post("/api/like_sound/get")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(contentJson))
                 .andExpect(status().isOk())
@@ -102,7 +102,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
 
-        MvcResult result = mockMvc.perform(post("/sound/like/get")
+        MvcResult result = mockMvc.perform(post("/api/like_sound/get")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentJson))
                 .andExpect(status().isOk())
@@ -124,7 +124,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
         UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
-        mockMvc.perform(post("/sound/like/create")
+        mockMvc.perform(post("/api/like_sound/create")
                 .content(contentJson)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
@@ -148,7 +148,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
         UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
 
-        mockMvc.perform(delete("/sound/like/delete")
+        mockMvc.perform(delete("/api/like_sound/delete")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentJson))
                 .andExpect(status().isAccepted());

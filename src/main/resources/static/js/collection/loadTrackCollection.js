@@ -11,7 +11,7 @@ async function loadTrackCollection(){
 
     const userId = window.currentUser.id;
 
-    const likedSoundsIdsResponses = await fetch('/sound/like/get', {
+    const likedSoundsIdsResponses = await fetch('/api/like_sound/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})

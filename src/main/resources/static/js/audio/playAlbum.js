@@ -23,7 +23,7 @@ export async function playAlbums(
         const albumTracksCache = new Map();
 
         btn.addEventListener('click', async () => {
-            // если это НОВЫЙ альбом
+            // если это новый альбом
             if (currentAlbum !== album) {
 
                 resetAlbumButton();
@@ -32,7 +32,7 @@ export async function playAlbums(
                 currentAlbumButton = btn;
                 currentTrackIndex = 0;
 
-                // 🔹 загружаем ТОЛЬКО если ещё не загружали
+                // загружаем если ещё не загружали
                 if (!albumTracksCache.has(albumId)) {
                     const response = await fetch(`/api/sound/album/${albumId}`);
                     const tracksJson = await response.json();
@@ -45,19 +45,15 @@ export async function playAlbums(
                 playTrack(currentTrackIndex);
                 return;
             }
-            // Тот же альбом → toggle play / pause
             togglePlayPause();
         });
     });
 
-// ====== КНОПКА PLAY / PAUSE ПЛЕЕРА ======
     playBtn.addEventListener('click', () => {
         if (!currentAlbum) return;
         togglePlayPause();
     });
 
-
-// ====== NEXT ======
     nextBtn.addEventListener('click', () => {
         if (!currentAlbum) return;
         if (currentTrackIndex < currentSoundList.length - 1) {
@@ -65,7 +61,6 @@ export async function playAlbums(
         }
     });
 
-// ====== PREV ======
     prevBtn.addEventListener('click', () => {
         if (!currentAlbum) return;
         if (currentTrackIndex > 0) {
@@ -73,7 +68,6 @@ export async function playAlbums(
         }
     });
 
-// ====== АВТОПЕРЕКЛЮЧЕНИЕ ПО ОКОНЧАНИЮ ======
     player.addEventListener('ended', () => {
         if (!currentAlbum) return;
         if (currentTrackIndex < currentSoundList.length - 1) {

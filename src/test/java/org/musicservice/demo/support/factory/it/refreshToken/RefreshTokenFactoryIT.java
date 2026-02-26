@@ -11,7 +11,7 @@ import java.time.Instant;
 
 public class RefreshTokenFactoryIT {
 
-    public static RefreshToken createNewRefreshToken(String refreshTokenValue, User user, RefreshTokenProperties refreshTokenProperties, RefreshTokenCryptoService refreshTokenCryptoService, RefreshTokenRepository refreshTokenRepository){
+    public static RefreshToken refreshToken(String refreshTokenValue, User user, RefreshTokenProperties refreshTokenProperties, RefreshTokenCryptoService refreshTokenCryptoService, RefreshTokenRepository refreshTokenRepository){
         String hash = refreshTokenCryptoService.hash(refreshTokenValue);
         Duration refreshTokenDuration = refreshTokenProperties.getDuration();
         return refreshTokenRepository.save(new RefreshToken(hash, Instant.now().plus(refreshTokenDuration), user.getId()));

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/album/like")
+@RequestMapping("/api/like_album")
 public class LikeAlbumController {
 
     private final LikeAlbumService likeAlbumService;

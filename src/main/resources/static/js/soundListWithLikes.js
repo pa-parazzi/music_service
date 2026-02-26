@@ -18,7 +18,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
 
     const userId = window.currentUser.id;
 
-    const likedSoundsIdsResponses = await fetch('/sound/like/get', {
+    const likedSoundsIdsResponses = await fetch('/api/like_sound/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})
@@ -54,7 +54,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
             };
 
             if(btn.classList.contains("liked")){
-                await fetch("/sound/like/delete", {
+                await fetch("/api/like_sound/delete", {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)
@@ -62,7 +62,7 @@ export async function initSoundListWithLikes({trackList, soundList}){
                 btn.classList.toggle("liked", false);
                 btn.textContent = "⊕";
             } else if(!btn.classList.contains("liked")){
-                await fetch("/sound/like/create", {
+                await fetch("/api/like_sound/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(likeRequest)

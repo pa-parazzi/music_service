@@ -1,4 +1,3 @@
-
 export function playTrack(soundList, index, playBtn, player){
     const track = soundList[index];
     player.src = track.url;

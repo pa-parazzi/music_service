@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/sound/like")
+@RequestMapping("/api/like_sound")
 public class LikeSoundController {
 
     private final LikeSoundService likeSoundService;

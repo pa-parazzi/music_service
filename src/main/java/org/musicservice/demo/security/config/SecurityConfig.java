@@ -1,11 +1,11 @@
 package org.musicservice.demo.security.config;
 
+import org.musicservice.demo.Authority.Authority;
 import org.musicservice.demo.security.authHandler.ApiAuthenticationEntryPoint;
 import org.musicservice.demo.security.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,16 +37,11 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**", "/js/**", "/auth/**", "/music/**").permitAll()
-                        .requestMatchers("/admin/main", "/admin/upload", "/admin/main.html").permitAll()
-                        .requestMatchers("/api/auth/refresh").permitAll()
-                        .requestMatchers("/album/**", "/api/album/**", "/api/sound/**", "/artist/**", "/api/artist/**", "/search").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-                        .requestMatchers("/album/like/create", "/album/like/delete", "/album/like/get").permitAll()
-                        .requestMatchers("/sound/like/create", "/sound/like/delete", "/sound/like/get").permitAll()
-                        .requestMatchers("/collection/tracks", "/collection/albums").permitAll()
-                        .requestMatchers("/user/profile").authenticated()
+                        .requestMatchers("/css/**", "/js/**").permitAll()
+                        .requestMatchers("/auth/*.html", "/music/*.html", "/admin/*.html").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
+                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**","/collection/**").permitAll()
+                        .requestMatchers("/user/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

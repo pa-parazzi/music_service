@@ -1,4 +1,4 @@
-package org.musicservice.demo.jamendoIntegration;
+package org.musicservice.demo.integration.jamendo;
 
 import org.musicservice.demo.dto.jamendo.JamendoResponse;
 import org.musicservice.demo.dto.jamendo.MusicResponse;

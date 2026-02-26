@@ -11,56 +11,58 @@ import java.util.UUID;
 
 public class UserDataFactoryIT {
 
+    private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1997, 2,4);
+
     public static RegistrationRequest registrationRequest() {
         RegistrationRequest request = new RegistrationRequest();
-        request.setUsername("username");
-        request.setPassword("password");
-        request.setEmail("test@mail.com");
-        request.setDateOfBirth(LocalDate.of(1997, 2,4));
+        request.setUsername("username123");
+        request.setPassword("test5t65");
+        request.setEmail( "test@gmail.com");
+        request.setDateOfBirth(DATE_OF_BIRTH);
         return request;
     }
 
-    public static LoginRequest loginRequest(){
+    public static LoginRequest loginRequest(String username, String password){
         LoginRequest request = new LoginRequest();
-        request.setUsername("USERNAME");
-        request.setPassword("PASSWORD");
+        request.setUsername(username);
+        request.setPassword(password);
         return request;
     }
 
     public static User userWithEnabledAccount(PasswordEncoder encoder){
-        String password = encodePassword(encoder, "PASSWORD");
-        User user = new User("USERNAME", password, "test@mail.com", LocalDate.of(1997, 2,4));
+        String password = encodePassword(encoder, UUID.randomUUID().toString());
+        User user = new User(UUID.randomUUID().toString(), password, UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
         user.setEnabled(true);
         return user;
     }
 
     public static User userWithUsernameAlreadyExistsByRegistrationRequest(RegistrationRequest request, PasswordEncoder encoder){
-        String password = encodePassword(encoder, "PASSWORD");
+        String password = encodePassword(encoder, UUID.randomUUID().toString());
         return new User(
                 request.getUsername(),
                 password,
-                "test@mail.com",
-                LocalDate.of(1997, 2,4)
+                UUID.randomUUID().toString() + "@gmail.com",
+                DATE_OF_BIRTH
         );
     }
 
     public static User userWithEmailAlreadyExistsByRegistrationRequest(RegistrationRequest request, PasswordEncoder encoder){
-        String password = encodePassword(encoder, "PASSWORD");
+        String password = encodePassword(encoder, UUID.randomUUID().toString());
         return new User(
-                "Alex",
+                UUID.randomUUID().toString(),
                 password,
                 request.getEmail(),
-                LocalDate.of(1997, 2,4)
+                DATE_OF_BIRTH
         );
     }
 
     public static User userWithEncodedPassword(PasswordEncoder encoder){
-        String password = encodePassword(encoder, "PASSWORD");
-        return new User("USERNAME", password, "test@mail.com", LocalDate.of(1997, 2,4));
+        String password = encodePassword(encoder, UUID.randomUUID().toString());
+        return new User(UUID.randomUUID().toString(), password, UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
     }
 
     public static User user(){
-        return new User("USERNAME", "PASSWORD", "test@mail.com", LocalDate.of(1997, 2,4));
+        return new User(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
     }
 
     public static UserAvatar userAvatar(User user){
