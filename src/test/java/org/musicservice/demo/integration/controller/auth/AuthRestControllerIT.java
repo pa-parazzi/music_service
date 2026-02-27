@@ -100,7 +100,6 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         MvcResult result = mockMvc.perform(multipart("/api/auth/registration")
                 .file(userPart)
                 .contentType(contentMultipartForm))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
