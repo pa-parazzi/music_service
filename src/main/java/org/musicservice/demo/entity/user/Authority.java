@@ -1,4 +1,4 @@
-package org.musicservice.demo.Authority;
+package org.musicservice.demo.entity.user;
 
 import org.springframework.security.core.GrantedAuthority;
 

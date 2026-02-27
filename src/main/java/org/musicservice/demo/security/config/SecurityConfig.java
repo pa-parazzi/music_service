@@ -1,6 +1,6 @@
 package org.musicservice.demo.security.config;
 
-import org.musicservice.demo.Authority.Authority;
+import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.security.authHandler.ApiAuthenticationEntryPoint;
 import org.musicservice.demo.security.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;

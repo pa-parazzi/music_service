@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.musicservice.demo.Authority.Authority;
+import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.user.User;

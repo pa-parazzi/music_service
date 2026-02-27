@@ -1,6 +1,6 @@
 package org.musicservice.demo.support.factory.unit.user;
 
-import org.musicservice.demo.Authority.Authority;
+import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.dto.image.UserAvatarResponse;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
