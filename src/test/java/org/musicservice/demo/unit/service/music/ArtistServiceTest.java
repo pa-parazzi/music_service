@@ -4,7 +4,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.musicservice.demo.exception.ApiNotFoundException;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.service.music.ArtistService;
 
@@ -28,6 +28,6 @@ public class ArtistServiceTest {
 
         when(artistRepository.findArtistResponseById(artistId)).thenReturn(Optional.empty());
 
-        assertThrows(ApiNotFoundException.class, ()-> artistService.viewArtistById(artistId));
+        assertThrows(MusicNotFoundException.class, ()-> artistService.viewArtistById(artistId));
     }
 }

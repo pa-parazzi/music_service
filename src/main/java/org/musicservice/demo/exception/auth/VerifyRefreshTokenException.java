@@ -1,6 +1,6 @@
-package org.musicservice.demo.exception;
+package org.musicservice.demo.exception.auth;
 
-import org.musicservice.demo.exception.response.RefreshTokenErrorCode;
+import org.musicservice.demo.error.auth.RefreshTokenErrorCode;
 
 public class VerifyRefreshTokenException extends RuntimeException {
 

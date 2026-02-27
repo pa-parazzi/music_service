@@ -1,8 +1,8 @@
 package org.musicservice.demo.exception.handler;
 
-import org.musicservice.demo.exception.VerifyEmailTokenException;
-import org.musicservice.demo.exception.VerifyRefreshTokenException;
-import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.auth.VerifyEmailTokenException;
+import org.musicservice.demo.exception.auth.VerifyRefreshTokenException;
+import org.musicservice.demo.error.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

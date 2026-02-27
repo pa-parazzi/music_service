@@ -9,7 +9,7 @@ import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.exception.UserNotFoundException;
+import org.musicservice.demo.exception.user.UserNotFoundException;
 import org.musicservice.demo.mapper.user.UserMapper;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.user.UserService;

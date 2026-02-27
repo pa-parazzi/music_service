@@ -1,10 +1,10 @@
 package org.musicservice.demo.exception.handler;
 
-import org.musicservice.demo.exception.ApiNotFoundException;
-import org.musicservice.demo.exception.NoSuchMusicResultException;
-import org.musicservice.demo.exception.UserNotFoundException;
-import org.musicservice.demo.exception.response.ApiErrorResponse;
-import org.musicservice.demo.exception.response.ErrorType;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
+import org.musicservice.demo.exception.music.NoSuchMusicResultException;
+import org.musicservice.demo.exception.user.UserNotFoundException;
+import org.musicservice.demo.error.ApiErrorResponse;
+import org.musicservice.demo.error.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ApiGlobalHandler {
 
-    @ExceptionHandler(ApiNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> apiErrorHandle(ApiNotFoundException e){
+    @ExceptionHandler(MusicNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> apiErrorHandle(MusicNotFoundException e){
         HttpStatus status = HttpStatus.NOT_FOUND;
         return ResponseEntity.status(status).body(
                 new ApiErrorResponse(ErrorType.API_ERROR.name(), e.getMessage(),

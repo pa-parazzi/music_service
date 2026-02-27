@@ -4,8 +4,8 @@ import org.musicservice.demo.dto.like.LikedSoundId;
 import org.musicservice.demo.dto.like.LikedSounds;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.exception.ApiNotFoundException;
-import org.musicservice.demo.exception.NoSuchMusicResultException;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
+import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
@@ -34,13 +34,13 @@ public class SoundService {
     }
 
     public TrackListResponse getSoundListByArtistId(Long artistId){
-        if(!artistRepository.existsById(artistId)) throw new ApiNotFoundException("Исполнитель не найден");
+        if(!artistRepository.existsById(artistId)) throw new MusicNotFoundException("Исполнитель не найден");
         List<SoundResponse> soundResponseList = soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toResponse).toList();
         return new TrackListResponse(soundResponseList);
     }
 
     public TrackListResponse getSoundListByAlbumId(Long albumId){
-        if(!albumRepository.existsById(albumId)) throw new ApiNotFoundException("Альбом не найден");
+        if(!albumRepository.existsById(albumId)) throw new MusicNotFoundException("Альбом не найден");
         List<SoundResponse> soundResponseList =  soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toResponse).toList();
         return new TrackListResponse(soundResponseList);
     }

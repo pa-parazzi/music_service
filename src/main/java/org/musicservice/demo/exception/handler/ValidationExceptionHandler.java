@@ -1,8 +1,8 @@
 package org.musicservice.demo.exception.handler;
 
-import org.musicservice.demo.exception.RegistrationException;
-import org.musicservice.demo.exception.response.ApiErrorResponse;
-import org.musicservice.demo.exception.response.ErrorType;
+import org.musicservice.demo.exception.user.RegistrationException;
+import org.musicservice.demo.error.ApiErrorResponse;
+import org.musicservice.demo.error.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

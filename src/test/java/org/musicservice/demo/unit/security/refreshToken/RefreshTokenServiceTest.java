@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.entity.auth.RefreshToken;
-import org.musicservice.demo.exception.VerifyRefreshTokenException;
+import org.musicservice.demo.exception.auth.VerifyRefreshTokenException;
 import org.musicservice.demo.security.cookie.CookieManager;
 import org.musicservice.demo.security.cookie.CookieService;
 import org.musicservice.demo.security.properties.RefreshTokenProperties;

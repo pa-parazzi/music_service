@@ -5,8 +5,8 @@ import org.musicservice.demo.dto.like.LikedAlbums;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
 import org.musicservice.demo.dto.music.album.MainAlbumResponse;
-import org.musicservice.demo.exception.ApiNotFoundException;
-import org.musicservice.demo.exception.NoSuchMusicResultException;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
+import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +46,6 @@ public class AlbumService {
     }
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){
-        return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new ApiNotFoundException("Album with id: " + id + " not found"));
+        return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new MusicNotFoundException("Album with id: " + id + " not found"));
     }
 }

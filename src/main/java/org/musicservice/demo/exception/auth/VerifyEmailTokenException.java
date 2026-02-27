@@ -1,6 +1,6 @@
-package org.musicservice.demo.exception;
+package org.musicservice.demo.exception.auth;
 
-import org.musicservice.demo.exception.response.VerificationTokenErrorCode;
+import org.musicservice.demo.error.auth.VerificationTokenErrorCode;
 
 public class VerifyEmailTokenException extends RuntimeException {
 

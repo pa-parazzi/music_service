@@ -1,4 +1,4 @@
-package org.musicservice.demo.exception;
+package org.musicservice.demo.exception.user;
 
 public class UserNotFoundException extends RuntimeException {
 

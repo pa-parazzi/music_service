@@ -1,4 +1,4 @@
-package org.musicservice.demo.exception.response;
+package org.musicservice.demo.error.auth;
 
 public enum RefreshTokenErrorCode {
 

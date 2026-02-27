@@ -1,7 +1,7 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
-import org.musicservice.demo.exception.ApiNotFoundException;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +19,6 @@ public class ArtistService {
     }
 
     public ArtistResponse viewArtistById(Long artistId){
-        return artistRepository.findArtistResponseById(artistId).orElseThrow(() -> new ApiNotFoundException("Artist with id: " + artistId + " not found"));
+        return artistRepository.findArtistResponseById(artistId).orElseThrow(() -> new MusicNotFoundException("Artist with id: " + artistId + " not found"));
     }
 }

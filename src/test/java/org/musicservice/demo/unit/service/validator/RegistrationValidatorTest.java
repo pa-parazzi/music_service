@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.musicservice.demo.exception.RegistrationException;
-import org.musicservice.demo.exception.response.UniqueFieldErrorCode;
+import org.musicservice.demo.exception.user.RegistrationException;
+import org.musicservice.demo.error.user.UniqueFieldErrorCode;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.validator.RegistrationValidator;
 

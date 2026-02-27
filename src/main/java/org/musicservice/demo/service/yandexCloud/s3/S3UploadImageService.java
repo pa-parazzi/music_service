@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.yandexCloud.s3;
 
-import org.musicservice.demo.exception.UploadObjectStorageException;
+import org.musicservice.demo.exception.objectStorage.UploadObjectStorageException;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;

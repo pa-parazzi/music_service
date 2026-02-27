@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.musicservice.demo.exception.ApiNotFoundException;
+import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.service.music.AlbumService;
@@ -32,7 +32,7 @@ public class AlbumServiceTest {
 
         when(albumRepository.findByIdWithArtistAndImage(albumId)).thenReturn(Optional.empty());
 
-        assertThrows(ApiNotFoundException.class, ()-> albumService.findByIdWithArtistAndImage(albumId));
+        assertThrows(MusicNotFoundException.class, ()-> albumService.findByIdWithArtistAndImage(albumId));
         verifyNoInteractions(albumMapper);
     }
 }

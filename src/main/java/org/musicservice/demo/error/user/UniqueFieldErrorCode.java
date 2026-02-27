@@ -1,4 +1,4 @@
-package org.musicservice.demo.exception.response;
+package org.musicservice.demo.error.user;
 
 public enum UniqueFieldErrorCode {
 

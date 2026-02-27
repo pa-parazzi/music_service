@@ -1,6 +1,6 @@
-package org.musicservice.demo.exception;
+package org.musicservice.demo.exception.user;
 
-import org.musicservice.demo.exception.response.UniqueFieldErrorCode;
+import org.musicservice.demo.error.user.UniqueFieldErrorCode;
 
 public class RegistrationException extends RuntimeException{
 

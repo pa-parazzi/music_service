@@ -14,7 +14,7 @@ import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.userDetails.UserDetailsServiceImpl;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.security.verificationToken.VerificationTokenService;
-import org.musicservice.demo.service.image.UserAvatarService;
+import org.musicservice.demo.service.user.UserAvatarService;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.service.validator.RegistrationValidator;
 import org.springframework.beans.factory.annotation.Autowired;

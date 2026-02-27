@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.image;
+package org.musicservice.demo.service.user;
 
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;

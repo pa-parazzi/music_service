@@ -1,7 +1,7 @@
 package org.musicservice.demo.security.userDetails;
 
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.exception.UserNotFoundException;
+import org.musicservice.demo.exception.user.UserNotFoundException;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.util.UserPrincipalMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserPrincipal
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("Загрузка UserDetails");
         User user = repository.findByUsernameWithAvatar(username).orElseThrow(() ->
                 new UsernameNotFoundException("User with username: " + username + " not found"));
         return UserPrincipalMapper.from(user);
@@ -29,6 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserPrincipal
 
     @Override
     public UserPrincipal loadPrincipalById(Long id) {
+        System.out.println("Загрузка UserPrincipal");
         User user = repository.findByIdWithAvatar(id).orElseThrow(()->
                 new UserNotFoundException("User with id: " + id + " not found"));
         return UserPrincipalMapper.from(user);

@@ -1,7 +1,7 @@
 package org.musicservice.demo.exception.handler;
 
-import org.musicservice.demo.exception.UploadObjectStorageException;
-import org.musicservice.demo.exception.response.ApiErrorResponse;
+import org.musicservice.demo.exception.objectStorage.UploadObjectStorageException;
+import org.musicservice.demo.error.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
