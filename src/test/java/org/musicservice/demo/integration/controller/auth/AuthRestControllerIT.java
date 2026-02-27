@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.RefreshToken;
+import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.exception.response.*;
 import org.musicservice.demo.repository.user.UserRepository;
@@ -18,12 +20,14 @@ import org.musicservice.demo.security.properties.VerificationTokenProperties;
 import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 import org.musicservice.demo.security.verificationToken.MailService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.cookie.CookieDataFactoryIT;
 import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.it.multipartFile.MultipartFileFactory;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
+import org.musicservice.demo.support.factory.it.verificationToken.VerificationTokenFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,8 +46,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,6 +73,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     private RefreshTokenCryptoService refreshTokenCryptoService;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
     @Autowired
     private VerificationTokenProperties verificationTokenProperties;
     @Autowired
@@ -388,6 +394,80 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(errorResponse.code()).isEqualTo(RefreshTokenErrorCode.INVALID.name());
         assertThat(errorResponse.message()).isEqualTo(RefreshTokenErrorCode.INVALID.getMessage());
+    }
+
+    @Test
+    void shouldEnableUserAccountAndReturnResponseToEmailVerificationAndStatusIsOk() throws Exception {
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
+        VerificationToken verificationToken = verificationTokenRepository.save(VerificationTokenFactoryIT.validVerificationToken(user, verificationTokenProperties));
+        String token = verificationToken.getToken();
+
+        MvcResult result = mockMvc.perform(get("/api/auth/activate").param("token", token))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        User userIsAfterActivate = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(userIsAfterActivate.isEnabled()).isTrue();
+
+        assertThat(verificationTokenRepository.findByToken(token)).isEmpty();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ResponseToEmailVerification response = objectMapper.readValue(resultJson, ResponseToEmailVerification.class);
+        assertThat(response.message()).isNotBlank();
+    }
+
+    @Test
+    void shouldReturnStatusIsUnauthorized_WhenTokenIsEmpty() throws Exception {
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
+        String token = " ";
+
+        MvcResult result = mockMvc.perform(get("/api/auth/activate").param("token", token))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        User userIsAfterActivate = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(userIsAfterActivate.isEnabled()).isFalse();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(VerificationTokenErrorCode.MISSING.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    void shouldReturnStatusIsUnauthorized_WhenTokenIsNull() throws Exception {
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
+
+        MvcResult result = mockMvc.perform(get("/api/auth/activate"))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        User userIsAfterActivate = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(userIsAfterActivate.isEnabled()).isFalse();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(VerificationTokenErrorCode.MISSING.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    void shouldReturnStatusIsUnauthorized_WhenTokenIsExpired() throws Exception {
+        User user = userRepository.save(UserDataFactoryIT.userWithEncodedPassword(passwordEncoder));
+        VerificationToken expiredVerificationToken = verificationTokenRepository.save(VerificationTokenFactoryIT.expiredVerificationToken(user));
+        String token = expiredVerificationToken.getToken();
+
+        MvcResult result = mockMvc.perform(get("/api/auth/activate").param("token", token))
+                .andExpect(status().isUnauthorized())
+                .andReturn();
+
+        User userIsAfterActivate = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(userIsAfterActivate.isEnabled()).isFalse();
+
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
+        assertThat(errorResponse.code()).isEqualTo(VerificationTokenErrorCode.EXPIRED.name());
+        assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     private void assertThatAccessTokenIsNotNull(TokenResponse tokenResponse){

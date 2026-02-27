@@ -5,8 +5,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
+import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.security.dto.TokenResponse;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
+import org.musicservice.demo.security.verificationToken.VerificationTokenService;
 import org.musicservice.demo.service.auth.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,11 +26,13 @@ public class AuthRestController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final VerificationTokenService verificationTokenService;
 
     @Autowired
-    public AuthRestController(AuthService authService, RefreshTokenService refreshTokenService) {
+    public AuthRestController(AuthService authService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
+        this.verificationTokenService = verificationTokenService;
     }
 
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -55,5 +59,9 @@ public class AuthRestController {
         return ResponseEntity.ok(authService.refreshAccess(response, request));
     }
 
+    @GetMapping("/activate")
+    public ResponseEntity<ResponseToEmailVerification> activate(@RequestParam(required = false, value = "token") String token){
+        return ResponseEntity.ok(verificationTokenService.verify(token));
+    }
 
 }
