@@ -11,7 +11,8 @@ import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.error.*;
+import org.musicservice.demo.error.ApiErrorResponse;
+import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.error.auth.AuthErrorCode;
 import org.musicservice.demo.error.auth.RefreshTokenErrorCode;
 import org.musicservice.demo.error.auth.VerificationTokenErrorCode;
@@ -28,8 +29,8 @@ import org.musicservice.demo.security.verificationToken.VerificationTokenReposit
 import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.cookie.CookieDataFactoryIT;
-import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.it.multipartFile.MultipartFileFactory;
+import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.musicservice.demo.support.factory.it.verificationToken.VerificationTokenFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -237,7 +236,7 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
-        RefreshToken usedRefreshToken = RefreshTokenFactoryIT.refreshToken(
+        RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
 
         Cookie cookieRequest = CookieDataFactoryIT.cookie(cookieProperties, (int) refreshTokenProperties.getDuration().getSeconds(), refreshTokenValue);
