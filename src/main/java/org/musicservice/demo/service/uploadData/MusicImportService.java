@@ -10,15 +10,15 @@ import java.text.Normalizer;
 import java.util.List;
 
 @Service
-public class UploadData {
+public class MusicImportService {
 
     private final JamendoClient jamendoClient;
-    private final UploadDataDbService uploadDataDbService;
+    private final MusicCatalogService musicCatalogService;
 
     @Autowired
-    public UploadData(JamendoClient jamendoClient, UploadDataDbService uploadDataDbService) {
+    public MusicImportService(JamendoClient jamendoClient, MusicCatalogService musicCatalogService) {
         this.jamendoClient = jamendoClient;
-        this.uploadDataDbService = uploadDataDbService;
+        this.musicCatalogService = musicCatalogService;
     }
 
     @Transactional
@@ -38,7 +38,7 @@ public class UploadData {
                     .replaceAll("^_+|_+$", "") + ".jpg";
             response.setMp3Key(mp3Key);
             response.setAlbumImgKey(imgKey);
-            uploadDataDbService.insertMusicData(response);
+            musicCatalogService.insertMusicData(response);
         }
     }
 }

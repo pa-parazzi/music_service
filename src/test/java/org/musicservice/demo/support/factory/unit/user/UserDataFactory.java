@@ -25,7 +25,7 @@ public class UserDataFactory {
     private static final Long ID = 1L;
     private static final String USERNAME = "Alice";
     private static final String PASSWORD = "qwerty12345";
-    private static final String EMAIL = "igor.bocharov.88@gmail.com";
+    private static final String EMAIL = "test@gmail.com";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(2000, 1, 1);
 
     private static final String AVATAR_KEY = "default_avatar.jpg";

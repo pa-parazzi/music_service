@@ -1,7 +1,7 @@
 package org.musicservice.demo.controller.admin;
 
 import org.musicservice.demo.dto.user.UserMainResponse;
-import org.musicservice.demo.service.uploadData.UploadData;
+import org.musicservice.demo.service.uploadData.MusicImportService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final UserService userService;
-    private final UploadData uploadData;
+    private final MusicImportService musicImportService;
 
-    public AdminController(UserService userService, UploadData uploadData) {
+    public AdminController(UserService userService, MusicImportService musicImportService) {
         this.userService = userService;
-        this.uploadData = uploadData;
+        this.musicImportService = musicImportService;
     }
 
     @GetMapping("/main")
@@ -31,7 +31,7 @@ public class AdminController {
 
     @PostMapping("/upload")
     public ResponseEntity<Void> uploadData() {
-        uploadData.upload();
+        musicImportService.upload();
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
