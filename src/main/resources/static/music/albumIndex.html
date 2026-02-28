@@ -49,25 +49,7 @@
 <!-- затемнение -->
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
-<div class="album-page">
-    <div class="album-header">
-        <div class="album-cover">
-            <img id="album-image" alt="Обложка альбома" class="album-image" src="">
-        </div>
-        <div class="album-info">
-            <div class="album-details">
-                <h1 id="album-title" class="album-title"></h1>
-                <p id="artist-name" class="artist-name"></p>
-            </div>
-            <div class="functionalities-of-album">
-                <button class="play-album-btn" id="play-album" aria-label="Play album">▶</button>
-                <button class="album-like-btn" id="album-like-btn">&#8853;</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="tracklist" id="tracklist"></div>
-</div>
+<div class="album-content" id="album-content"></div>
 
 <audio id="player"></audio>
 
@@ -90,9 +72,8 @@
     </div>
 </div>
 
-<script src="/js/loadUserProfile.js"></script>
+<script type="module" src="/js/album/albumIndex.js"></script>
 <script src="/js/audio/audioPlayer.js"></script>
-<script type="module" src="/js/album/loadAlbum.js"></script>
 
 </body>
 </html>

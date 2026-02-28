@@ -1,0 +1,20 @@
+import {apiFetch} from "./api.js";
+
+export async function logout() {
+    try {
+        const response = await apiFetch('/api/auth/logout', {
+            method: "POST",
+            credentials: "include"
+        });
+
+        clearAuth();
+        if (response.ok) {
+            console.log("Выход выполнен успешно");
+            window.location.href = "/music/main.html";
+        } else {
+            console.warn("Ошибка при выходе:", response.status);
+        }
+    } catch (error) {
+        console.error("Ошибка logout:", error);
+    }
+}

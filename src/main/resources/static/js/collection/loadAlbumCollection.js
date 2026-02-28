@@ -1,5 +1,5 @@
-import {playAlbums} from "../audio/playAlbum.js";
-import {initAlbumContainer} from "../album/albumContainer.js";
+import {playAlbums} from "../audio/playAlbums.js";
+import {initAlbums} from "../album/albumContainer.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');
@@ -11,11 +11,15 @@ let currentAlbumButton = null;
 let currentTrackIndex = 0;
 let isPlaying = false;
 
-async function loadAlbumCollection(){
+export async function loadAlbumCollection(user){
 
     const albumCollectionContainer = document.getElementById("album-collection");
 
-    const userId = window.currentUser.id;
+    if (!user) {
+        console.log("Пользователь не авторизован");
+        return;
+    }
+    const userId = user.id;
 
     const likedAlbumsIdsResponse = await fetch('/api/like_album/get', {
         method: "POST",
@@ -33,7 +37,7 @@ async function loadAlbumCollection(){
 
     const albumData = await albumCollectionResponse.json();
 
-    await initAlbumContainer(albumCollectionContainer, albumData);
+    await initAlbums(albumCollectionContainer, albumData);
 
     const playAlbumButtons = document.querySelectorAll('.play-album-btn');
 
@@ -41,12 +45,3 @@ async function loadAlbumCollection(){
         currentTrackIndex, isPlaying, playAlbumButtons);
 
 }
-
-(async function initUser(){
-    await window.loadUser;
-    if(!window.currentUser){
-        console.log("Пользователь не авторизирован");
-        return;
-    }
-    await loadAlbumCollection();
-})();

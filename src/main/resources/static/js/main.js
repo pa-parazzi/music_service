@@ -1,7 +1,7 @@
 import{escapeHtml} from "./util.js";
-import{loadAlbums} from "./loadAlbumsMainContent.js";
-import{initAlbumContainer} from "./album/albumContainer.js";
-import{playAlbums} from "./audio/playAlbum.js";
+import{loadAlbums} from "./album/loadAlbums.js";
+import{initAlbums} from "./album/albumContainer.js";
+import{playAlbums} from "./audio/playAlbums.js";
 
 const searchResults = document.querySelector(".search-results");
 const notFoundResult = document.getElementById("not-found");
@@ -23,10 +23,11 @@ document.getElementById("search-form").addEventListener("submit", async (e) => {
     e.preventDefault(); // не перезагружаем страницу
     const query = document.getElementById("search-input").value.trim();
 
+    // если пусто возвращаю оригинальный список
     if (!query) {
         searchResults.style.display = "none";
         albumsContainer.style.display = "flex";
-        await loadAlbums(); // ⬅ если пусто → вернуть оригинальный список
+        await loadAlbums();
         return;
     }
 
@@ -62,11 +63,14 @@ document.getElementById("search-form").addEventListener("submit", async (e) => {
     const albums = data.albums;
 
     // Найденные альбомы
-    await initAlbumContainer(foundAlbums, data);
+    await initAlbums(foundAlbums, data);
 
     const playAlbumButtons = document.querySelectorAll('.play-album-btn');
 
     await playAlbums(albums, player, playBtn, nextBtn, prevBtn, currentAlbum, currentAlbumButton, currentTrackIndex, isPlaying, playAlbumButtons)
 });
 
-(async function initAlbums(){ await loadAlbums(); searchResults.style.display = "none"})();
+(async function initAlbums(){
+    await loadAlbums();
+    searchResults.style.display = "none"
+})();

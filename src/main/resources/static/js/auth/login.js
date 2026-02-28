@@ -17,7 +17,7 @@ function clearMessages() {
 }
 
 function showFieldError(field, messages) {
-    // если есть "Обязательное поле" — показываем только его
+    // если сообщение "Обязательное поле", то показываем только его
     const requiredMessage = messages.find(m => m === "Обязательное поле");
     const messageToShow = requiredMessage ?? messages[0];
 
@@ -84,7 +84,7 @@ form.addEventListener("submit", async (event) => {
 
         setTimeout(() => {
             window.location.href = "/music/main.html";
-        }, 1500);
+        }, 1000);
 
     } catch (e) {
         showGlobalError("Ошибка соединения с сервером");

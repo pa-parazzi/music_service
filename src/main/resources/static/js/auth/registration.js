@@ -91,7 +91,7 @@ form.addEventListener("submit", async (event) => {
 
         setTimeout(() => {
             window.location.href = "/music/main.html";
-        }, 1500);
+        }, 500);
 
     } catch (e) {
         showGlobalError("Ошибка соединения с сервером");

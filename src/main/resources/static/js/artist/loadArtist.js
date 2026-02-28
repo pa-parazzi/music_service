@@ -1,5 +1,5 @@
 import{escapeHtml} from "../util.js";
-import{initSoundListWithLikes} from "../soundListWithLikes.js";
+import{initSoundListWithLikes} from "../sound/soundListWithLikes.js";
 import{audioListener} from "../audio/audioListener.js";
 
 const player = document.getElementById('player');
@@ -7,47 +7,42 @@ const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const artistName = document.getElementById('artist-name');
-const artistTrackList = document.getElementById('tracklist');
+const trackListContainer = document.getElementById('tracklist');
 
-async function loadArtist() {
+export async function loadArtist(user) {
     const id = window.location.pathname.split('/').pop();
 
-    try {
-        const response = await fetch(`/api/artist/${id}`);
-        if (!response.ok) throw new Error("Ошибка загрузки");
-
-        const artist = await response.json();
-
-
-        artistName.textContent = artist.name;
-        artistName.alt = escapeHtml(artist.name);
-
-        const soundListResponse = await fetch(`/api/sound/artist/${id}`);
-        const soundListJson = await soundListResponse.json();
-        const soundList = soundListJson.soundList;
-
-        await initSoundListWithLikes({
-            trackList: artistTrackList,
-            soundList: soundList
-        });
-
-        const playerState = {
-            currentTrackIndex: 0,
-            soundList: soundList
-        }
-
-        audioListener(playerState, player, playBtn, nextBtn, prevBtn);
-
-    } catch (err) {
-        console.error("Ошибка загрузки исполнителя", err);
-    }
-}
-
-(async function initUser(){
-    await window.loadUser;
-    if(!window.currentUser){
-        console.log("Пользователь не авторизирован");
+    const response = await fetch(`/api/artist/${id}`);
+    if (!response.ok){
+        console.log("Ошибка загрузки исполнителя");
         return;
     }
-    await loadArtist();
-})();
+
+    const artist = await response.json();
+
+    artistName.textContent = artist.name;
+    artistName.alt = escapeHtml(artist.name);
+
+    const soundListResponse = await fetch(`/api/sound/artist/${id}`);
+    const soundListJson = await soundListResponse.json();
+    const soundList = soundListJson.soundList;
+
+    if (!user) {
+        console.log("Пользователь не авторизован");
+        return;
+    }
+    const userId = user.id;
+
+    await initSoundListWithLikes({
+        trackListContainer: trackListContainer,
+        soundList: soundList,
+        userId: userId
+    });
+
+    const playerState = {
+        currentTrackIndex: 0,
+        soundList: soundList
+    }
+
+    audioListener(playerState, player, playBtn, nextBtn, prevBtn);
+}

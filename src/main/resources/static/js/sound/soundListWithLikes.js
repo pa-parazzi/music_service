@@ -1,8 +1,8 @@
-import {escapeHtml} from "./util.js";
+import {escapeHtml} from "../util.js";
 
-export async function initSoundListWithLikes({trackList, soundList}){
+export async function initSoundListWithLikes({trackListContainer, soundList, userId}){
 
-    trackList.innerHTML = soundList.map((track, i) => `
+    trackListContainer.innerHTML = soundList.map((track, i) => `
         <div class="track" id="track" data-index="${i}">
           <div class="track-title">
             <span>${i + 1}</span>
@@ -16,7 +16,9 @@ export async function initSoundListWithLikes({trackList, soundList}){
         </div>
       `).join('');
 
-    const userId = window.currentUser.id;
+    if(userId === null){
+        return;
+    }
 
     const likedSoundsIdsResponses = await fetch('/api/like_sound/get', {
         method: "POST",

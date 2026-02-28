@@ -1,4 +1,3 @@
-// ===== Элементы управления =====
 const player = document.getElementById("player");
 const playBtn = document.getElementById("play-btn");
 const progress = document.getElementById("progress");
@@ -9,7 +8,7 @@ const durationEl = document.getElementById("duration");
 // Текущее состояние проигрывания
 let isPlaying = false;
 
-// ===== Функция форматирования времени (mm:ss) =====
+// Функция форматирования времени (mm:ss)
 function formatTime(seconds) {
     if (isNaN(seconds) || seconds === Infinity) return "0:00";
 
@@ -21,13 +20,13 @@ function formatTime(seconds) {
     return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-// ===== Событие загрузки метаданных трека =====
+// Событие загрузки метаданных трека
 player.addEventListener("loadedmetadata", () => {
     if (!player.duration || isNaN(player.duration)) return;
     durationEl.textContent = formatTime(player.duration);
 });
 
-// ===== Обновление времени и прогресс-бара =====
+// Обновление времени и прогресс-бара
 player.addEventListener("timeupdate", () => {
     if (!player.duration || isNaN(player.duration)) return;
 
@@ -35,18 +34,18 @@ player.addEventListener("timeupdate", () => {
     currentTimeEl.textContent = formatTime(player.currentTime);
 });
 
-// ===== Перемотка по прогресс-бару =====
+// Перемотка по прогресс-бару
 progress.addEventListener("input", () => {
     if (!player.duration) return;
     player.currentTime = (player.duration * progress.value)/ 100;
 });
 
-// ===== Громкость =====
+// Громкость
 volume.addEventListener("input", () => {
     player.volume = volume.value;
 });
 
-// ===== Play / Pause =====
+// Play / Pause
 playBtn.addEventListener("click", () => {
     if (player.paused) {
         player.play();

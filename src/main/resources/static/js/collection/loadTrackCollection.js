@@ -1,4 +1,4 @@
-import {initSoundListWithLikes} from "../soundListWithLikes.js";
+import {initSoundListWithLikes} from "../sound/soundListWithLikes.js";
 import {audioListener} from "../audio/audioListener.js";
 
 const player = document.getElementById('player');
@@ -6,10 +6,14 @@ const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 
-async function loadTrackCollection(){
+export async function loadTrackCollection(user){
     const trackCollection = document.getElementById("track-collection");
 
-    const userId = window.currentUser.id;
+    if (!user) {
+        console.log("Пользователь не авторизован");
+        return;
+    }
+    const userId = user.id;
 
     const likedSoundsIdsResponses = await fetch('/api/like_sound/get', {
         method: "POST",
@@ -29,8 +33,9 @@ async function loadTrackCollection(){
     const soundList = collectionData.soundList;
 
     await initSoundListWithLikes({
-        trackList: trackCollection,
-        soundList: soundList
+        trackListContainer: trackCollection,
+        soundList: soundList,
+        userId: userId
     });
 
     const playerState = {
@@ -40,14 +45,5 @@ async function loadTrackCollection(){
 
     audioListener(playerState, player, playBtn, nextBtn, prevBtn);
 }
-
-(async function initUser(){
-    await window.loadUser;
-    if(!window.currentUser){
-        console.log("Пользователь не авторизирован");
-        return;
-    }
-    await loadTrackCollection();
-})();
 
 

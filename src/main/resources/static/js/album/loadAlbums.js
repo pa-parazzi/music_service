@@ -1,5 +1,5 @@
-import{initAlbumContainer} from "./album/albumContainer.js";
-import{playAlbums} from "./audio/playAlbum.js";
+import{initAlbums} from "./albumContainer.js";
+import{playAlbums} from "../audio/playAlbums.js";
 
 const albumsContainer = document.getElementById("albums");
 const player = document.getElementById('player');
@@ -23,7 +23,7 @@ export async function loadAlbums() {
 
         console.log("Загруженные альбомы:", data);
 
-        await initAlbumContainer(albumsContainer, data);
+        await initAlbums(albumsContainer, data);
 
         const playAlbumButtons = document.querySelectorAll('.play-album-btn');
 
