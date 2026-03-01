@@ -2,8 +2,6 @@ package org.musicservice.demo.service.likes;
 
 import jakarta.persistence.EntityManager;
 import org.musicservice.demo.dto.likes.LikedSounds;
-import org.musicservice.demo.dto.likes.UserGetLikesRequest;
-import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
@@ -28,20 +26,20 @@ public class SoundLikeService {
     }
 
     @Transactional
-    public void create(UserLikedMusicRequest request){
-        User user = entityManager.getReference(User.class, request.userId());
-        Sound sound = entityManager.getReference(Sound.class, request.targetId());
+    public void create(Long userId, Long soundId){
+        User user = entityManager.getReference(User.class, userId);
+        Sound sound = entityManager.getReference(Sound.class, soundId);
         SoundLike soundLike = new SoundLike(user, sound);
         soundLikeRepository.save(soundLike);
     }
 
     @Transactional
-    public void delete(UserLikedMusicRequest request){
-        soundLikeRepository.deleteByUserIdAndSoundId(request.userId(), request.targetId());
+    public void delete(Long userId, Long soundId){
+        soundLikeRepository.deleteByUserIdAndSoundId(userId, soundId);
     }
 
-    public LikedSounds getAllLikedSounds(UserGetLikesRequest request){
-        List<Long> likedSoundsIdsList = soundLikeRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId())
+    public LikedSounds getAllLikedSounds(Long userId){
+        List<Long> likedSoundsIdsList = soundLikeRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
                 .stream().map(soundLike -> soundLike.getSound().getId()).toList();
         return new LikedSounds(likedSoundsIdsList);
     }

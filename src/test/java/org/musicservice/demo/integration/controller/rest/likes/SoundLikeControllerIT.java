@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.likes.LikedSounds;
-import org.musicservice.demo.dto.likes.UserGetLikesRequest;
-import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -18,11 +16,11 @@ import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.factory.it.security.WithMockUserPrincipal;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,8 +29,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -64,11 +61,9 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUserPrincipal
     void shouldReturnLikedSoundsIdsByOrderCreatedAtAndStatusIsOk_WhenUserHasLikedSounds() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
-        String contentJson = objectMapper.writeValueAsString(userRequest);
-
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album));
@@ -80,9 +75,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
         List<Long> orderSoundIdsList = List.of(soundLike3.getSound().getId(), soundLike2.getSound().getId(), soundLike.getSound().getId());
         LikedSounds expectedLikedSoundIds = new LikedSounds(orderSoundIdsList);
 
-        MvcResult result = mockMvc.perform(post("/api/like_sound/get")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(contentJson))
+        MvcResult result = mockMvc.perform(get("/api/liked-sounds/get"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -92,18 +85,11 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    @WithMockUserPrincipal
     void shouldReturnIsEmptyStatusIsOk_WhenUserDoesNotLikedSounds() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        UserGetLikesRequest userRequest = new UserGetLikesRequest(user.getId());
-        String contentJson = objectMapper.writeValueAsString(userRequest);
+        userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
 
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
-
-        MvcResult result = mockMvc.perform(post("/api/like_sound/get")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentJson))
+        MvcResult result = mockMvc.perform(get("/api/liked-sounds/get"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -113,44 +99,34 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldCreateSoundLikeAndReturnStatusIsAccept() throws Exception{
+    @WithMockUserPrincipal
+    void shouldCreateSoundLikeAndReturnStatusIsCreated() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
-        Sound likedSound = soundList.getFirst();
+        Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album));
 
-        UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
-        String contentJson = objectMapper.writeValueAsString(userRequest);
-
-        mockMvc.perform(post("/api/like_sound/create")
-                .content(contentJson)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted());
+        mockMvc.perform(post("/api/liked-sounds/{soundId}", sound.getId()))
+                .andExpect(status().isCreated());
 
         assertThat(soundLikeRepository.count()).isEqualTo(1);
 
         SoundLike soundLike = soundLikeRepository.findAll().getFirst();
-        assertThat(soundLike.getSound().getId()).isEqualTo(likedSound.getId());
+        assertThat(soundLike.getSound().getId()).isEqualTo(sound.getId());
         assertThat(soundLike.getUser().getId()).isEqualTo(user.getId());
     }
 
     @Test
-    void shouldDeleteSoundLikeAndReturnStatusIsAccept() throws Exception{
+    @WithMockUserPrincipal
+    void shouldDeleteSoundLikeAndReturnStatusIsNoContent() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
-        Sound likedSound = soundList.get(1);
-        SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, likedSound));
+        Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album));
+        SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
-        UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
-        String contentJson = objectMapper.writeValueAsString(userRequest);
-
-        mockMvc.perform(delete("/api/like_sound/delete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentJson))
-                .andExpect(status().isAccepted());
+        mockMvc.perform(delete("/api/liked-sounds/{soundId}", sound.getId()))
+                .andExpect(status().isNoContent());
 
         assertThat(soundLikeRepository.findById(soundLike.getId())).isEmpty();
     }

@@ -1,16 +1,15 @@
 package org.musicservice.demo.controller.rest.likes;
 
 import org.musicservice.demo.dto.likes.LikedSounds;
-import org.musicservice.demo.dto.likes.UserGetLikesRequest;
-import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
 import org.musicservice.demo.service.likes.SoundLikeService;
+import org.musicservice.demo.annotations.CurrentUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/like_sound")
+@RequestMapping("/api/liked-sounds")
 public class SoundLikeController {
 
     private final SoundLikeService soundLikeService;
@@ -20,20 +19,20 @@ public class SoundLikeController {
         this.soundLikeService = soundLikeService;
     }
 
-    @PostMapping("/get")
-    public ResponseEntity<LikedSounds> getSoundLikes(@RequestBody UserGetLikesRequest request){
-        return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(request));
+    @GetMapping("/get")
+    public ResponseEntity<LikedSounds> getSoundLikes(@CurrentUser Long userId){
+        return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(userId));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<HttpStatus> likeSound(@RequestBody UserLikedMusicRequest request){
-        soundLikeService.create(request);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    @PostMapping("/{soundId}")
+    public ResponseEntity<Void> likeSound(@CurrentUser Long userId, @PathVariable ("soundId") Long soundId){
+        soundLikeService.create(userId, soundId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<HttpStatus> dropLike(@RequestBody UserLikedMusicRequest request){
-        soundLikeService.delete(request);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    @DeleteMapping("/{soundId}")
+    public ResponseEntity<Void> dropLike(@CurrentUser Long userId, @PathVariable ("soundId") Long soundId){
+        soundLikeService.delete(userId, soundId);
+        return ResponseEntity.noContent().build();
     }
 }
