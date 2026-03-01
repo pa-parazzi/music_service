@@ -21,7 +21,7 @@ export async function loadAlbumCollection(user){
     }
     const userId = user.id;
 
-    const likedAlbumsIdsResponse = await fetch('/api/like_album/get', {
+    const likedAlbumsIdsResponse = await fetch('/api/liked-albums/get', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({userId})

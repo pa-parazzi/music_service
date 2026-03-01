@@ -88,7 +88,7 @@ export async function loadAlbum(user) {
         playBtn.textContent = "▶";
     });
 
-    const likedAlbumsIdsResponse = await fetch('/api/like_album/get', {
+    const likedAlbumsIdsResponse = await fetch('/api/liked-albums/get', {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({userId})
@@ -121,7 +121,7 @@ export async function loadAlbum(user) {
         };
 
         if (albumLikeBtn.classList.contains("liked")) {
-            await fetch('/api/like_album/delete', {
+            await fetch('/api/liked-albums/delete', {
                 method: "DELETE",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(likeRequest)
@@ -129,7 +129,7 @@ export async function loadAlbum(user) {
             albumLikeBtn.classList.toggle("liked", false);
             albumLikeBtn.textContent = "⊕";
         } else if (!albumLikeBtn.classList.contains("liked")) {
-            await fetch('/api/like_album/create', {
+            await fetch('/api/liked-albums/${albumId}', {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(likeRequest)
