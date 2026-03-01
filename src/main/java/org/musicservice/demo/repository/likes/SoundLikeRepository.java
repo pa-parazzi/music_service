@@ -1,6 +1,6 @@
-package org.musicservice.demo.repository.like;
+package org.musicservice.demo.repository.likes;
 
-import org.musicservice.demo.entity.like.LikeSound;
+import org.musicservice.demo.entity.likes.SoundLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface LikeSoundRepository extends JpaRepository<LikeSound, Long> {
+public interface SoundLikeRepository extends JpaRepository<SoundLike, Long> {
 
     @Modifying
-    @Query("delete from LikeSound l where l.user.id = :userId and l.sound.id = :soundId")
+    @Query("delete from SoundLike l where l.user.id = :userId and l.sound.id = :soundId")
     void deleteByUserIdAndSoundId(Long userId, Long soundId);
 
-    List<LikeSound> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    List<SoundLike> findAllByUserIdOrderByCreatedAtDesc(Long userId);
 }

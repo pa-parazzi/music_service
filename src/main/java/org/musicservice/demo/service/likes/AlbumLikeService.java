@@ -1,0 +1,48 @@
+package org.musicservice.demo.service.likes;
+
+import jakarta.persistence.EntityManager;
+import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.UserGetLikesRequest;
+import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
+import org.musicservice.demo.entity.likes.AlbumLike;
+import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.repository.likes.AlbumLikeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@Transactional(readOnly = true)
+public class AlbumLikeService {
+
+    private final AlbumLikeRepository albumLikeRepository;
+    private final EntityManager entityManager;
+
+    @Autowired
+    public AlbumLikeService(AlbumLikeRepository albumLikeRepository, EntityManager entityManager) {
+        this.albumLikeRepository = albumLikeRepository;
+        this.entityManager = entityManager;
+    }
+
+    @Transactional
+    public void create(UserLikedMusicRequest request){
+        User user = entityManager.getReference(User.class, request.userId());
+        Album album = entityManager.getReference(Album.class, request.targetId());
+        AlbumLike albumLike = new AlbumLike(user, album);
+        albumLikeRepository.save(albumLike);
+    }
+
+    @Transactional
+    public void delete(UserLikedMusicRequest request){
+        albumLikeRepository.deleteByUserIdAndAlbumId(request.userId(), request.targetId());
+    }
+
+    public LikedAlbums getAllLikedAlbums(UserGetLikesRequest request){
+        List<Long> likedAlbumsIdsList = albumLikeRepository.findAllByUserIdOrderByCreatedAtDesc(request.userId())
+                .stream().map(albumLike-> albumLike.getAlbum().getId()).toList();
+        return new LikedAlbums(likedAlbumsIdsList);
+    }
+}

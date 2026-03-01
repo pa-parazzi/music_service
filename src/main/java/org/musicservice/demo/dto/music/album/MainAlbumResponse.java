@@ -1,5 +1,0 @@
-package org.musicservice.demo.dto.music.album;
-
-import java.util.List;
-
-public record MainAlbumResponse (List<AlbumResponse> albums) {}

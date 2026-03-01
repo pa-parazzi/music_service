@@ -1,8 +1,8 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.like.LikedAlbums;
-import org.musicservice.demo.dto.like.LikedSounds;
-import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
+import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.LikedSounds;
+import org.musicservice.demo.dto.music.album.AlbumListResponse;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.service.music.AlbumService;
 import org.musicservice.demo.service.music.SoundService;
@@ -32,7 +32,7 @@ public class MusicCollectionController {
     }
 
     @PostMapping("/albums")
-    public ResponseEntity<CollectionAlbumsResponse> viewAlbumCollection(@RequestBody LikedAlbums albumsIds) {
+    public ResponseEntity<AlbumListResponse> viewAlbumCollection(@RequestBody LikedAlbums albumsIds) {
         return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(albumsIds));
     }
 

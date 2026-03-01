@@ -3,12 +3,10 @@ package org.musicservice.demo.integration.controller.rest.music;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.like.LikedAlbumId;
-import org.musicservice.demo.dto.like.LikedAlbums;
-import org.musicservice.demo.dto.like.LikedSoundId;
-import org.musicservice.demo.dto.like.LikedSounds;
+import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.LikedSounds;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
-import org.musicservice.demo.dto.music.album.CollectionAlbumsResponse;
+import org.musicservice.demo.dto.music.album.AlbumListResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.entity.music.Album;
@@ -58,7 +56,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image, sound, like_sound, like_album RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image, sound RESTART IDENTITY CASCADE");
     }
 
     @Test
@@ -67,12 +65,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
         List<Long> orderedSoundIds = List.of(soundList.get(2).getId(), soundList.get(0).getId(), soundList.get(1).getId());
-        List<LikedSoundId> orderedLikedSoundIds = orderedSoundIds.stream().map(id -> {
-            LikedSoundId dto = new LikedSoundId();
-            dto.setSoundId(id);
-            return dto;
-        }).toList();
-        LikedSounds likedSounds = new LikedSounds(orderedLikedSoundIds);
+        LikedSounds likedSounds = new LikedSounds(orderedSoundIds);
         String jsonContent = objectMapper.writeValueAsString(likedSounds);
 
         MvcResult result = mockMvc.perform(post("/collection/tracks")
@@ -94,12 +87,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist));
         albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));
         List<Long> orderedAlbumIds = List.of(albumList.get(2).getId(), albumList.get(0).getId(), albumList.get(1).getId());
-        List<LikedAlbumId> orderedLikedAlbumIds = orderedAlbumIds.stream().map(id -> {
-            LikedAlbumId dto = new LikedAlbumId();
-            dto.setAlbumId(id);
-            return dto;
-        }).toList();
-        LikedAlbums likedAlbums = new LikedAlbums(orderedLikedAlbumIds);
+        LikedAlbums likedAlbums = new LikedAlbums(orderedAlbumIds);
         String contentJson = objectMapper.writeValueAsString(likedAlbums);
 
         MvcResult result = mockMvc.perform(post("/collection/albums")
@@ -109,8 +97,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        CollectionAlbumsResponse collectionAlbumsResponse = objectMapper.readValue(jsonResult, CollectionAlbumsResponse.class);
-        List<AlbumResponse> albums = collectionAlbumsResponse.albums();
+        AlbumListResponse albumListResponse = objectMapper.readValue(jsonResult, AlbumListResponse.class);
+        List<AlbumResponse> albums = albumListResponse.albums();
         List<Long> actualAlbumIds = albums.stream().map(AlbumResponse::getAlbumId).toList();
         assertThat(actualAlbumIds).containsExactlyElementsOf(orderedAlbumIds);
     }

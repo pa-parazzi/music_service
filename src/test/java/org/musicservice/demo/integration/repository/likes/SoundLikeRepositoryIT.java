@@ -1,11 +1,12 @@
-package org.musicservice.demo.integration.repository.like;
+package org.musicservice.demo.integration.repository.likes;
 
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.entity.like.LikeAlbum;
+import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.repository.like.LikeAlbumRepository;
+import org.musicservice.demo.repository.likes.SoundLikeRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
@@ -19,30 +20,28 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-public class LikeAlbumRepositoryIT extends AbstractIntegrationTest {
+public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Autowired
-    private LikeAlbumRepository repository;
+    private SoundLikeRepository repository;
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Test
     void deleteByUserIdAndAlbumId_ShouldDeleteRecord(){
-        // Регистрация объектов в текущем контексте управления сущностями
         User user = entityManager.persistAndFlush(UserDataFactoryIT.user());
         Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
         Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        LikeAlbum likeAlbum = entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album));
+        Sound sound = entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
+        SoundLike soundLike = entityManager.persistAndFlush(MusicFactoryIT.soundLike(user, sound));
         entityManager.clear();
 
-        // Вызов тестируемого метода репозитория
-        repository.deleteByUserIdAndAlbumId(user.getId(), album.getId());
+        repository.deleteByUserIdAndSoundId(user.getId(), sound.getId());
         entityManager.flush();
         entityManager.clear();
 
-        // Сравнение ожидаемого результата с реальным поведением
-        LikeAlbum foundEntity = entityManager.find(LikeAlbum.class, likeAlbum.getId());
+        SoundLike foundEntity = entityManager.find(SoundLike.class, soundLike.getId());
         assertThat(foundEntity).isNull();
     }
 
@@ -51,16 +50,15 @@ public class LikeAlbumRepositoryIT extends AbstractIntegrationTest {
         User user = entityManager.persistAndFlush(UserDataFactoryIT.user());
         Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
         Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Album album2 = entityManager.persistAndFlush(MusicFactoryIT.album2(artist));
-        Album album3 = entityManager.persistAndFlush(MusicFactoryIT.album3(artist));
-
-        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album3));
-        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album));
-        entityManager.persistAndFlush(MusicFactoryIT.likeAlbum(user, album2));
+        List<Sound> soundList = MusicFactoryIT.soundList(artist, album);
+        soundList.forEach(sound -> entityManager.persistAndFlush(sound));
+        entityManager.persistAndFlush(MusicFactoryIT.soundLike(user, soundList.get(2)));
+        entityManager.persistAndFlush(MusicFactoryIT.soundLike(user, soundList.get(0)));
+        entityManager.persistAndFlush(MusicFactoryIT.soundLike(user, soundList.get(1)));
         entityManager.clear();
 
-        List<LikeAlbum> actualOrder = repository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
-        assertThat(actualOrder).extracting(LikeAlbum::getCreatedAt).isSortedAccordingTo(Comparator.reverseOrder());
+        List<SoundLike> actualOrder = repository.findAllByUserIdOrderByCreatedAtDesc(user.getId());
+        assertThat(actualOrder).extracting(SoundLike::getCreatedAt).isSortedAccordingTo(Comparator.reverseOrder());
     }
 
     @Test

@@ -1,8 +1,8 @@
 package org.musicservice.demo.support.factory.it.music;
 
 import org.musicservice.demo.entity.image.AlbumImage;
-import org.musicservice.demo.entity.like.LikeAlbum;
-import org.musicservice.demo.entity.like.LikeSound;
+import org.musicservice.demo.entity.likes.AlbumLike;
+import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -96,12 +96,12 @@ public class MusicFactoryIT {
         return List.of(sound1, sound2, sound3, sound4, sound5);
     }
 
-    public static LikeAlbum likeAlbum (User user, Album album){
-        return new LikeAlbum(user, album);
+    public static AlbumLike albumLike(User user, Album album){
+        return new AlbumLike(user, album);
     }
 
-    public static LikeSound likeSound (User user, Sound sound){
-        return new LikeSound(user, sound);
+    public static SoundLike soundLike(User user, Sound sound){
+        return new SoundLike(user, sound);
     }
 }
 

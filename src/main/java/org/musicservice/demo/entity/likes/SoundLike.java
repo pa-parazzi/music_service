@@ -1,20 +1,21 @@
-package org.musicservice.demo.entity.like;
+package org.musicservice.demo.entity.likes;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.CreationTimestamp;
-import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
 
 import java.time.Instant;
 
+
 @Entity
-@Table(name = "like_album")
+@Table(name = "sound_like")
 @Getter
 @Setter
-public class LikeAlbum {
+public class SoundLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,18 +26,18 @@ public class LikeAlbum {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "album_id", referencedColumnName = "id")
-    private Album album;
+    @JoinColumn(name = "sound_id", referencedColumnName = "id")
+    private Sound sound;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public LikeAlbum(){}
+    public SoundLike(){}
 
-    public LikeAlbum(User user, Album album) {
+    public SoundLike(User user, Sound sound) {
         this.user = user;
-        this.album = album;
+        this.sound = sound;
     }
 
     @Override
@@ -44,7 +45,7 @@ public class LikeAlbum {
         if (this == o) return true;
         if (o == null) return false;
         if (Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        LikeAlbum that = (LikeAlbum) o;
+        SoundLike that = (SoundLike) o;
         return id != null && id.equals(that.id);
     }
 

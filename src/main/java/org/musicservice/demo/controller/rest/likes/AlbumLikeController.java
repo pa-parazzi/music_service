@@ -1,9 +1,9 @@
-package org.musicservice.demo.controller.rest.like;
+package org.musicservice.demo.controller.rest.likes;
 
-import org.musicservice.demo.dto.like.LikedAlbums;
-import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikedMusicRequest;
-import org.musicservice.demo.service.like.LikeAlbumService;
+import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.UserGetLikesRequest;
+import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
+import org.musicservice.demo.service.likes.AlbumLikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,29 +11,29 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/like_album")
-public class LikeAlbumController {
+public class AlbumLikeController {
 
-    private final LikeAlbumService likeAlbumService;
+    private final AlbumLikeService albumLikeService;
 
     @Autowired
-    public LikeAlbumController(LikeAlbumService likeAlbumService) {
-        this.likeAlbumService = likeAlbumService;
+    public AlbumLikeController(AlbumLikeService albumLikeService) {
+        this.albumLikeService = albumLikeService;
     }
 
     @PostMapping("/get")
     public ResponseEntity<LikedAlbums> getLikes(@RequestBody UserGetLikesRequest request){
-        return ResponseEntity.ok().body(likeAlbumService.getAllLikedAlbums(request));
+        return ResponseEntity.ok().body(albumLikeService.getAllLikedAlbums(request));
     }
 
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> likeAlbum(@RequestBody UserLikedMusicRequest request){
-        likeAlbumService.create(request);
+        albumLikeService.create(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<HttpStatus> dropLike(@RequestBody UserLikedMusicRequest request){
-        likeAlbumService.delete(request);
+        albumLikeService.delete(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

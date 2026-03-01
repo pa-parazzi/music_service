@@ -1,4 +1,4 @@
 package org.musicservice.demo.dto.music.album;
 import java.util.List;
 
-public record CollectionAlbumsResponse(List<AlbumResponse> albums) {}
+public record AlbumListResponse(List<AlbumResponse> albums) {}

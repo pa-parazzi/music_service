@@ -52,7 +52,7 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, images_avatar RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, user_avatar RESTART IDENTITY CASCADE");
     }
 
     @Test

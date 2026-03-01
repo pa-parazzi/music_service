@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.musicservice.demo.entity.user.User;
 
 @Entity
-@Table(name="images_avatar")
+@Table(name="user_avatar")
 @Getter
 @Setter
 public class UserAvatar {

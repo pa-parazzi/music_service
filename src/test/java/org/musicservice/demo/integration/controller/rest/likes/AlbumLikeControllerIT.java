@@ -1,16 +1,15 @@
-package org.musicservice.demo.integration.controller.rest.like;
+package org.musicservice.demo.integration.controller.rest.likes;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.like.LikedAlbumId;
-import org.musicservice.demo.dto.like.LikedAlbums;
-import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikedMusicRequest;
-import org.musicservice.demo.entity.like.LikeAlbum;
+import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.UserGetLikesRequest;
+import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
+import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.repository.like.LikeAlbumRepository;
+import org.musicservice.demo.repository.likes.AlbumLikeRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.user.UserRepository;
@@ -36,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class LikeAlbumControllerIT extends AbstractIntegrationTest {
+public class AlbumLikeControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,11 +52,11 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
     @Autowired
     private AlbumRepository albumRepository;
     @Autowired
-    private LikeAlbumRepository likeAlbumRepository;
+    private AlbumLikeRepository albumLikeRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, like_album RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, album_like RESTART IDENTITY CASCADE");
     }
 
     @Test
@@ -70,12 +69,11 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         Album album2 = albumRepository.save(MusicFactoryIT.album2(artist));
         Album album3 = albumRepository.save(MusicFactoryIT.album3(artist));
-        likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album2));
-        likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album));
-        likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album3));
-
-        List<Long> expectedOrderAlbumIds = likeAlbumRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
-                .stream().map(likeAlbum -> likeAlbum.getAlbum().getId()).toList();
+        AlbumLike albumLike = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album2));
+        AlbumLike albumLike2 = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
+        AlbumLike albumLike3 = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album3));
+        List<Long> orderAlbumIdsList = List.of(albumLike3.getAlbum().getId(), albumLike2.getAlbum().getId(), albumLike.getAlbum().getId());
+        LikedAlbums expectedOrderAlbumIds = new LikedAlbums(orderAlbumIdsList);
 
         MvcResult result = mockMvc.perform(post("/api/like_album/get")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,9 +82,8 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        LikedAlbums resultLikedAlbums = objectMapper.readValue(resultJson, LikedAlbums.class);
-        List<Long> actualOrderAlbumIds = resultLikedAlbums.likedAlbumsIds().stream().map(LikedAlbumId::getAlbumId).toList();
-        assertThat(actualOrderAlbumIds).containsExactlyElementsOf(expectedOrderAlbumIds);
+        LikedAlbums actualOrderAlbumIds = objectMapper.readValue(resultJson, LikedAlbums.class);
+        assertThat(actualOrderAlbumIds.likedAlbumsIds()).containsExactlyElementsOf(expectedOrderAlbumIds.likedAlbumsIds());
     }
 
     @Test
@@ -110,7 +107,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldCreateLikeForAlbumAndReturnStatusIsAccept() throws Exception{
+    void shouldCreateAlbumLikeAndReturnStatusIsAccept() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
@@ -123,19 +120,19 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
 
-        assertThat(likeAlbumRepository.count()).isEqualTo(1);
+        assertThat(albumLikeRepository.count()).isEqualTo(1);
 
-        LikeAlbum likeAlbum = likeAlbumRepository.findAll().getFirst();
-        assertThat(likeAlbum.getAlbum().getId()).isEqualTo(album.getId());
-        assertThat(likeAlbum.getUser().getId()).isEqualTo(user.getId());
+        AlbumLike albumLike = albumLikeRepository.findAll().getFirst();
+        assertThat(albumLike.getAlbum().getId()).isEqualTo(album.getId());
+        assertThat(albumLike.getUser().getId()).isEqualTo(user.getId());
     }
 
     @Test
-    void shouldSuccessDeleteLikeAlbumAndReturnStatusIsAccept() throws Exception{
+    void shouldSuccessDeleteAlbumLikeAndReturnStatusIsAccept() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        LikeAlbum likeAlbum = likeAlbumRepository.save(MusicFactoryIT.likeAlbum(user, album));
+        AlbumLike albumLike = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
         UserLikedMusicRequest likeRequest = new UserLikedMusicRequest(user.getId(), album.getId());
 
         String jsonRequest = objectMapper.writeValueAsString(likeRequest);
@@ -145,7 +142,7 @@ public class LikeAlbumControllerIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
 
-        assertThat(likeAlbumRepository.findById(likeAlbum.getId())).isEmpty();
+        assertThat(albumLikeRepository.findById(albumLike.getId())).isEmpty();
     }
 
 }

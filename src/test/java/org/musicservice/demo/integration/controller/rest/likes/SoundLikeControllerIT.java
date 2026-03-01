@@ -1,18 +1,17 @@
-package org.musicservice.demo.integration.controller.rest.like;
+package org.musicservice.demo.integration.controller.rest.likes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.like.LikedSoundId;
-import org.musicservice.demo.dto.like.LikedSounds;
-import org.musicservice.demo.dto.like.UserGetLikesRequest;
-import org.musicservice.demo.dto.like.UserLikedMusicRequest;
-import org.musicservice.demo.entity.like.LikeSound;
+import org.musicservice.demo.dto.likes.LikedSounds;
+import org.musicservice.demo.dto.likes.UserGetLikesRequest;
+import org.musicservice.demo.dto.likes.UserLikedMusicRequest;
+import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.repository.like.LikeSoundRepository;
+import org.musicservice.demo.repository.likes.SoundLikeRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
@@ -38,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class LikeSoundControllerIT extends AbstractIntegrationTest {
+public class SoundLikeControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -57,11 +56,11 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
     @Autowired
     private SoundRepository soundRepository;
     @Autowired
-    private LikeSoundRepository likeSoundRepository;
+    private SoundLikeRepository soundLikeRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, like_sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, sound_like RESTART IDENTITY CASCADE");
     }
 
     @Test
@@ -72,13 +71,14 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
 
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
-        for (Sound sound : soundList) {
-            likeSoundRepository.save(MusicFactoryIT.likeSound(user, sound));
-        }
-
-        List<Long> expectedOrderSoundIds = likeSoundRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId())
-                .stream().map(likeSound -> likeSound.getSound().getId()).toList();
+        Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album));
+        Sound sound2 = soundRepository.save(MusicFactoryIT.sound(artist, album));
+        Sound sound3 = soundRepository.save(MusicFactoryIT.sound(artist, album));
+        SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound3));
+        SoundLike soundLike2 = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
+        SoundLike soundLike3 = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound2));
+        List<Long> orderSoundIdsList = List.of(soundLike3.getSound().getId(), soundLike2.getSound().getId(), soundLike.getSound().getId());
+        LikedSounds expectedLikedSoundIds = new LikedSounds(orderSoundIdsList);
 
         MvcResult result = mockMvc.perform(post("/api/like_sound/get")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,9 +87,8 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        LikedSounds likedSoundsResult = objectMapper.readValue(jsonResult, LikedSounds.class);
-        List<Long> actualOrderSoundsIds = likedSoundsResult.likedSoundsIds().stream().map(LikedSoundId::getSoundId).toList();
-        assertThat(actualOrderSoundsIds).containsExactlyElementsOf(expectedOrderSoundIds);
+        LikedSounds actualLikedSoundIds = objectMapper.readValue(jsonResult, LikedSounds.class);
+        assertThat(actualLikedSoundIds.likedSoundsIds()).containsExactlyElementsOf(expectedLikedSoundIds.likedSoundsIds());
     }
 
     @Test
@@ -114,7 +113,7 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldCreateLikeSoundAndReturnStatusIsAccept() throws Exception{
+    void shouldCreateSoundLikeAndReturnStatusIsAccept() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
@@ -129,21 +128,21 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isAccepted());
 
-        assertThat(likeSoundRepository.count()).isEqualTo(1);
+        assertThat(soundLikeRepository.count()).isEqualTo(1);
 
-        LikeSound likeSound = likeSoundRepository.findAll().getFirst();
-        assertThat(likeSound.getSound().getId()).isEqualTo(likedSound.getId());
-        assertThat(likeSound.getUser().getId()).isEqualTo(user.getId());
+        SoundLike soundLike = soundLikeRepository.findAll().getFirst();
+        assertThat(soundLike.getSound().getId()).isEqualTo(likedSound.getId());
+        assertThat(soundLike.getUser().getId()).isEqualTo(user.getId());
     }
 
     @Test
-    void shouldDeleteLikeSoundAndReturnStatusIsAccept() throws Exception{
+    void shouldDeleteSoundLikeAndReturnStatusIsAccept() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
         Artist artist = artistRepository.save(MusicFactoryIT.artist());
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
         Sound likedSound = soundList.get(1);
-        LikeSound likeSound = likeSoundRepository.save(MusicFactoryIT.likeSound(user, likedSound));
+        SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, likedSound));
 
         UserLikedMusicRequest userRequest = new UserLikedMusicRequest(user.getId(), likedSound.getId());
         String contentJson = objectMapper.writeValueAsString(userRequest);
@@ -153,6 +152,6 @@ public class LikeSoundControllerIT extends AbstractIntegrationTest {
                         .content(contentJson))
                 .andExpect(status().isAccepted());
 
-        assertThat(likeSoundRepository.findById(likeSound.getId())).isEmpty();
+        assertThat(soundLikeRepository.findById(soundLike.getId())).isEmpty();
     }
 }
