@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.album.AlbumListResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
@@ -29,9 +29,9 @@ public class AlbumService {
         this.albumMapper = albumMapper;
     }
 
-    public AlbumListResponse getAlbumCollectionByUserLikes(LikedAlbums likedAlbums){
-        if(likedAlbums.likedAlbumsIds().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
-        List<Long> orderIds = likedAlbums.likedAlbumsIds(); // порядок элементов сохранен
+    public AlbumListResponse getAlbumCollectionByUserLikes(LikedContentIds likedContentIds){
+        if(likedContentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
+        List<Long> orderIds = likedContentIds.ids(); // порядок элементов сохранен
         List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
         List<AlbumResponse> orderedResponse = orderIds.stream().map(mapById::get).toList();

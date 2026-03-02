@@ -3,7 +3,7 @@ package org.musicservice.demo.integration.controller.rest.likes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -68,15 +68,15 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
         AlbumLike albumLike2 = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
         AlbumLike albumLike3 = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album3));
         List<Long> orderAlbumIdsList = List.of(albumLike3.getAlbum().getId(), albumLike2.getAlbum().getId(), albumLike.getAlbum().getId());
-        LikedAlbums expectedOrderAlbumIds = new LikedAlbums(orderAlbumIdsList);
+        LikedContentIds expectedOrderAlbumIds = new LikedContentIds(orderAlbumIdsList);
 
         MvcResult result = mockMvc.perform(get("/api/liked-albums/get"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        LikedAlbums actualOrderAlbumIds = objectMapper.readValue(resultJson, LikedAlbums.class);
-        assertThat(actualOrderAlbumIds.likedAlbumsIds()).containsExactlyElementsOf(expectedOrderAlbumIds.likedAlbumsIds());
+        LikedContentIds actualOrderAlbumIds = objectMapper.readValue(resultJson, LikedContentIds.class);
+        assertThat(actualOrderAlbumIds.ids()).containsExactlyElementsOf(expectedOrderAlbumIds.ids());
     }
 
     @Test
@@ -89,8 +89,8 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        LikedAlbums resultLikedAlbums = objectMapper.readValue(resultJson, LikedAlbums.class);
-        assertThat(resultLikedAlbums.likedAlbumsIds()).isEmpty();
+        LikedContentIds resultLikedContentIds = objectMapper.readValue(resultJson, LikedContentIds.class);
+        assertThat(resultLikedContentIds.ids()).isEmpty();
     }
 
     @Test

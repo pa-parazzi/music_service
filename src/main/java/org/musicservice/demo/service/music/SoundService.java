@@ -1,6 +1,6 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.likes.LikedSounds;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
@@ -44,9 +44,9 @@ public class SoundService {
         return new TrackListResponse(soundResponseList);
     }
 
-    public TrackListResponse getTrackCollectionByUserLikes(LikedSounds likedSounds){
-        if(likedSounds.likedSoundsIds().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
-        List<Long> soundOrderIds = likedSounds.likedSoundsIds();
+    public TrackListResponse getTrackCollectionByUserLikes(LikedContentIds contentIds){
+        if(contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
+        List<Long> soundOrderIds = contentIds.ids();
         Long[] orderIds = soundOrderIds.toArray(Long[]::new);
         List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
         return new TrackListResponse(response);

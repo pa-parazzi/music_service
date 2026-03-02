@@ -1,11 +1,11 @@
 package org.musicservice.demo.support.factory.unit.user;
 
-import org.musicservice.demo.entity.user.Authority;
-import org.musicservice.demo.dto.image.UserAvatarResponse;
+import org.musicservice.demo.dto.image.ImageResponse;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
+import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -55,7 +55,7 @@ public class UserDataFactory {
         UserMainResponse userResponse = new UserMainResponse();
         userResponse.setId(user.getId());
         userResponse.setUsername(user.getUsername());
-        UserAvatarResponse avatarResponse = new UserAvatarResponse();
+        ImageResponse avatarResponse = new ImageResponse();
         avatarResponse.setKey(user.getUserAvatar().getKey());
         avatarResponse.setUrl(AVATAR_URL);
         userResponse.setAvatar(avatarResponse);

@@ -1,6 +1,6 @@
 package org.musicservice.demo.controller.rest.likes;
 
-import org.musicservice.demo.dto.likes.LikedAlbums;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.annotations.CurrentUser;
 import org.musicservice.demo.service.likes.AlbumLikeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class AlbumLikeController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<LikedAlbums> getLikes(@CurrentUser Long userId){
+    public ResponseEntity<LikedContentIds> getLikes(@CurrentUser Long userId){
         return ResponseEntity.ok().body(albumLikeService.getAllLikedAlbums(userId));
     }
 

@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.likes.LikedAlbums;
-import org.musicservice.demo.dto.likes.LikedSounds;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.album.AlbumListResponse;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.service.music.AlbumService;
@@ -27,13 +26,13 @@ public class MusicCollectionController {
     }
 
     @PostMapping("/tracks")
-    public ResponseEntity<TrackListResponse> viewTrackCollection(@RequestBody LikedSounds likedSounds) {
-        return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(likedSounds));
+    public ResponseEntity<TrackListResponse> viewTrackCollection(@RequestBody LikedContentIds ids) {
+        return ResponseEntity.ok().body(soundService.getTrackCollectionByUserLikes(ids));
     }
 
     @PostMapping("/albums")
-    public ResponseEntity<AlbumListResponse> viewAlbumCollection(@RequestBody LikedAlbums albumsIds) {
-        return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(albumsIds));
+    public ResponseEntity<AlbumListResponse> viewAlbumCollection(@RequestBody LikedContentIds ids) {
+        return ResponseEntity.ok().body(albumService.getAlbumCollectionByUserLikes(ids));
     }
 
 }

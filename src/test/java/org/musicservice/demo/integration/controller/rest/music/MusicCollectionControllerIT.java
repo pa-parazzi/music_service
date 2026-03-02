@@ -3,10 +3,9 @@ package org.musicservice.demo.integration.controller.rest.music;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.likes.LikedAlbums;
-import org.musicservice.demo.dto.likes.LikedSounds;
-import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.album.AlbumListResponse;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TrackListResponse;
 import org.musicservice.demo.entity.music.Album;
@@ -65,7 +64,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         Album album = albumRepository.save(MusicFactoryIT.album(artist));
         List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
         List<Long> orderedSoundIds = List.of(soundList.get(2).getId(), soundList.get(0).getId(), soundList.get(1).getId());
-        LikedSounds likedSounds = new LikedSounds(orderedSoundIds);
+        LikedContentIds likedSounds = new LikedContentIds(orderedSoundIds);
         String jsonContent = objectMapper.writeValueAsString(likedSounds);
 
         MvcResult result = mockMvc.perform(post("/collection/tracks")
@@ -87,8 +86,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist));
         albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));
         List<Long> orderedAlbumIds = List.of(albumList.get(2).getId(), albumList.get(0).getId(), albumList.get(1).getId());
-        LikedAlbums likedAlbums = new LikedAlbums(orderedAlbumIds);
-        String contentJson = objectMapper.writeValueAsString(likedAlbums);
+        LikedContentIds likedContentIds = new LikedContentIds(orderedAlbumIds);
+        String contentJson = objectMapper.writeValueAsString(likedContentIds);
 
         MvcResult result = mockMvc.perform(post("/collection/albums")
                         .content(contentJson)
@@ -105,7 +104,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNoContent_WhenLikedTracksIsEmpty() throws Exception{
-        LikedSounds likedSounds = new LikedSounds(List.of());
+        LikedContentIds likedSounds = new LikedContentIds(List.of());
         String contentJson = objectMapper.writeValueAsString(likedSounds);
 
         MvcResult result = mockMvc.perform(post("/collection/tracks")
@@ -121,8 +120,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNoContent_WhenLikedAlbumsIsEmpty() throws Exception{
-        LikedAlbums likedAlbums = new LikedAlbums(List.of());
-        String contentJson = objectMapper.writeValueAsString(likedAlbums);
+        LikedContentIds likedContentIds = new LikedContentIds(List.of());
+        String contentJson = objectMapper.writeValueAsString(likedContentIds);
 
         MvcResult result = mockMvc.perform(post("/collection/albums")
                         .contentType(MediaType.APPLICATION_JSON)
