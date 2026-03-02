@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
-import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.security.dto.TokenResponse;
 import org.musicservice.demo.security.refreshToken.RefreshTokenService;
 import org.musicservice.demo.security.verificationToken.VerificationTokenService;
@@ -14,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -60,7 +56,7 @@ public class AuthRestController {
     }
 
     @GetMapping("/activate")
-    public ResponseEntity<ResponseToEmailVerification> activate(@RequestParam(required = false, value = "token") String token){
+    public ResponseEntity<String> activate(@RequestParam(required = false, value = "token") String token){
         return ResponseEntity.ok(verificationTokenService.verify(token));
     }
 

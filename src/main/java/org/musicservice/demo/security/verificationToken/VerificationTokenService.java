@@ -1,10 +1,9 @@
 package org.musicservice.demo.security.verificationToken;
 
-import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
-import org.musicservice.demo.exception.auth.VerifyEmailTokenException;
 import org.musicservice.demo.error.auth.VerificationTokenErrorCode;
+import org.musicservice.demo.exception.auth.VerifyEmailTokenException;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.VerifyEmailRequest;
 import org.musicservice.demo.security.properties.VerificationTokenProperties;
@@ -47,7 +46,7 @@ public class VerificationTokenService {
     }
 
     @Transactional
-    public ResponseToEmailVerification verify(String token){
+    public String verify(String token){
         if(token==null) throw new VerifyEmailTokenException(VerificationTokenErrorCode.MISSING);
         VerificationToken verificationToken = findByToken(token);
         if(isExpired(verificationToken)){
@@ -57,7 +56,7 @@ public class VerificationTokenService {
         Long userId = verificationToken.getUser().getId();
         userRepository.enableUser(userId);
         verificationTokenRepository.delete(verificationToken);
-        return new ResponseToEmailVerification("Ваш аккаунт активирован!");
+        return "Ваш аккаунт активирован!";
     }
 
     private boolean isExpired(VerificationToken verificationToken){

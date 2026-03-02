@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
-import org.musicservice.demo.dto.user.ResponseToEmailVerification;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.auth.VerificationToken;
 import org.musicservice.demo.entity.user.User;
@@ -413,9 +412,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         assertThat(verificationTokenRepository.findByToken(token)).isEmpty();
 
-        String resultJson = result.getResponse().getContentAsString();
-        ResponseToEmailVerification response = objectMapper.readValue(resultJson, ResponseToEmailVerification.class);
-        assertThat(response.message()).isNotBlank();
+        String response = result.getResponse().getContentAsString();
+        assertThat(response).isNotBlank();
     }
 
     @Test
