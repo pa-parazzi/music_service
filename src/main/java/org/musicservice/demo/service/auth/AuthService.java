@@ -59,7 +59,7 @@ public class AuthService {
         registrationValidator.validateEmail(regRequest.getEmail());
         User newUser = userService.create(regRequest);
         Long userId = newUser.getId();
-        avatarService.createOrGetDefault(file, newUser);
+        avatarService.create(file, newUser);
         verificationTokenService.createToken(new VerifyEmailRequest(userId, newUser.getEmail()));
         refreshTokenService.create(userId, response);
         String accessToken = jwtTokenService.generateToken(new TokenSubject(userId, List.of(newUser.getRole().getAuthority())));

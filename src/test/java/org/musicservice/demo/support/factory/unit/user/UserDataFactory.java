@@ -51,17 +51,6 @@ public class UserDataFactory {
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 
-    public static UserMainResponse userMainResponse(User user){
-        UserMainResponse userResponse = new UserMainResponse();
-        userResponse.setId(user.getId());
-        userResponse.setUsername(user.getUsername());
-        ImageResponse avatarResponse = new ImageResponse();
-        avatarResponse.setKey(user.getUserAvatar().getKey());
-        avatarResponse.setUrl(AVATAR_URL);
-        userResponse.setAvatar(avatarResponse);
-        return userResponse;
-    }
-
     public static RegistrationRequest registrationRequest() {
         RegistrationRequest request = new RegistrationRequest();
         request.setUsername(USERNAME);
@@ -89,20 +78,15 @@ public class UserDataFactory {
         return user;
     }
 
-    public static User userWithAvatar(){
-        User user = new User(
-                USERNAME,
-                PASSWORD,
-                EMAIL,
-                DATE_OF_BIRTH
-        );
-        user.setId(ID);
+    public static UserAvatar userAvatar(User user){
+        return new UserAvatar(user, AVATAR_KEY);
+    }
 
-        UserAvatar avatar = new UserAvatar(user, AVATAR_KEY);
-        avatar.setId(ID);
-        user.setUserAvatar(avatar);
-
-        return user;
+    public static ImageResponse avatarResponse(){
+        ImageResponse response = new ImageResponse();
+        response.setKey(AVATAR_KEY);
+        response.setUrl(AVATAR_URL);
+        return response;
     }
 
     public static User userWithFailedLoginAttemptsZero(){

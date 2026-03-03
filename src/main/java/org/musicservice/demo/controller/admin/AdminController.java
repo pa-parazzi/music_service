@@ -1,11 +1,12 @@
 package org.musicservice.demo.controller.admin;
 
 import org.musicservice.demo.dto.user.UserMainResponse;
+import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.service.uploadData.MusicImportService;
 import org.musicservice.demo.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +25,8 @@ public class AdminController {
     }
 
     @GetMapping("/main")
-    public UserMainResponse mainMenu(Authentication authentication){
-        Long userId = (Long) authentication.getPrincipal();
-        return userService.viewMainResponseById(userId);
+    public UserMainResponse mainMenu(@AuthenticationPrincipal UserPrincipal principal){
+        return userService.mainResponse(principal);
     }
 
     @PostMapping("/upload")

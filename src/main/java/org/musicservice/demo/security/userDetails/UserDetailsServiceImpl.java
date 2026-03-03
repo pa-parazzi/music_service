@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,14 +22,14 @@ public class UserDetailsServiceImpl implements UserDetailsService, UserPrincipal
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = repository.findByUsernameWithAvatar(username).orElseThrow(() ->
+        User user = repository.findByUsername(username).orElseThrow(() ->
                 new UsernameNotFoundException("User with username: " + username + " not found"));
         return UserPrincipalMapper.from(user);
     }
 
     @Override
     public UserPrincipal loadPrincipalById(Long id) {
-        User user = repository.findByIdWithAvatar(id).orElseThrow(()->
+        User user = repository.findById(id).orElseThrow(()->
                 new UserNotFoundException("User with id: " + id + " not found"));
         return UserPrincipalMapper.from(user);
     }

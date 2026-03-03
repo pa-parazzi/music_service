@@ -88,7 +88,7 @@ public class AuthServiceTest {
         verify(registrationValidator).validateUsername(registrationRequest.getUsername());
         verify(registrationValidator).validateEmail(registrationRequest.getEmail());
         verify(userService).create(registrationRequest);
-        verify(avatarService).createOrGetDefault(mockMultipartFile, user);
+        verify(avatarService).create(mockMultipartFile, user);
 
         ArgumentCaptor<VerifyEmailRequest> verifyEmailRequestCaptor = ArgumentCaptor.forClass(VerifyEmailRequest.class);
         verify(verificationTokenService).createToken(verifyEmailRequestCaptor.capture());

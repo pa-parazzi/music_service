@@ -46,9 +46,6 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private Authority role;
 
-    @OneToOne(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
-    private UserAvatar userAvatar;
-
     public User(){}
 
     // Конструктор для регистрации пользователя

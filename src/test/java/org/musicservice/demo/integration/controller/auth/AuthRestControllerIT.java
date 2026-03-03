@@ -9,6 +9,7 @@ import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.entity.auth.RefreshToken;
 import org.musicservice.demo.entity.auth.VerificationToken;
+import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
@@ -16,6 +17,7 @@ import org.musicservice.demo.error.auth.AuthErrorCode;
 import org.musicservice.demo.error.auth.RefreshTokenErrorCode;
 import org.musicservice.demo.error.auth.VerificationTokenErrorCode;
 import org.musicservice.demo.error.user.UniqueFieldErrorCode;
+import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.cookie.CookieProperties;
 import org.musicservice.demo.security.dto.TokenResponse;
@@ -64,6 +66,8 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private UserAvatarRepository userAvatarRepository;
+    @Autowired
     private CookieProperties cookieProperties;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -95,7 +99,6 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
     void shouldRegisterUserWithDefaultAvatarAndReturnAccessToken_WhenMultipartFileFromUserAvatarIsNull() throws Exception{
         RegistrationRequest registrationRequest = UserDataFactoryIT.registrationRequest();
         String userJson = objectMapper.writeValueAsString(registrationRequest);
-        String defaultAvatarKey = yandexStorageProperties.getDefaultAvatarKey();
 
         MockMultipartFile userPart = MultipartFileFactory.userPart(userJson);
 
@@ -113,9 +116,10 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertCookieResponse(cookieResponse);
 
         User user = userRepository.findByUsername(registrationRequest.getUsername()).orElseThrow();
-
         assertRegistrationFieldsUser(registrationRequest, user);
-        assertUserAvatarKey(defaultAvatarKey, user);
+
+        UserAvatar userAvatar = userAvatarRepository.findByUserId(user.getId());
+        assertThat(userAvatar.getKey()).isEqualTo(yandexStorageProperties.getDefaultAvatarKey());
 
         assertActivationEmailSent(user);
     }
@@ -141,7 +145,9 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
 
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         assertRegistrationFieldsUser(request, user);
-        assertThat(user.getUserAvatar().getKey()).isNotEqualTo(yandexStorageProperties.getDefaultAvatarKey());
+
+        UserAvatar userAvatar = userAvatarRepository.findByUserId(user.getId());
+        assertThat(userAvatar.getKey()).isNotEqualTo(yandexStorageProperties.getDefaultAvatarKey());
 
         Cookie cookie = result.getResponse().getCookie(cookieProperties.getRefreshTokenName());
         assertCookieResponse(cookie);
@@ -488,10 +494,6 @@ public class AuthRestControllerIT extends AbstractIntegrationTest {
         assertThat(request.getEmail()).isEqualTo(user.getEmail());
         assertThat(request.getDateOfBirth()).isEqualTo(user.getDateOfBirth());
         assertThat(user.isEnabled()).isFalse();
-    }
-
-    private void assertUserAvatarKey(String expectedKey, User user){
-        assertThat(expectedKey).isEqualTo(user.getUserAvatar().getKey());
     }
 
     private void assertActivationEmailSent(User user){

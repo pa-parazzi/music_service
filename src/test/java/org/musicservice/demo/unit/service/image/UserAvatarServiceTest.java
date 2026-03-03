@@ -50,7 +50,7 @@ public class UserAvatarServiceTest {
         verify(userAvatarRepository).save(avatarCaptor.capture());
         UserAvatar userAvatar = avatarCaptor.getValue();
 
-        assertEquals(user, userAvatar.getOwner());
+        assertEquals(user, userAvatar.getUser());
         assertEquals(avatarKey, userAvatar.getKey());
     }
 
@@ -63,56 +63,6 @@ public class UserAvatarServiceTest {
         assertThrows(UploadObjectStorageException.class, ()-> userAvatarService.create(mockMultipartFile, user));
 
         verifyNoInteractions(userAvatarRepository);
-    }
-
-    @Test
-    void createDefaultAvatar_ShouldCreateDefaultAvatar(){
-        User user = UserDataFactory.user();
-        String avatarKey = "default_avatar";
-        when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(avatarKey);
-
-        userAvatarService.createDefaultAvatar(user);
-
-        ArgumentCaptor<UserAvatar> avatarCaptor = ArgumentCaptor.forClass(UserAvatar.class);
-        verify(userAvatarRepository).save(avatarCaptor.capture());
-        UserAvatar userAvatar = avatarCaptor.getValue();
-
-        assertEquals(user, userAvatar.getOwner());
-        assertEquals(avatarKey, userAvatar.getKey());
-    }
-
-    @Test
-    void createOrGetDefault_ShouldCreateDefaultAvatar_WhenMultipartFileIsNull(){
-        User user = UserDataFactory.user();
-        String defaultKey = "default_avatar";
-        when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(defaultKey);
-
-        userAvatarService.createOrGetDefault(null, user);
-
-        ArgumentCaptor<UserAvatar> avatarCapture = ArgumentCaptor.forClass(UserAvatar.class);
-        verify(userAvatarRepository).save(avatarCapture.capture());
-        UserAvatar userAvatar = avatarCapture.getValue();
-        assertEquals(user, userAvatar.getOwner());
-        assertEquals(defaultKey, userAvatar.getKey());
-
-        verifyNoInteractions(objectStorageService);
-    }
-
-    @Test
-    void createOrGetDefault_ShouldCreateUserAvatar_WhenMultipartFileIsPresent(){
-        User user = UserDataFactory.user();
-        String avatarKey = "new_user_avatar_key";
-        when(objectStorageService.upload(mockMultipartFile)).thenReturn(avatarKey);
-
-        userAvatarService.createOrGetDefault(mockMultipartFile, user);
-
-        verify(objectStorageService).upload(mockMultipartFile);
-
-        ArgumentCaptor<UserAvatar> avatarCapture = ArgumentCaptor.forClass(UserAvatar.class);
-        verify(userAvatarRepository).save(avatarCapture.capture());
-        UserAvatar userAvatar = avatarCapture.getValue();
-        assertEquals(user, userAvatar.getOwner());
-        assertEquals(avatarKey, userAvatar.getKey());
     }
 
 }

@@ -21,12 +21,12 @@ public class UserAvatar {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User owner;
+    private User user;
 
     public UserAvatar(){}
 
-    public UserAvatar(User owner, String key) {
-        this.owner = owner;
+    public UserAvatar(User user, String key) {
+        this.user = user;
         this.key = key;
     }
 

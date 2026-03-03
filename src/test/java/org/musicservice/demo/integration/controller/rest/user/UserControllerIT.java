@@ -58,7 +58,7 @@ public class UserControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        user.setUserAvatar(userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user)));
+        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
         MvcResult result = mockMvc.perform(get("/user/profile")
@@ -70,14 +70,13 @@ public class UserControllerIT extends AbstractIntegrationTest {
         UserMainResponse response = objectMapper.readValue(resultJson, UserMainResponse.class);
         assertThat(response.getId()).isEqualTo(user.getId());
         assertThat(response.getUsername()).isEqualTo(user.getUsername());
-        assertThat(response.getAvatar().getKey()).isEqualTo(user.getUserAvatar().getKey());
+        assertThat(response.getAvatar().getKey()).isEqualTo(userAvatar.getKey());
     }
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
-        user.setUserAvatar(userAvatar);
+        userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
 
         MvcResult result = mockMvc.perform(get("/user/profile"))
                 .andExpect(status().isUnauthorized())
@@ -91,8 +90,7 @@ public class UserControllerIT extends AbstractIntegrationTest {
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
-        user.setUserAvatar(userAvatar);
+        userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
         MvcResult result = mockMvc.perform(get("/user/profile")
