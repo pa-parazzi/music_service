@@ -29,6 +29,9 @@ public class S3UploadImageService implements ObjectStorageService {
 
     @Override
     public String upload(MultipartFile file) {
+        if(file == null){
+            return yandexStorageProperties.getDefaultAvatarKey();
+        }
         String key = "avatar/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         try (InputStream inputStream = file.getInputStream()) {
             // Загружаем файл в бакет
