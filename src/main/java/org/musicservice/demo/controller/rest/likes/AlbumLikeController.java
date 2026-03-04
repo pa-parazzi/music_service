@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.rest.likes;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
-import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.service.likes.AlbumLikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,20 +19,20 @@ public class AlbumLikeController {
         this.albumLikeService = albumLikeService;
     }
 
-    @GetMapping("/get")
-    public ResponseEntity<LikedContentIds> getLikes(@AuthenticationPrincipal UserPrincipal principal){
-        return ResponseEntity.ok().body(albumLikeService.getAllLikedAlbums(principal.userId()));
+    @GetMapping
+    public ResponseEntity<LikedContentIds> getLikes(@AuthenticationPrincipal Long userId){
+        return ResponseEntity.ok().body(albumLikeService.getAllLikedAlbums(userId));
     }
 
     @PostMapping("/{albumId}")
-    public ResponseEntity<Void> likeAlbum(@AuthenticationPrincipal UserPrincipal principal, @PathVariable ("albumId") Long albumId){
-        albumLikeService.create(principal.userId(), albumId);
+    public ResponseEntity<Void> likeAlbum(@AuthenticationPrincipal Long userId, @PathVariable ("albumId") Long albumId){
+        albumLikeService.create(userId, albumId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("/{albumId}")
-    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal UserPrincipal principal, @PathVariable ("albumId") Long albumId){
-        albumLikeService.delete(principal.userId(), albumId);
+    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("albumId") Long albumId){
+        albumLikeService.delete(userId, albumId);
         return ResponseEntity.noContent().build();
     }
 }

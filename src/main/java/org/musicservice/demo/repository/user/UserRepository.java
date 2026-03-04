@@ -13,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
 
+    @Query("select u.username from User u where u.id=:id")
+    Optional<String> getUsernameById(Long id);
+
     @Modifying
     @Query("update User u set u.enabled=true where u.id=:id")
     void enableUser(Long id);

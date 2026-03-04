@@ -11,13 +11,15 @@ import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.user.UserNotFoundException;
 import org.musicservice.demo.mapper.image.UserAvatarMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.musicservice.demo.service.user.UserService;
 import org.musicservice.demo.support.factory.unit.user.UserDataFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +42,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
-    void createUserTest_ReturnValidUser(){
+    void createUser_ReturnValidUser(){
         RegistrationRequest registrationRequest = UserDataFactory.registrationRequest();
         String encodingPassword = "encoded";
 
@@ -60,19 +62,27 @@ public class UserServiceTest {
     }
 
     @Test
-    void mainResponseTest_ReturnValidResponse(){
+    void mainResponse_ReturnValidResponse(){
         User user = UserDataFactory.user();
-        UserPrincipal principal = UserDataFactory.principal();
+        Long userId = user.getId();
+        String username = user.getUsername();
         UserAvatar userAvatar = UserDataFactory.userAvatar(user);
         ImageResponse expectedAvatarResponse = UserDataFactory.avatarResponse();
-        when(userAvatarRepository.findByUserId(principal.userId())).thenReturn(userAvatar);
-        when(userAvatarMapper.convertToDto(any(UserAvatar.class))).thenReturn(expectedAvatarResponse);
+        when(userRepository.getUsernameById(userId)).thenReturn(Optional.of(username));
+        when(userAvatarRepository.findByUserId(userId)).thenReturn(userAvatar);
+        when(userAvatarMapper.convertToDto(userAvatar)).thenReturn(expectedAvatarResponse);
 
-        UserMainResponse result = userService.mainResponse(principal);
-        assertEquals(principal.userId(), result.getId());
-        assertEquals(principal.username(), result.getUsername());
+        UserMainResponse result = userService.mainResponse(userId);
+        assertEquals(username, result.getUsername());
         assertEquals(result.getAvatar().getKey(), expectedAvatarResponse.getKey());
         assertEquals(result.getAvatar().getUrl(), expectedAvatarResponse.getUrl());
+    }
+
+    @Test
+    void mainResponse_ThrowUserNotFoundException_WhenUsernameIsEmpty(){
+        when(userRepository.getUsernameById(any(Long.class))).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.mainResponse(any(Long.class)));
     }
 
 }

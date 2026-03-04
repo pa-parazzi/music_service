@@ -1,7 +1,6 @@
 package org.musicservice.demo.integration.repository.user;
 
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
@@ -9,6 +8,8 @@ import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,6 +49,25 @@ public class UserRepositoryIT extends AbstractIntegrationTest {
 
         User actual = entityManager.find(User.class, user.getId());
         assertThat(actual.isEnabled()).isFalse();
+    }
+
+    @Test
+    void getUsernameById_ShouldReturnsValidUsername(){
+        User user = entityManager.persistAndFlush(UserDataFactoryIT.user());
+        entityManager.clear();
+
+        Optional<String> actualUsername = repository.getUsernameById(user.getId());
+        assertThat(actualUsername).isNotEmpty();
+        assertThat(actualUsername.get()).isEqualTo(user.getUsername());
+    }
+
+    @Test
+    void getUsernameById_ShouldReturnEmpty_WhenIdIncorrect(){
+        entityManager.persistAndFlush(UserDataFactoryIT.user());
+        entityManager.clear();
+
+        Optional<String> actualUsername = repository.getUsernameById(2654L);
+        assertThat(actualUsername).isEmpty();
     }
 
 }

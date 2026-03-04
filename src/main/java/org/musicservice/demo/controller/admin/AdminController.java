@@ -25,8 +25,8 @@ public class AdminController {
     }
 
     @GetMapping("/main")
-    public UserMainResponse mainMenu(@AuthenticationPrincipal UserPrincipal principal){
-        return userService.mainResponse(principal);
+    public UserMainResponse mainMenu(@AuthenticationPrincipal Long userId){
+        return userService.mainResponse(userId);
     }
 
     @PostMapping("/upload")

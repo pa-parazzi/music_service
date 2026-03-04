@@ -12,8 +12,4 @@ import java.lang.annotation.Target;
 @WithSecurityContext(factory = WithMockUserPrincipalSecurityContextFactory.class)
 public @interface WithMockUserPrincipal {
     long userId() default 1L;
-    String username() default "username";
-    String password() default "defaultPassword";
-    boolean accountNonLocked() default true;
-    boolean accountEnabled() default true;
 }

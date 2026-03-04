@@ -4,14 +4,18 @@ import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.user.UserNotFoundException;
 import org.musicservice.demo.mapper.image.UserAvatarMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,13 +41,16 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public UserMainResponse mainResponse(UserPrincipal principal){
+    public UserMainResponse mainResponse(Long userId){
         UserMainResponse userResponse = new UserMainResponse();
-        userResponse.setId(principal.userId());
-        userResponse.setUsername(principal.username());
-        UserAvatar userAvatar = userAvatarRepository.findByUserId(principal.userId());
+        userResponse.setUsername(getUsernameById(userId));
+        UserAvatar userAvatar = userAvatarRepository.findByUserId(userId);
         userResponse.setAvatar(userAvatarMapper.convertToDto(userAvatar));
         return userResponse;
+    }
+
+    public String getUsernameById(Long userId){
+        return userRepository.getUsernameById(userId).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 
 }

@@ -68,7 +68,6 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
         String resultJson = result.getResponse().getContentAsString();
         UserMainResponse response = objectMapper.readValue(resultJson, UserMainResponse.class);
-        assertThat(response.getId()).isEqualTo(user.getId());
         assertThat(response.getUsername()).isEqualTo(user.getUsername());
         assertThat(response.getAvatar().getKey()).isEqualTo(userAvatar.getKey());
     }

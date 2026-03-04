@@ -20,20 +20,20 @@ public class SoundLikeController {
         this.soundLikeService = soundLikeService;
     }
 
-    @GetMapping("/get")
-    public ResponseEntity<LikedContentIds> getSoundLikes(@AuthenticationPrincipal UserPrincipal principal){
-        return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(principal.userId()));
+    @GetMapping
+    public ResponseEntity<LikedContentIds> getSoundLikes(@AuthenticationPrincipal Long userId){
+        return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(userId));
     }
 
     @PostMapping("/{soundId}")
-    public ResponseEntity<Void> likeSound(@AuthenticationPrincipal UserPrincipal principal, @PathVariable ("soundId") Long soundId){
-        soundLikeService.create(principal.userId(), soundId);
+    public ResponseEntity<Void> likeSound(@AuthenticationPrincipal Long userId, @PathVariable ("soundId") Long soundId){
+        soundLikeService.create(userId, soundId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @DeleteMapping("/{soundId}")
-    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal UserPrincipal principal, @PathVariable ("soundId") Long soundId){
-        soundLikeService.delete(principal.userId(), soundId);
+    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("soundId") Long soundId){
+        soundLikeService.delete(userId, soundId);
         return ResponseEntity.noContent().build();
     }
 }
