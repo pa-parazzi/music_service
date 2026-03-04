@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TrackListResponse;
+import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -66,7 +66,7 @@ public class SoundControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        TrackListResponse response = objectMapper.readValue(resultJson, TrackListResponse.class);
+        TracksResponse response = objectMapper.readValue(resultJson, TracksResponse.class);
         List<SoundResponse> soundResponseList = response.soundList();
         soundResponseList.forEach(soundResponse -> assertSoundResponse(soundResponse, soundByIdMap.get(soundResponse.getId())));
     }
@@ -83,7 +83,7 @@ public class SoundControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        TrackListResponse actualResponse = objectMapper.readValue(resultJson, TrackListResponse.class);
+        TracksResponse actualResponse = objectMapper.readValue(resultJson, TracksResponse.class);
         List<SoundResponse> soundResponseList = actualResponse.soundList();
         soundResponseList.forEach(soundResponse -> assertSoundResponse(soundResponse, soundByIdMap.get(soundResponse.getId())));
     }

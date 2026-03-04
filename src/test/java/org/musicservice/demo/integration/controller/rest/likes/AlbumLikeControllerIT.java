@@ -70,7 +70,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
         List<Long> orderAlbumIdsList = List.of(albumLike3.getAlbum().getId(), albumLike2.getAlbum().getId(), albumLike.getAlbum().getId());
         LikedContentIds expectedOrderAlbumIds = new LikedContentIds(orderAlbumIdsList);
 
-        MvcResult result = mockMvc.perform(get("/api/liked-albums/get"))
+        MvcResult result = mockMvc.perform(get("/api/liked-albums"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -84,7 +84,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     void shouldReturnStatusIsOkAndResultIsEmpty_WhenUserDoesNotHaveLikedAlbums() throws Exception{
         userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
 
-        MvcResult result = mockMvc.perform(get("/api/liked-albums/get"))
+        MvcResult result = mockMvc.perform(get("/api/liked-albums"))
                 .andExpect(status().isOk())
                 .andReturn();
 

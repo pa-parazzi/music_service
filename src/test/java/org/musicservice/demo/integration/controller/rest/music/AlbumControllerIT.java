@@ -3,7 +3,7 @@ package org.musicservice.demo.integration.controller.rest.music;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.music.album.AlbumListResponse;
+import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -69,7 +69,7 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        AlbumListResponse response = objectMapper.readValue(jsonResult, AlbumListResponse.class);
+        AlbumsResponse response = objectMapper.readValue(jsonResult, AlbumsResponse.class);
         List<AlbumResponse> albumResponseList = response.albums();
         albumResponseList.forEach(albumResponse -> assertAlbumResponse(albumResponse, albumsByIdMap.get(albumResponse.getAlbumId())));
     }

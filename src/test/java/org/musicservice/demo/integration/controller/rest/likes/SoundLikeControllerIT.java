@@ -75,7 +75,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
         List<Long> orderSoundIdsList = List.of(soundLike3.getSound().getId(), soundLike2.getSound().getId(), soundLike.getSound().getId());
         LikedContentIds expectedLikedSoundIds = new LikedContentIds(orderSoundIdsList);
 
-        MvcResult result = mockMvc.perform(get("/api/liked-sounds/get"))
+        MvcResult result = mockMvc.perform(get("/api/liked-sounds"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -89,7 +89,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     void shouldReturnIsEmptyStatusIsOk_WhenUserDoesNotLikedSounds() throws Exception{
         userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
 
-        MvcResult result = mockMvc.perform(get("/api/liked-sounds/get"))
+        MvcResult result = mockMvc.perform(get("/api/liked-sounds"))
                 .andExpect(status().isOk())
                 .andReturn();
 

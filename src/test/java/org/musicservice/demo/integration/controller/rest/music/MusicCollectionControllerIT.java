@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.likes.LikedContentIds;
-import org.musicservice.demo.dto.music.album.AlbumListResponse;
+import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TrackListResponse;
+import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -74,8 +74,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        TrackListResponse trackListResponse = objectMapper.readValue(jsonResult, TrackListResponse.class);
-        List<SoundResponse> soundListResponse = trackListResponse.soundList();
+        TracksResponse tracksResponse = objectMapper.readValue(jsonResult, TracksResponse.class);
+        List<SoundResponse> soundListResponse = tracksResponse.soundList();
         List<Long> actualSoundsIds = soundListResponse.stream().map(SoundResponse::getId).toList();
         assertThat(actualSoundsIds).containsExactlyElementsOf(orderedSoundIds);
     }
@@ -96,8 +96,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
-        AlbumListResponse albumListResponse = objectMapper.readValue(jsonResult, AlbumListResponse.class);
-        List<AlbumResponse> albums = albumListResponse.albums();
+        AlbumsResponse albumsResponse = objectMapper.readValue(jsonResult, AlbumsResponse.class);
+        List<AlbumResponse> albums = albumsResponse.albums();
         List<Long> actualAlbumIds = albums.stream().map(AlbumResponse::getAlbumId).toList();
         assertThat(actualAlbumIds).containsExactlyElementsOf(orderedAlbumIds);
     }

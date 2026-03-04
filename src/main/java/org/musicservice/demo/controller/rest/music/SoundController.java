@@ -1,6 +1,6 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.sound.TrackListResponse;
+import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +21,12 @@ public class SoundController {
     }
 
     @GetMapping("/album/{id}")
-    public ResponseEntity<TrackListResponse> getTracksByAlbum(@PathVariable("id") Long id){
+    public ResponseEntity<TracksResponse> getTracksByAlbum(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(soundService.getSoundListByAlbumId(id));
     }
 
     @GetMapping("/artist/{id}")
-    public ResponseEntity<TrackListResponse> getTracksByArtist(@PathVariable("id") Long id){
+    public ResponseEntity<TracksResponse> getTracksByArtist(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(soundService.getSoundListByArtistId(id));
     }
 }

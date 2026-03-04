@@ -1,7 +1,7 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
-import org.musicservice.demo.dto.music.album.AlbumListResponse;
+import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
@@ -29,18 +29,18 @@ public class AlbumService {
         this.albumMapper = albumMapper;
     }
 
-    public AlbumListResponse getAlbumCollectionByUserLikes(LikedContentIds likedContentIds){
-        if(likedContentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
-        List<Long> orderIds = likedContentIds.ids(); // порядок элементов сохранен
+    public AlbumsResponse getAlbumCollectionByUserLikes(LikedContentIds contentIds){
+        if(contentIds == null || contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
+        List<Long> orderIds = contentIds.ids(); // порядок элементов сохранен
         List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
         Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
         List<AlbumResponse> orderedResponse = orderIds.stream().map(mapById::get).toList();
-        return new AlbumListResponse(orderedResponse);
+        return new AlbumsResponse(orderedResponse);
     }
 
-    public AlbumListResponse getAllAlbumsByMainResponse(){
+    public AlbumsResponse getAllAlbumsByMainResponse(){
         List<AlbumResponse> albumResponseList = albumRepository.findAllForMainPage().stream().map(albumMapper::toAlbumResponse).toList();
-        return new AlbumListResponse(albumResponseList);
+        return new AlbumsResponse(albumResponseList);
     }
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){

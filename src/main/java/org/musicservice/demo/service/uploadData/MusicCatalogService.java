@@ -82,10 +82,6 @@ public class MusicCatalogService {
         sound.setArtist(artist);
         sound.setAlbum(album);
 
-        if(!album.getSoundList().contains(sound)){
-            album.getSoundList().add(sound);
-        }
-
         artistRepository.save(artist);
         albumRepository.save(album);
         albumImageRepository.save(albumImage);

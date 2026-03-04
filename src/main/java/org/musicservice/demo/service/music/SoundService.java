@@ -2,7 +2,7 @@ package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TrackListResponse;
+import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.SoundMapper;
@@ -32,23 +32,23 @@ public class SoundService {
         this.albumRepository = albumRepository;
     }
 
-    public TrackListResponse getSoundListByArtistId(Long artistId){
+    public TracksResponse getSoundListByArtistId(Long artistId){
         if(!artistRepository.existsById(artistId)) throw new MusicNotFoundException("Исполнитель не найден");
         List<SoundResponse> soundResponseList = soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toResponse).toList();
-        return new TrackListResponse(soundResponseList);
+        return new TracksResponse(soundResponseList);
     }
 
-    public TrackListResponse getSoundListByAlbumId(Long albumId){
+    public TracksResponse getSoundListByAlbumId(Long albumId){
         if(!albumRepository.existsById(albumId)) throw new MusicNotFoundException("Альбом не найден");
         List<SoundResponse> soundResponseList =  soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toResponse).toList();
-        return new TrackListResponse(soundResponseList);
+        return new TracksResponse(soundResponseList);
     }
 
-    public TrackListResponse getTrackCollectionByUserLikes(LikedContentIds contentIds){
-        if(contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
+    public TracksResponse getTrackCollectionByUserLikes(LikedContentIds contentIds){
+        if(contentIds == null || contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
         List<Long> soundOrderIds = contentIds.ids();
         Long[] orderIds = soundOrderIds.toArray(Long[]::new);
         List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
-        return new TrackListResponse(response);
+        return new TracksResponse(response);
     }
 }
