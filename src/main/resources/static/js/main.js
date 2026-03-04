@@ -1,6 +1,6 @@
 import{escapeHtml} from "./util.js";
 import{loadAlbums} from "./album/loadAlbums.js";
-import{initAlbums} from "./album/albumContainer.js";
+import{initAlbums} from "./album/initAlbums.js";
 import{playAlbums} from "./audio/playAlbums.js";
 
 const searchResults = document.querySelector(".search-results");

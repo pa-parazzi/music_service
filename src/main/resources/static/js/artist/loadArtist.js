@@ -1,15 +1,16 @@
 import{escapeHtml} from "../util.js";
-import{initSoundListWithLikes} from "../sound/soundListWithLikes.js";
+import{initSounds} from "../sound/initSounds.js";
 import{audioListener} from "../audio/audioListener.js";
+import {loadSoundLikes} from "../sound/loadSoundLikes.js";
 
 const player = document.getElementById('player');
 const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const artistName = document.getElementById('artist-name');
-const trackListContainer = document.getElementById('tracklist');
+const tracksContainer = document.getElementById('tracklist');
 
-export async function loadArtist(user) {
+export async function loadArtist() {
     const id = window.location.pathname.split('/').pop();
 
     const response = await fetch(`/api/artist/${id}`);
@@ -27,16 +28,12 @@ export async function loadArtist(user) {
     const soundListJson = await soundListResponse.json();
     const soundList = soundListJson.soundList;
 
-    if (!user) {
-        console.log("Пользователь не авторизован");
-        return;
-    }
-    const userId = user.id;
+    const likedSounds = await loadSoundLikes();
 
-    await initSoundListWithLikes({
-        trackListContainer: trackListContainer,
+    await initSounds({
+        trackListContainer: tracksContainer,
         soundList: soundList,
-        userId: userId
+        likedSounds: likedSounds
     });
 
     const playerState = {

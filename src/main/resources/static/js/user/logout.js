@@ -1,4 +1,5 @@
 import {apiFetch} from "./api.js";
+import {clearAuth} from "./auth.js";
 
 export async function logout() {
     try {

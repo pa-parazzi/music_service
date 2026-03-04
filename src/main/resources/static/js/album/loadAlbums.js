@@ -1,4 +1,4 @@
-import{initAlbums} from "./albumContainer.js";
+import{initAlbums} from "./initAlbums.js";
 import{playAlbums} from "../audio/playAlbums.js";
 
 const albumsContainer = document.getElementById("albums");
@@ -20,8 +20,6 @@ export async function loadAlbums() {
         const data = await res.json();
 
         const albums = data.albums;
-
-        console.log("Загруженные альбомы:", data);
 
         await initAlbums(albumsContainer, data);
 

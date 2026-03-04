@@ -1,7 +1,9 @@
 import {escapeHtml} from "../util.js"
-import {initSoundListWithLikes} from "../sound/soundListWithLikes.js";
+import {initSounds} from "../sound/initSounds.js";
 import {playTrack} from "../audio/playTrack.js";
 import {audioListener} from "../audio/audioListener.js";
+import {getToken} from "../user/auth.js";
+import {loadSoundLikes} from "../sound/loadSoundLikes.js";
 
 const albumContent = document.getElementById('album-content')
 const player = document.getElementById('player');
@@ -9,7 +11,7 @@ const playBtn = document.getElementById('play-btn');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 
-export async function loadAlbum(user) {
+export async function loadAlbum() {
     const id = window.location.pathname.split('/').pop();
     const response = await fetch(`/api/album/${id}`);
     if (!response.ok) {
@@ -45,16 +47,12 @@ export async function loadAlbum(user) {
     const soundListJson = await soundListResponse.json();
     const soundList = soundListJson.soundList;
 
-    if (!user) {
-        console.log("Пользователь не авторизован");
-        return;
-    }
-    const userId = user.id;
+    const likedSounds = await loadSoundLikes();
 
-    await initSoundListWithLikes({
+    await initSounds({
         trackListContainer: document.getElementById("tracklist"),
         soundList: soundList,
-        userId: userId
+        likedSounds: likedSounds
     });
 
     const playerState = {
@@ -88,21 +86,21 @@ export async function loadAlbum(user) {
         playBtn.textContent = "▶";
     });
 
-    const likedAlbumsIdsResponse = await fetch('/api/liked-albums/get', {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({userId})
+    const jwt = getToken();
+    if(!jwt) return;
+
+    const likedAlbumsIdsResponse = await fetch('/api/liked-albums', {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${jwt}`
+        }
     });
 
     const albumLikeBtn = document.querySelector(".album-like-btn");
 
     if (likedAlbumsIdsResponse.ok) {
         const json = await likedAlbumsIdsResponse.json();
-        const likedAlbumsIdsList = json.likedAlbumsIds;
-
-        const likedAlbums = new Set(
-            likedAlbumsIdsList.map(l => l.albumId)
-        );
+        const likedAlbums = new Set(json.ids);
 
         if (likedAlbums.has(albumId)) {
             albumLikeBtn.classList.add("liked");
@@ -115,24 +113,21 @@ export async function loadAlbum(user) {
 
         e.stopPropagation();
 
-        const likeRequest = {
-            userId: userId,
-            targetId: albumId
-        };
-
         if (albumLikeBtn.classList.contains("liked")) {
-            await fetch('/api/liked-albums/delete', {
+            await fetch(`/api/liked-albums/${albumId}`, {
                 method: "DELETE",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(likeRequest)
+                headers: {
+                    "Authorization": `Bearer ${jwt}`
+                }
             });
             albumLikeBtn.classList.toggle("liked", false);
             albumLikeBtn.textContent = "⊕";
         } else if (!albumLikeBtn.classList.contains("liked")) {
-            await fetch('/api/liked-albums/${albumId}', {
+            await fetch(`/api/liked-albums/${albumId}`, {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(likeRequest)
+                headers: {
+                    "Authorization": `Bearer ${jwt}`
+                }
             });
             albumLikeBtn.classList.toggle("liked", true);
             albumLikeBtn.textContent = "✔";

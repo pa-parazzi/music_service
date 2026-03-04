@@ -18,8 +18,5 @@ export async function initAlbums(albumsContainer, data){
              <div class="artist-name">${escapeHtml(album.artist.name)}</div>
              </a>
         </div>
-     </div>
-        `).join('');
-
-
+     </div>`).join('');
 }

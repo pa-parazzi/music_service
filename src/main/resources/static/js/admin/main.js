@@ -3,5 +3,5 @@ import {upload} from "./upload.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadProfile('/admin/main');
-    upload();
+    await upload();
 });
