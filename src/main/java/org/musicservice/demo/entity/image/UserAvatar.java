@@ -20,7 +20,7 @@ public class UserAvatar {
     private String key;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     public UserAvatar(){}

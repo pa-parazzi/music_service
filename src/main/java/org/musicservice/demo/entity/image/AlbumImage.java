@@ -20,7 +20,7 @@ public class AlbumImage {
     private String key;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "album_id", referencedColumnName = "id")
+    @JoinColumn(name = "album_id")
     private Album album;
 
     public AlbumImage(){}

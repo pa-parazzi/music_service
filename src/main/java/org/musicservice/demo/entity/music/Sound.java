@@ -19,17 +19,17 @@ public class Sound{
     private String title;
 
     @Column(name = "duration")
-    private int duration;
+    private Integer duration;
 
     @Column(name = "s3_key")
     private String key;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id", referencedColumnName = "id")
+    @JoinColumn(name = "artist_id")
     private Artist artist;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "album_id", referencedColumnName = "id")
+    @JoinColumn(name = "album_id")
     private Album album;
 
     public Sound(){}
@@ -40,18 +40,6 @@ public class Sound{
         this.artist = artist;
         this.album = album;
         this.key = key;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Sound other)) return false;
-        return id != null && id.equals(other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 
 }

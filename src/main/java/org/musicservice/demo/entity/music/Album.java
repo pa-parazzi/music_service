@@ -23,13 +23,10 @@ public class Album{
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id", referencedColumnName = "id")
+    @JoinColumn(name = "artist_id")
     private Artist artist;
 
-    @OneToMany(mappedBy = "album")
-    private List<Sound> soundList = new ArrayList<>();
-
-    @OneToOne(mappedBy = "album", orphanRemoval = true)
+    @OneToOne(mappedBy = "album")
     private AlbumImage image;
 
     public Album(){}
@@ -37,17 +34,5 @@ public class Album{
     public Album(String title, Artist artist) {
         this.title = title;
         this.artist = artist;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Album other)) return false;
-        return id != null && id.equals(other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 }
