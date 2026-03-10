@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "sound")
 @Getter
@@ -31,6 +33,13 @@ public class Sound{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id")
     private Album album;
+
+    @Column(name = "release_date")
+    private LocalDate releaseDate;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
 
     public Sound(){}
 
