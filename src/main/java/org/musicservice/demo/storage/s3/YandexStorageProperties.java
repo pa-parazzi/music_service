@@ -1,4 +1,4 @@
-package org.musicservice.demo.service.yandexCloud.properties;
+package org.musicservice.demo.storage.s3;
 
 import lombok.Getter;
 import lombok.Setter;

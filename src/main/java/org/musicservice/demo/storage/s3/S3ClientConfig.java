@@ -1,12 +1,11 @@
-package org.musicservice.demo.service.yandexCloud.s3;
+package org.musicservice.demo.storage.s3;
 
-import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -25,7 +24,7 @@ public class S3ClientConfig {
 
     @Bean
     public S3Client s3Client(){
-        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+        AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(
                 properties.getAccessKey(),
                 properties.getSecretKey()
         );
@@ -33,8 +32,8 @@ public class S3ClientConfig {
         return S3Client.builder()
                 .endpointOverride(URI.create(properties.getEndpoint()))
                 .region(Region.of(properties.getRegion()))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
+                .httpClientBuilder(ApacheHttpClient.builder())
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())

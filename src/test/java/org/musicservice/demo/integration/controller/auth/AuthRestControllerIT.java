@@ -27,7 +27,7 @@ import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 import org.musicservice.demo.security.verificationToken.MailService;
 import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
-import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
+import org.musicservice.demo.storage.s3.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.cookie.CookieDataFactoryIT;
 import org.musicservice.demo.support.factory.it.multipartFile.MultipartFileFactory;

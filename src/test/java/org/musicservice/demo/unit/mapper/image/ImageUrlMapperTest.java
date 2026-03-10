@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.mapper.image.ImageUrlMapper;
-import org.musicservice.demo.service.yandexCloud.properties.YandexStorageProperties;
+import org.musicservice.demo.storage.s3.YandexStorageProperties;
 
 import java.util.Map;
 
