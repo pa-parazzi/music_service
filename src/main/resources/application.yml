@@ -35,3 +35,7 @@ cookie:
   secure: true
   path: /
   same-site: Strict
+
+
+app:
+  metadata-file: D:/tracks.jsonl

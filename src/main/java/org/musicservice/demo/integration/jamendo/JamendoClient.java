@@ -1,7 +1,7 @@
 package org.musicservice.demo.integration.jamendo;
 
-import org.musicservice.demo.dto.jamendo.JamendoResponse;
-import org.musicservice.demo.dto.jamendo.MusicResponse;
+import org.musicservice.demo.integration.jamendo.response.JamendoResponse;
+import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,7 +21,7 @@ public class JamendoClient {
         this.jamendoProperties = jamendoProperties;
     }
 
-    public List<MusicResponse> getMusicData(){
+    public List<MusicResponse> tracksPack(String genreName){
         return Objects.requireNonNull(webClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/tracks/")
@@ -29,6 +29,7 @@ public class JamendoClient {
                                 .queryParam("format", "json")
                                 .queryParam("limit", 200)
                                 .queryParam("imagesize", 600)
+                                .queryParam("tags", genreName)
                                 .build())
                         .retrieve()
                         .bodyToMono(JamendoResponse.class)
