@@ -23,7 +23,7 @@ public class Album{
     @JoinColumn(name = "artist_id")
     private Artist artist;
 
-    @OneToOne(mappedBy = "album", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToOne(mappedBy = "album")
     private AlbumImage image;
 
     public Album(){}
@@ -31,10 +31,5 @@ public class Album{
     public Album(String title, Artist artist) {
         this.title = title;
         this.artist = artist;
-    }
-
-    public void setImage(AlbumImage albumImage){
-        this.image = albumImage;
-        albumImage.setAlbum(this);
     }
 }

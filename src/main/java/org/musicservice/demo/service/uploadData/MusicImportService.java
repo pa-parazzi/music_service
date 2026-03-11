@@ -3,12 +3,15 @@ package org.musicservice.demo.service.uploadData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.musicservice.demo.dto.metadata.TrackMetadata;
+import org.musicservice.demo.entity.music.Genre;
 import org.musicservice.demo.integration.jamendo.JamendoClient;
 import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +23,7 @@ import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Service
@@ -28,6 +32,9 @@ public class MusicImportService {
     private final MusicCatalogService musicCatalogService;
     private final JamendoClient jamendoClient;
     private final ObjectMapper objectMapper;
+
+    private static final Pattern unicodePattern = Pattern.compile("[^\\p{L}0-9]", Pattern.UNICODE_CHARACTER_CLASS);
+    private final Set<String> hashSet = new HashSet<>();
 
     @Value("${app.metadata-file}")
     private String filePath;
@@ -40,60 +47,60 @@ public class MusicImportService {
     }
 
     public void uploadData(String genreName) {
-        List<MusicResponse> responseList = filterByAudiodownload_allowed(jamendoClient.tracksPack(genreName));
+        Genre genre = musicCatalogService.findGenreByName(genreName);
+        List<MusicResponse> responseList = filterMusicResponse(jamendoClient.tracksPack(genreName));
         for (MusicResponse response : responseList) {
             String albumImgKey = generateUploadAlbumImageKey(response);
-            String trackKey = generateUploadMp3Key(response);
+            String mp3Key = generateUploadMp3Key(response);
             response.setAlbumImgKey(albumImgKey);
-            response.setMp3Key(trackKey);
-            musicCatalogService.saveMusicData(response, genreName);
-            appendMetadataInFile(response);
+            response.setMp3Key(mp3Key);
+            TrackMetadata trackMetadata = musicCatalogService.saveMusicData(response, genre);
+            if(trackMetadata!=null){
+                appendMetadataInFile(trackMetadata);
+            }
         }
     }
 
-    private List<MusicResponse> filterByAudiodownload_allowed(List<MusicResponse> responseList){
-        return responseList.stream().filter(response -> response.getAudiodownload_allowed() == true).toList();
+    private List<MusicResponse> filterMusicResponse(List<MusicResponse> responseList){
+        return responseList.stream()
+                .filter(response -> response.getAudiodownload_allowed() == true)
+                .filter(response -> response.getDuration() > 0)
+                .toList();
     }
 
     private String generateUploadAlbumImageKey(MusicResponse response){
-        return "albums/" + Normalizer.normalize(response.getAlbum_name(), Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .replaceAll("[^a-zA-Z0-9]", "_")
-                .replaceAll("_+", "_")
-                .replaceAll("^_+|_+$", "") + ".jpg";
+        return "albums/" + normalize(response.getAlbum_name()) + ".jpg";
     }
 
     private String generateUploadMp3Key(MusicResponse response){
-        return Normalizer.normalize(response.getName(), Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .replaceAll("[^a-zA-Z0-9]", "_")
-                .replaceAll("_+", "_")
-                .replaceAll("^_+|_+$", "") + ".mp3";
+        return normalize(response.getName()) + ".mp3";
     }
 
-    private void appendMetadataInFile(MusicResponse response){
-        if(checkMetadataExist(response)) return;
+    private String normalize(String input){
+        return Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll(unicodePattern.pattern(), "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_+|_+$", "");
+    }
+
+    private void appendMetadataInFile(TrackMetadata trackMetadata){
+        if(hashSet.contains(trackMetadata.audiodownload())) throw new RuntimeException("Запись уже существует в файле");
         try{
             Path path = Paths.get(filePath);
             if(!Files.exists(path.getParent())){
                 Files.createDirectories(path.getParent());
             }
-            TrackMetadata trackMetadata = trackMetadata(response);
             String json = objectMapper.writeValueAsString(trackMetadata);
             Files.writeString(path, json + System.lineSeparator(), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            hashSet.add(trackMetadata.audiodownload());
         } catch (IOException e){
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    private TrackMetadata trackMetadata(MusicResponse response){
-        return new TrackMetadata(response.getName(), response.getAlbum_name(),
-                response.getAlbum_image(), response.getAudiodownload(),
-                response.getMp3Key(), response.getAlbumImgKey());
-    }
-
-    private boolean checkMetadataExist(MusicResponse response){
-        Set<String> hashSet = new HashSet<>();
+    @PostConstruct
+    private void initHashSetAudiodownloadValue(){
         try(Stream<String> lines = Files.lines(Path.of(filePath), StandardCharsets.UTF_8)) {
             lines.forEach(line -> {
                 try {
@@ -106,7 +113,6 @@ public class MusicImportService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return hashSet.contains(response.getAudiodownload());
     }
 
 }

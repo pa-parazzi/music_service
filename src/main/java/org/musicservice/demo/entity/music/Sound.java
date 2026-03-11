@@ -43,12 +43,14 @@ public class Sound{
 
     public Sound(){}
 
-    public Sound(String title, int duration, Artist artist, Album album, String key) {
+    public Sound(String title, Integer duration, Artist artist, Album album, String key, LocalDate releaseDate, Genre genre) {
         this.title = title;
         this.duration = duration;
         this.artist = artist;
         this.album = album;
         this.key = key;
+        this.releaseDate = releaseDate;
+        this.genre = genre;
     }
 
 }
