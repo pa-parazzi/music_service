@@ -1,36 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Исполнитель</title>
+    <title>Жанр</title>
     <link rel="stylesheet" href="/css/headerAndBody.css">
     <link rel="stylesheet" href="/css/audioPlayer.css">
     <link rel="stylesheet" href="/css/userInfo.css">
-    <link rel="stylesheet" href="/css/artist.css">
-    <link rel="stylesheet" href="/css/trackListContainer.css">
-    <link rel="stylesheet" href="/css/trackList.css">
 </head>
+
 <body>
+<input type="checkbox" id="side-checkbox">
 
 <header class="header">
     <div class="header-left">
         <label class="menu-btn" for="side-checkbox" aria-label="Открыть меню">&#9776;</label>
         <a href="/music/main.html" class="logo">&#8962;</a>
-        <h1>Исполнители</h1>
+        <h1>Жанры</h1>
     </div>
+
+    <form id="search-form" class="search-form">
+        <input id="search-input" type="text" name="fragment" placeholder="Введите название альбома">
+        <button id="search-button" type="submit">&#128270;</button>
+    </form>
+
     <nav id="sign-in/up-buttons" class="nav-buttons">
         <a href="/auth/login.html" class="button">Sign in</a>
         <a href="/auth/registration.html" class="button">Sign up</a>
     </nav>
     <div class="userInfo" id="userInfo"></div>
 </header>
-
-<input type="checkbox" id="side-checkbox">
-
-<div class="artist-page">
-    <p class="artist-name" id="artist-name"></p>
-    <div class="tracklist" id="tracklist"></div>
-</div>
 
 <!-- боковая панель -->
 <aside class="side-panel" role="search" aria-label="Боковая панель">
@@ -59,6 +57,8 @@
 <!-- затемнение -->
 <label class="overlay" for="side-checkbox" aria-hidden="true"></label>
 
+<div class="genres" id="genres"></div>
+
 <audio id="player"></audio>
 
 <!-- Кастомный плеер -->
@@ -80,7 +80,7 @@
     </div>
 </div>
 
-<script type="module" src="/js/artist/artistIndex.js"></script>
+<script type="module" src="/js/genre/genre.js"></script>
 <script src="/js/audio/audioPlayer.js"></script>
 
 </body>
