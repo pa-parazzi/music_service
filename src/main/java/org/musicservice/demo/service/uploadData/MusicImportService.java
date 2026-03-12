@@ -3,6 +3,7 @@ package org.musicservice.demo.service.uploadData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.huxhorn.sulky.ulid.ULID;
 import jakarta.annotation.PostConstruct;
 import org.musicservice.demo.dto.metadata.TrackMetadata;
 import org.musicservice.demo.entity.music.Genre;
@@ -11,7 +12,6 @@ import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,11 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Service
@@ -33,7 +31,7 @@ public class MusicImportService {
     private final JamendoClient jamendoClient;
     private final ObjectMapper objectMapper;
 
-    private static final Pattern unicodePattern = Pattern.compile("[^\\p{L}0-9]", Pattern.UNICODE_CHARACTER_CLASS);
+    private static final ULID ulid = new ULID();
     private final Set<String> hashSet = new HashSet<>();
 
     @Value("${app.metadata-file}")
@@ -50,8 +48,8 @@ public class MusicImportService {
         Genre genre = musicCatalogService.findGenreByName(genreName);
         List<MusicResponse> responseList = filterMusicResponse(jamendoClient.tracksPack(genreName));
         for (MusicResponse response : responseList) {
-            String albumImgKey = generateUploadAlbumImageKey(response);
-            String mp3Key = generateUploadMp3Key(response);
+            String albumImgKey = generateUploadAlbumImageKey();
+            String mp3Key = generateUploadMp3Key();
             response.setAlbumImgKey(albumImgKey);
             response.setMp3Key(mp3Key);
             TrackMetadata trackMetadata = musicCatalogService.saveMusicData(response, genre);
@@ -68,20 +66,16 @@ public class MusicImportService {
                 .toList();
     }
 
-    private String generateUploadAlbumImageKey(MusicResponse response){
-        return "albums/" + normalize(response.getAlbum_name()) + ".jpg";
+    private String generateUploadAlbumImageKey(){
+        return "albums/" + generateULID() + ".jpg";
     }
 
-    private String generateUploadMp3Key(MusicResponse response){
-        return normalize(response.getName()) + ".mp3";
+    private String generateUploadMp3Key(){
+        return generateULID() + ".mp3";
     }
 
-    private String normalize(String input){
-        return Normalizer.normalize(input, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .replaceAll(unicodePattern.pattern(), "_")
-                .replaceAll("_+", "_")
-                .replaceAll("^_+|_+$", "");
+    private String generateULID(){
+        return ulid.nextULID();
     }
 
     private void appendMetadataInFile(TrackMetadata trackMetadata){

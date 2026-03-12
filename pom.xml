@@ -83,19 +83,19 @@
             <version>${awssdk.version}</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>software.amazon.awssdk</groupId>-->
-<!--            <artifactId>url-connection-client</artifactId>-->
-<!--            <version>${awssdk.version}</version>-->
-<!--        </dependency>-->
-        <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>1.6.3</version>
             <scope>provided</scope>
         </dependency>
-
+        <!-- Source: https://mvnrepository.com/artifact/de.huxhorn.sulky/de.huxhorn.sulky.ulid
+         ULID generation key -->
+        <dependency>
+            <groupId>de.huxhorn.sulky</groupId>
+            <artifactId>de.huxhorn.sulky.ulid</artifactId>
+            <version>8.3.0</version>
+        </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
