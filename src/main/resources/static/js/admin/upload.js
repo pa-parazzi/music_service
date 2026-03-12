@@ -5,7 +5,7 @@ export async function upload() {
     const statusDiv = document.getElementById("importStatus");
     const genreSelect = document.getElementById('genreSelect');
 
-    const genresResponse = await apiFetch('/api/genres', {
+    const genresResponse = await apiFetch('/api/genre', {
         method: "GET"
     });
 
@@ -15,8 +15,8 @@ export async function upload() {
     genreSelect.innerHTML = "";
     genres.forEach(genre => {
         const option = document.createElement('option');
-        option.value = genre;
-        option.textContent = genre;
+        option.value = genre.name;
+        option.textContent = genre.name;
         genreSelect.appendChild(option);
     });
 
