@@ -18,10 +18,15 @@ public class Artist {
     @Column(name = "name")
     private String name;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
+
     public Artist(){}
 
-    public Artist(String name){
+    public Artist(String name, Genre genre){
         this.name = name;
+        this.genre = genre;
     }
 
 }

@@ -1,5 +1,6 @@
 package org.musicservice.demo.exception.handler;
 
+import org.musicservice.demo.exception.music.GenreDoesNotExistException;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.exception.user.UserNotFoundException;
@@ -34,6 +35,14 @@ public class ApiGlobalHandler {
         HttpStatus status = HttpStatus.NO_CONTENT;
         return ResponseEntity.status(status).body(
                 new ApiErrorResponse(ErrorType.INVALID_MUSIC_CONTENT.name(), e.getMessage(),
+                        status.value(), System.currentTimeMillis(), null));
+    }
+
+    @ExceptionHandler(GenreDoesNotExistException.class)
+    public ResponseEntity<ApiErrorResponse> genreDoesNotExistHandle(GenreDoesNotExistException e){
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(
+                new ApiErrorResponse(ErrorType.MUSIC_GENRE_DOES_NOT_EXIST.name(), e.getMessage(),
                         status.value(), System.currentTimeMillis(), null));
     }
 }

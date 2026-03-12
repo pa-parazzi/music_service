@@ -28,4 +28,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     // Возвращает список всех альбомов по списку их id со связями: Исполнитель, Обложка - для страницы Коллекций альбомов
     @Query("select a from Album a join fetch a.artist join fetch a.image where a.id in :ids")
     List<Album> findAllByIdForCollectionPage(@Param("ids") Iterable<Long> ids);
+
+    @Query("select a from Album a join fetch a.artist join fetch a.image join fetch a.genre where a.genre.id=:genreId")
+    List<Album> findAllByGenreId(@Param("genreId") Long genreId);
 }

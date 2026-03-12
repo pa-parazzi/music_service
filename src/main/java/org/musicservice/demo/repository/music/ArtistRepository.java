@@ -2,6 +2,7 @@ package org.musicservice.demo.repository.music;
 
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.music.Genre;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,5 +17,7 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
     List<ArtistResponse> findAllArtistResponseByNameStartingWith(String fragment);
 
     Optional<ArtistResponse> findArtistResponseById(Long id);
+
+    List<ArtistResponse> findAllArtistResponseByGenreId(Long id);
 
 }

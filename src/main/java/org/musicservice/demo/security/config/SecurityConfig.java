@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**").permitAll()
                         .requestMatchers("/auth/*.html", "/music/*.html", "/admin/*.html").permitAll()
                         .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
-                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**","/collection/**").permitAll()
+                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**","/collection/**", "/genre/**").permitAll()
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

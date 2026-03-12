@@ -1,8 +1,8 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
@@ -22,11 +22,13 @@ public class AlbumService {
 
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
+    private final GenreService genreService;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper) {
+    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper, GenreService genreService) {
         this.albumRepository = albumRepository;
         this.albumMapper = albumMapper;
+        this.genreService = genreService;
     }
 
     public AlbumsResponse getAlbumCollectionByUserLikes(LikedContentIds contentIds){
@@ -45,5 +47,11 @@ public class AlbumService {
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){
         return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new MusicNotFoundException("Album with id: " + id + " not found"));
+    }
+
+    public AlbumsResponse findAllAlbumsByGenreId(Long genreId){
+        genreService.checkExistById(genreId);
+        List<AlbumResponse> albumResponseList = albumRepository.findAllByGenreId(genreId).stream().map(albumMapper::toAlbumResponse).toList();
+        return new AlbumsResponse(albumResponseList);
     }
 }

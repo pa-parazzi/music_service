@@ -26,10 +26,15 @@ public class Album{
     @OneToOne(mappedBy = "album")
     private AlbumImage image;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
+
     public Album(){}
 
-    public Album(String title, Artist artist) {
+    public Album(String title, Artist artist, Genre genre) {
         this.title = title;
         this.artist = artist;
+        this.genre = genre;
     }
 }

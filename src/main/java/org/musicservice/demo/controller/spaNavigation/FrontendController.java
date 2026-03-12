@@ -26,4 +26,14 @@ public class FrontendController {
         return "forward:/music/collectionAlbums.html";
     }
 
+    @GetMapping("/genre")
+    public String genre(){
+        return "forward:/music/genre.html";
+    }
+
+    @GetMapping("/genre/{id}")
+    public String genreIndex(){
+        return "forward:/music/genreIndex.html";
+    }
+
 }
