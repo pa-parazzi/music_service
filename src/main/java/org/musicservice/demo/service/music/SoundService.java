@@ -1,6 +1,8 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
+import org.musicservice.demo.dto.music.sound.SoundPageProjection;
+import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
@@ -50,5 +52,10 @@ public class SoundService {
         Long[] orderIds = soundOrderIds.toArray(Long[]::new);
         List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
         return new TracksResponse(response);
+    }
+
+    public SoundPageResponse viewById(Long id) {
+        SoundPageProjection soundPageProjection = soundRepository.findByIdForSoundPage(id).orElseThrow(()-> new MusicNotFoundException("Песня не найдена"));
+        return soundMapper.toPageResponse(soundPageProjection);
     }
 }

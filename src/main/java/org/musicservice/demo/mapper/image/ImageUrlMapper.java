@@ -16,7 +16,7 @@ public class ImageUrlMapper {
         this.yandexStorageProperties = yandexStorageProperties;
     }
 
-    @Named("mapUrl")
+    @Named("mapImgUrl")
     public String mapUrl(String key){
         return S3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("img"), key);
     }

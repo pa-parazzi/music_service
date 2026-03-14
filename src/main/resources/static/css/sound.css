@@ -1,0 +1,184 @@
+/* общий контейнер */
+.sound-container {
+    min-height: calc(100vh - 180px);
+    background: linear-gradient(180deg,
+    #46466a 0%,
+    #292929 60%,
+    #181818 100%);
+    padding: 35px 45px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+
+    color: white;
+}
+
+/* блок верхней информации */
+.sound-meta-data {
+    margin-left: 50px;
+}
+
+/* надпись "Трек" */
+.track-title-head {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+}
+
+/* строка названия + кнопок */
+.sound-title-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* название трека */
+.sound-title {
+    font-size: 42px;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Контейнер для кнопок*/
+.sound-buttons-row{
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-top: 16px;
+}
+
+/* Кнопки play и like */
+.play-sound-btn{
+    width: 56px;
+    height: 56px;
+    font-size: 30px;
+    font-weight: 700;
+    background: #aa9f68;
+    color: black;
+}
+
+.like-btn{
+    width: 40px;
+    height: 40px;
+    font-size: 35px;
+    font-weight: 1000;
+}
+
+.play-sound-btn,
+.like-btn {
+    border-radius: 50%;
+    border: none;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.like-btn.liked{
+    background: #aa9f68;
+    color: black;
+}
+
+.like-btn:not(.liked){
+    background: #7e7c78;
+    color: black;
+}
+
+.play-sound-btn:hover,
+.like-btn:hover{
+    transform: scale(1.03);
+}
+
+.like-btn::before {
+    content: "+";
+}
+
+.like-btn.liked::before {
+    content: "✔";
+}
+
+/* строка информации */
+.track-info {
+    display: flex;
+    gap: 30px;
+
+    margin-top: 16px;
+
+    font-size: 14px;
+    opacity: 0.75;
+}
+
+/* нижний блок с карточками */
+.additional-sound-info {
+    display: flex;
+    align-items: flex-start;
+    margin-left: 50px;
+    gap: 30px;
+}
+
+/* карточка исполнителя */
+.artist-card {
+    width: 280px;
+}
+
+.artist-card h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.artist-name-link {
+    font-size: 25px;
+    text-decoration: none;
+    color: white;
+}
+
+.artist-name-link:hover,
+.album-title-link:hover{
+    text-decoration: underline;
+}
+
+/* карточка альбома */
+.album-card {
+    width: 180px;
+}
+
+.album-card h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+/* контейнер обложки */
+.cover-wrapper {
+    width: 180px;
+    height: 180px;
+
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.album-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* название альбома */
+.album-meta {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.album-title {
+    text-align: center;
+}
+
+.album-title-link {
+    text-decoration: none;
+    color: white;
+}

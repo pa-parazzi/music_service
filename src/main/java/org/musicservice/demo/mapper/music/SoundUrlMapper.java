@@ -16,7 +16,7 @@ public class SoundUrlMapper {
         this.yandexStorageProperties = yandexStorageProperties;
     }
 
-    @Named("mapUrl")
+    @Named("mapMp3Url")
     public String mapUrl(String key){
         return S3UrlGenerator.generatePublicUrl(yandexStorageProperties.getBuckets().get("music"), key);
     }

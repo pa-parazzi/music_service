@@ -1,4 +1,4 @@
-export function playTrack(soundList, index, playBtn, player){
+export function playTracks(soundList, index, playBtn, player){
     const track = soundList[index];
     player.src = track.url;
     player.play();

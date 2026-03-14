@@ -8,6 +8,6 @@ import org.musicservice.demo.entity.image.AlbumImage;
 @Mapper(componentModel = "spring", uses = {ImageUrlMapper.class})
 public interface AlbumImageMapper {
 
-    @Mapping(target = "url", source = "key", qualifiedByName = "mapUrl")
+    @Mapping(target = "url", source = "key", qualifiedByName = "mapImgUrl")
     ImageResponse convertToDto(AlbumImage albumImage);
 }

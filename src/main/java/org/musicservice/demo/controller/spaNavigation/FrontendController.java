@@ -36,4 +36,8 @@ public class FrontendController {
         return "forward:/music/genreIndex.html";
     }
 
+    @GetMapping("/sound/{id}")
+    public String soundIndex(){
+        return "forward:/music/soundIndex.html";
+    }
 }

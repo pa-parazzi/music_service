@@ -1,5 +1,6 @@
 package org.musicservice.demo.controller.rest.music;
 
+import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,11 @@ public class SoundController {
     @Autowired
     public SoundController(SoundService soundService) {
         this.soundService = soundService;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SoundPageResponse> viewTrack(@PathVariable("id") Long id){
+        return ResponseEntity.ok(soundService.viewById(id));
     }
 
     @GetMapping("/album/{id}")

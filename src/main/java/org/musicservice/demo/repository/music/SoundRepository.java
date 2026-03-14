@@ -1,5 +1,6 @@
 package org.musicservice.demo.repository.music;
 
+import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.entity.music.Sound;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SoundRepository extends JpaRepository<Sound, Long> {
@@ -19,4 +21,13 @@ public interface SoundRepository extends JpaRepository<Sound, Long> {
     List<Sound> findAllByAlbumId(Long albumId);
 
     boolean existsByKey(String key);
+
+    @Query("""
+    select new org.musicservice.demo.dto.music.sound.SoundPageProjection(
+        s.title, s.duration, s.key, s.releaseDate,
+        new org.musicservice.demo.dto.music.artist.ArtistResponse (a.id, a.name),
+        new org.musicservice.demo.dto.music.album.AlbumInfo(al.id, al.title, al.image.key, null))
+        from Sound s join s.artist a join s.album al where s.id=:id
+    """)
+    Optional<SoundPageProjection> findByIdForSoundPage(Long id);
 }

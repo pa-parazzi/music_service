@@ -8,6 +8,6 @@ import org.musicservice.demo.entity.image.UserAvatar;
 @Mapper(componentModel = "spring", uses = {ImageUrlMapper.class})
 public interface UserAvatarMapper {
 
-    @Mapping(target = "url", source = "key", qualifiedByName = "mapUrl")
+    @Mapping(target = "url", source = "key", qualifiedByName = "mapImgUrl")
     ImageResponse convertToDto(UserAvatar userAvatar);
 }
