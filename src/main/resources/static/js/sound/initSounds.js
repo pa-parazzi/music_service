@@ -1,4 +1,4 @@
-import {escapeHtml} from "../util.js";
+import {escapeHtml, formatTime} from "../util.js";
 import {getToken} from "../user/auth.js";
 
 export async function initSounds({trackListContainer, soundList, likedSounds}){
@@ -7,11 +7,13 @@ export async function initSounds({trackListContainer, soundList, likedSounds}){
         <div class="track" id="track" data-index="${i}">
           <div class="track-title">
             <span>${i + 1}</span>
-            <span>${escapeHtml(track.title)}</span>
+              <a href="/sound/${track.id}" class="track-title-link">
+                 <span>${escapeHtml(track.title)}</span>
+              </a>           
           </div>
           <div class="track-right">
-          <button class="like-btn" id="like-btn" data-track-id="${track.id}">&#8853;</button>
-          <div class="track-duration">${formatTime(Math.floor(track.duration || 0))}</div>
+              <button class="like-btn" data-track-id="${track.id}"></button>
+              <div class="track-duration">${formatTime(Math.floor(track.duration || 0))}</div>
           </div>
         </div>
       `).join('');
@@ -23,7 +25,6 @@ export async function initSounds({trackListContainer, soundList, likedSounds}){
         const trackId = Number(btn.dataset.trackId);
         if (likedSoundsIds.has(trackId)) {
             btn.classList.add("liked");
-            btn.textContent = "✔";
         }
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -35,7 +36,6 @@ export async function initSounds({trackListContainer, soundList, likedSounds}){
                     }
                 });
                 btn.classList.toggle("liked", false);
-                btn.textContent = "⊕";
             } else if (!btn.classList.contains("liked")) {
                 await fetch(`/api/liked-sounds/${trackId}`, {
                     method: "POST",
@@ -44,7 +44,6 @@ export async function initSounds({trackListContainer, soundList, likedSounds}){
                     }
                 });
                 btn.classList.toggle("liked", true);
-                btn.textContent = "✔";
             }
         });
     });

@@ -1,7 +1,9 @@
 import {apiFetch} from "../user/api.js";
 import {escapeHtml} from "../util.js";
+import {loadProfile} from "../user/loadProfile.js";
+import {playAlbums} from "../audio/playAlbums.js";
 
-export async function loadGenreData(){
+async function loadGenreContent(){
 
     const genreId = window.location.pathname.split("/").pop();
 
@@ -18,10 +20,21 @@ export async function loadGenreData(){
 
     const genreContainer = document.getElementById('genre-container');
     genreContainer.innerHTML = `
-        <div class="genre-card">
-             <div class="albums-${genreId}"></div>
-             <div class="artists-${genreId}"></div>
-        </div>`;
+        <div class="genre-content">
+          <section class="albums-section">
+            <h2 class="section-title">Альбомы</h2>
+            <div class="albums-row">
+                <div class="albums-${genreId}"></div>
+                <a href="/genre/${genreId}/albums" class="show-all-btn">
+                    Показать все
+                </a>
+            </div>
+          </section>
+          <section class="artists-section">
+            <h2 class="section-title">Исполнители</h2>
+            <div class="artists-container artists-${genreId}"></div>
+          </section>
+    </div>`;
 
 
     const artistsResponse = await apiFetch(`/api/genre/${genreId}/artists`, {
@@ -36,7 +49,7 @@ export async function loadGenreData(){
     });
     const albumsJson = await albumsResponse.json();
     const albums = albumsJson.albums;
-    renderAlbums(genreId, albums);
+    await renderAlbums(genreId, albums);
 
 }
 
@@ -52,17 +65,28 @@ function renderArtists(genreId, artists) {
 
 }
 
-function renderAlbums(genreId, albums) {
+const player = document.getElementById('player');
+const playBtn = document.getElementById('play-btn');
+const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+
+let currentAlbum = null;
+let currentAlbumButton = null;
+let currentTrackIndex = 0;
+let isPlaying = false;
+
+async function renderAlbums(genreId, albums) {
 
     const container = document.querySelector(`.albums-${genreId}`);
 
-    container.innerHTML = albums.map(album => `
-        <div class="album-card">
+    container.innerHTML = albums.slice(0, 7).map(album => `
+    <div class="album-card">
          <div class="cover-wrapper">
              <a href="/album/${album.albumId}" class="album-card-link">
              <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
              </a>
-             <button class="play-album-btn" aria-label="Play ${escapeHtml(album.title)}"></button>
+             <button class="play-album-btn" data-album-id="${album.albumId}"
+              aria-label="Play ${escapeHtml(album.title)}"></button>
         </div>
         <div class="album-meta">
              <a href="/album/${album.albumId}" class="album-title-link">
@@ -72,6 +96,15 @@ function renderAlbums(genreId, albums) {
              <div class="artist-name">${escapeHtml(album.artist.name)}</div>
              </a>
         </div>
-     </div>`).join('');
+    </div>`).join('');
 
+    const playAlbumButtons = document.querySelectorAll('.play-album-btn');
+
+    await playAlbums(albums, player, playBtn, nextBtn, prevBtn, currentAlbum, currentAlbumButton,
+        currentTrackIndex, isPlaying, playAlbumButtons);
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProfile();
+    await loadGenreContent();
+});

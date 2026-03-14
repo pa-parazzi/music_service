@@ -26,13 +26,15 @@
     align-items: center;
     gap: 12px;
     font-size: 1.05em;
-    font-weight: 500;
 }
 
-.track-title span:first-child {
-    width: 24px;
-    text-align: right;
-    opacity: 0.6;
+.track-title-link{
+    color: white;
+    text-decoration: none;
+}
+
+.track-title-link:hover{
+    text-decoration: underline;
 }
 
 /* Контейнер правая часть: длительность, кнопка лайка*/
@@ -50,21 +52,44 @@
     text-align: right;
 }
 
-/* Кнопка лайка */
+/* кнопка скрыта */
 .like-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    font-size: 25px;
+    line-height: 1;
+
     background: none;
     border: none;
-    padding: 0;
-    font-size: 16px;
-    line-height: 1;
+
     color: #b3b3b3;
     cursor: pointer;
-    transition: color 0.2s ease, transform 0.15s ease;
+
+    opacity: 0;
+}
+
+/* показываем при наведении на трек */
+.track:hover .like-btn {
+    opacity: 1;
+}
+
+/* иконки */
+.like-btn::before {
+    content: "+";
+}
+
+.like-btn.liked::before {
+    content: "✔";
 }
 
 .like-btn:hover {
     color: #aa9f68;
-    transform: scale(1.15);
+    transform: scale(1.05);
 }
 
 .like-btn.liked {

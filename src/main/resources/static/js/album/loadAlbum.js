@@ -1,9 +1,10 @@
 import {escapeHtml} from "../util.js"
 import {initSounds} from "../sound/initSounds.js";
-import {playTrack} from "../audio/playTrack.js";
+import {playTracks} from "../audio/playTracks.js";
 import {audioListener} from "../audio/audioListener.js";
 import {getToken} from "../user/auth.js";
 import {loadSoundLikes} from "../sound/loadSoundLikes.js";
+import {loadProfile} from "../user/loadProfile.js";
 
 const albumContent = document.getElementById('album-content')
 const player = document.getElementById('player');
@@ -19,7 +20,6 @@ export async function loadAlbum() {
         return;
     }
     const album = await response.json();
-    const albumId = album.albumId;
 
     albumContent.innerHTML = `
     <div class="album-page">
@@ -36,14 +36,14 @@ export async function loadAlbum() {
             </div>
             <div class="functionalities-of-album">
                 <button class="play-album-btn" id="play-album-btn" aria-label="Play album">▶</button>
-                <button class="album-like-btn" id="album-like-btn">&#8853;</button>
+                <button class="album-like-btn" id="album-like-btn"></button>
             </div>
         </div>
         </div>
         <div class="tracklist" id="tracklist"></div>
     </div>`
 
-    const soundListResponse = await fetch(`/api/sound/album/${albumId}`);
+    const soundListResponse = await fetch(`/api/sound/album/${id}`);
     const soundListJson = await soundListResponse.json();
     const soundList = soundListJson.soundList;
 
@@ -63,10 +63,9 @@ export async function loadAlbum() {
     audioListener(playerState, player, playBtn, nextBtn, prevBtn);
 
     const playAlbumBtn = document.querySelector(".play-album-btn");
-    // Проигрывание альбома
     playAlbumBtn.addEventListener('click', () => {
         if (!player.src) {
-            playerState.currentTrackIndex = playTrack(soundList, 0, playBtn, player);
+            playerState.currentTrackIndex = playTracks(soundList, 0, playBtn, player);
         } else if (player.paused) {
             player.play();
         } else {
@@ -89,48 +88,43 @@ export async function loadAlbum() {
     const jwt = getToken();
     if(!jwt) return;
 
-    const likedAlbumsIdsResponse = await fetch('/api/liked-albums', {
+    const likedAlbumStatusResponse = await fetch(`/api/liked-albums/is-liked/${id}`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${jwt}`
         }
     });
+    const statusLikedAlbum = await likedAlbumStatusResponse.json();
 
     const albumLikeBtn = document.querySelector(".album-like-btn");
 
-    if (likedAlbumsIdsResponse.ok) {
-        const json = await likedAlbumsIdsResponse.json();
-        const likedAlbums = new Set(json.ids);
-
-        if (likedAlbums.has(albumId)) {
-            albumLikeBtn.classList.add("liked");
-            albumLikeBtn.textContent = "✔";
-        }
-
+    if (statusLikedAlbum.status === true) {
+        albumLikeBtn.classList.add("liked");
     }
 
     albumLikeBtn.addEventListener('click', async (e) => {
-
         e.stopPropagation();
-
         if (albumLikeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-albums/${albumId}`, {
+            await fetch(`/api/liked-albums/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${jwt}`
                 }
             });
             albumLikeBtn.classList.toggle("liked", false);
-            albumLikeBtn.textContent = "⊕";
         } else if (!albumLikeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-albums/${albumId}`, {
+            await fetch(`/api/liked-albums/${id}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${jwt}`
                 }
             });
             albumLikeBtn.classList.toggle("liked", true);
-            albumLikeBtn.textContent = "✔";
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProfile();
+    await loadAlbum();
+});

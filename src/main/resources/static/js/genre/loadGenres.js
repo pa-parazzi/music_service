@@ -1,7 +1,8 @@
 import {apiFetch} from "../user/api.js";
 import {escapeHtml} from "../util.js";
+import {loadProfile} from "../user/loadProfile.js";
 
-export async function loadGenres(){
+async function loadGenres(){
 
     const genresResponse = await apiFetch('/api/genre', {
         method: "GET"
@@ -13,7 +14,15 @@ export async function loadGenres(){
     const genresContainer = document.getElementById("genres");
     genresContainer.innerHTML = genres.map((genre) => `
         <div class="genre-card">
-             <a href="/genre/${genre.id}" class="genre-link">${escapeHtml(genre.name)}</a> 
+           <div class="genre-name">${escapeHtml(genre.name)}</div>
+             <a href="/genre/${genre.id}" class="genre-link">
+             <img src="/image/genre/${genre.imageName}" alt="${escapeHtml(genre.name)}" class="genre-cover">
+             </a>
         </div>
-    `);
+    `).join('');
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadProfile();
+    await loadGenres();
+});
