@@ -16,4 +16,6 @@ public interface AlbumLikeRepository extends JpaRepository<AlbumLike, Long> {
     void deleteByUserIdAndAlbumId(Long userId, Long albumId);
 
     List<AlbumLike> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+
+    Boolean existsByUserIdAndAlbumId(Long userId, Long albumId);
 }

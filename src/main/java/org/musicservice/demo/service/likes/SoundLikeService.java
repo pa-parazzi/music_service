@@ -2,6 +2,7 @@ package org.musicservice.demo.service.likes;
 
 import jakarta.persistence.EntityManager;
 import org.musicservice.demo.dto.likes.LikedContentIds;
+import org.musicservice.demo.dto.likes.LikeStatusResponse;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
@@ -42,5 +43,9 @@ public class SoundLikeService {
         List<Long> likedSoundsIdsList = soundLikeRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
                 .stream().map(soundLike -> soundLike.getSound().getId()).toList();
         return new LikedContentIds(likedSoundsIdsList);
+    }
+
+    public LikeStatusResponse findLikedSound(Long userId, Long soundId){
+        return new LikeStatusResponse(soundLikeRepository.existsByUserIdAndSoundId(userId, soundId));
     }
 }

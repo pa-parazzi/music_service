@@ -1,6 +1,7 @@
 package org.musicservice.demo.service.likes;
 
 import jakarta.persistence.EntityManager;
+import org.musicservice.demo.dto.likes.LikeStatusResponse;
 import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
@@ -42,5 +43,9 @@ public class AlbumLikeService {
         List<Long> likedAlbumsIdsList = albumLikeRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
                 .stream().map(albumLike-> albumLike.getAlbum().getId()).toList();
         return new LikedContentIds(likedAlbumsIdsList);
+    }
+
+    public LikeStatusResponse findLikedAlbum(Long userId, Long albumId) {
+        return new LikeStatusResponse(albumLikeRepository.existsByUserIdAndAlbumId(userId, albumId));
     }
 }

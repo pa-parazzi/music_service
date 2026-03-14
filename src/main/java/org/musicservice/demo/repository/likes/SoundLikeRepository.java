@@ -16,4 +16,6 @@ public interface SoundLikeRepository extends JpaRepository<SoundLike, Long> {
     void deleteByUserIdAndSoundId(Long userId, Long soundId);
 
     List<SoundLike> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+
+    boolean existsByUserIdAndSoundId(Long userId, Long soundId);
 }
