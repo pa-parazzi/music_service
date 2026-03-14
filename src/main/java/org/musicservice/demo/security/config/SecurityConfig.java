@@ -37,10 +37,11 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**", "/js/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
                         .requestMatchers("/auth/*.html", "/music/*.html", "/admin/*.html").permitAll()
                         .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
-                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**","/collection/**", "/genre/**").permitAll()
+                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**",
+                                "/collection/**", "/genre/**", "/sound/**").permitAll()
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

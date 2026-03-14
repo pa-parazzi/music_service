@@ -1,4 +1,4 @@
-package org.musicservice.demo.entity.music;
+package org.musicservice.demo.entity.genre;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,6 +18,9 @@ public class Genre {
     @Column(name = "name")
     @Enumerated(value = EnumType.STRING)
     private GenreName name;
+
+    @Column(name = "image_name")
+    private String imageName;
 
     public Genre() {}
 

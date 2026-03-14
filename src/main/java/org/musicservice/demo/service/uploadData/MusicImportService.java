@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.huxhorn.sulky.ulid.ULID;
 import jakarta.annotation.PostConstruct;
 import org.musicservice.demo.dto.metadata.TrackMetadata;
-import org.musicservice.demo.entity.music.Genre;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.integration.jamendo.JamendoClient;
 import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;

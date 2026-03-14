@@ -2,7 +2,7 @@ package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.music.genre.GenreResponse;
 import org.musicservice.demo.dto.music.genre.GenresResponse;
-import org.musicservice.demo.entity.music.Genre;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.exception.music.GenreDoesNotExistException;
 import org.musicservice.demo.repository.music.GenreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class GenreService {
     }
 
     public GenresResponse genresNames(){
-        List<GenreResponse> genresList = genreRepository.findAll().stream().map(genre -> new GenreResponse(genre.getId(), genre.getName().name())).toList();
+        List<GenreResponse> genresList = genreRepository.findAll().stream().map(genre -> new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName())).toList();
         return new GenresResponse(genresList);
     }
 
@@ -33,6 +33,6 @@ public class GenreService {
 
     public GenreResponse findGenreNameById(Long id){
         Genre genre = genreRepository.findById(id).orElseThrow(()-> new GenreDoesNotExistException("Такой жанр не существует"));
-        return new GenreResponse(genre.getId(), genre.getName().name());
+        return new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName());
     }
 }

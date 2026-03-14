@@ -1,7 +1,7 @@
 package org.musicservice.demo.repository.music;
 
-import org.musicservice.demo.entity.music.Genre;
-import org.musicservice.demo.entity.music.GenreName;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package org.musicservice.demo.entity.music;
+package org.musicservice.demo.entity.genre;
 
 public enum GenreName {
     ROCK, POP, ELECTRONIC, JAZZ,

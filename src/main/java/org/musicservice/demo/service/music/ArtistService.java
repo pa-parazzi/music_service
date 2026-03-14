@@ -2,11 +2,8 @@ package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.artist.ArtistsResponse;
-import org.musicservice.demo.entity.music.Genre;
-import org.musicservice.demo.exception.music.GenreDoesNotExistException;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
