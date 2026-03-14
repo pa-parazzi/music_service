@@ -1,6 +1,8 @@
 package org.musicservice.demo.service.uploadData;
 
 import org.musicservice.demo.dto.metadata.TrackMetadata;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.image.AlbumImage;
 import org.musicservice.demo.entity.music.*;
 import org.musicservice.demo.exception.music.GenreDoesNotExistException;
