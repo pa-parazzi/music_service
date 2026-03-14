@@ -1,3 +1,5 @@
+import {formatTime} from "../util.js";
+
 const player = document.getElementById("player");
 const playBtn = document.getElementById("play-btn");
 const progress = document.getElementById("progress");
@@ -7,18 +9,6 @@ const durationEl = document.getElementById("duration");
 
 // Текущее состояние проигрывания
 let isPlaying = false;
-
-// Функция форматирования времени (mm:ss)
-function formatTime(seconds) {
-    if (isNaN(seconds) || seconds === Infinity) return "0:00";
-
-    seconds = Math.floor(seconds); // Убираем дроби
-
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-
-    return `${m}:${String(s).padStart(2, "0")}`;
-}
 
 // Событие загрузки метаданных трека
 player.addEventListener("loadedmetadata", () => {
