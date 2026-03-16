@@ -13,18 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final UserService userService;
     private final MusicImportService musicImportService;
 
     @Autowired
-    public AdminController(UserService userService, MusicImportService musicImportService) {
-        this.userService = userService;
+    public AdminController(MusicImportService musicImportService) {
         this.musicImportService = musicImportService;
-    }
-
-    @GetMapping("/main")
-    public UserMainResponse mainMenu(@AuthenticationPrincipal Long userId){
-        return userService.mainResponse(userId);
     }
 
     @PostMapping("/upload")
