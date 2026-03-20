@@ -1,17 +1,17 @@
-.albums {
-    margin-bottom: 120px;
-    padding-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: center;
-}
-
 .album-card {
     width: 200px;
     text-align: center;
     font-family: sans-serif;
     color: #fff;
+}
+
+.cover-wrapper {
+    cursor: default;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 /* кликабельная карточка альбома */
@@ -25,29 +25,6 @@
 .album-card-link:hover {
     transform: scale(1.02);
     transition: 0.2s;
-}
-
-.album-title-link{
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-/* кликабельное имя артиста */
-.artist-name-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-.cover-wrapper {
-    cursor: default;
-    position: relative;
-    width: 200px;
-    height: 200px;
-    border-radius: 10px;
-    overflow: hidden;
 }
 
 .album-cover {
@@ -83,9 +60,18 @@
 .album-meta {
     margin-top: 6px;
 }
-.album-title {
-    font-weight: bold;
+
+.album-title-link,
+.artist-name-link {
+    color: white;
+    text-decoration: none;
 }
+
+.album-title-link:hover,
+.artist-name-link:hover {
+    text-decoration: underline;
+}
+
 .artist-name {
     font-size: 0.9em;
     opacity: 0.8;

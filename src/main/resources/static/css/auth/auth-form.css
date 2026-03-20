@@ -54,7 +54,7 @@ button:hover {
     border-radius: 5px;
     font-weight: bold;
     margin-top: 10px;
-    display: none; /* скрываем по умолчанию */
+    display: none;
 }
 
 /* Ошибка */

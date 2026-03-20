@@ -1,0 +1,21 @@
+.auth-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.auth-buttons .sign-in-button,
+.auth-buttons .sign-up-button {
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.auth-buttons .sign-in-button:hover,
+.auth-buttons .sign-up-button:hover {
+    background: #fff;
+    color: black;
+}

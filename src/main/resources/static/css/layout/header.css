@@ -1,0 +1,56 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #2b2b3a;
+    color: #fff;
+    padding: 0 20px;
+    height: 60px; /* фиксированная высота */
+    box-sizing: border-box;
+    gap: 10px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* расстояние между кнопкой открытия, заголовком, кнопкой навигации на главную */
+    padding: 0;
+}
+
+.header-left h1 {
+    order: 3;
+    margin: 0;
+    font-size: 25px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 60px;   /* всегда по высоте шапки */
+    height: auto;        /* сбрасываем 80% */
+    display: block;      /* обычный блочный заголовок */
+}
+
+.menu-btn {
+    order: 1;
+    cursor: pointer;
+    font-size: 20px;
+    width: 36px;
+    height: 36px; /* фиксированная высота */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 0; /* убираем влияние внутренних отступов */
+}
+
+.logo {
+    display: flex;
+    order: 2;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+    line-height: 100%;
+    transform: scale(3);
+    color: white;
+}

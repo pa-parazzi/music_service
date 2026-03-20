@@ -1,0 +1,95 @@
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 280px;
+    height: 100vh;
+
+    background: #1e1e1e;
+    color: white;
+
+    transform: translateX(-100%);
+    transition: transform .3s ease;
+
+    z-index: 1000;
+}
+
+.side-panel.open {
+    transform: translateX(0);
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,.5);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity .3s;
+
+    z-index: 900;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* карточка-кнопка */
+.side-panel-btn {
+    width: 98%;
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.side-panel-btn:hover{
+    background: #aa9f68;
+}
+
+.side-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 28px;
+    border-radius: 12px;
+    background: rgb(239 239 239 / 6%);
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    border: none;
+}
+
+.side-close-btn:hover {
+    transform: scale(1.05);
+}
+
+.side-header {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    margin-left: 10px;
+    gap: 38px;
+}
+
+/* Кнопки боковой панели */
+.trackCollection, .albumCollection, .genres {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ссылка-обёртка */
+.trackCollection a,
+.albumCollection a,
+.genres a {
+    text-decoration: none;
+}
