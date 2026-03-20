@@ -8,36 +8,36 @@ public class FrontendController {
 
     @GetMapping("/album/{id}")
     public String album(){
-        return "forward:/music/albumIndex.html";
+        return "forward:/html/pages/album-index.html";
     }
 
     @GetMapping("/artist/{id}")
     public String artist(){
-        return "forward:/music/artistIndex.html";
+        return "forward:/html/pages/artist-index.html";
     }
 
     @GetMapping("/collection/tracks")
     public String collectionTracks(){
-        return "forward:/music/collectionTracks.html";
+        return "forward:/html/pages/collection-tracks.html";
     }
 
     @GetMapping("/collection/albums")
     public String collectionAlbums(){
-        return "forward:/music/collectionAlbums.html";
+        return "forward:/html/pages/collection-albums.html";
     }
 
     @GetMapping("/genre")
     public String genre(){
-        return "forward:/music/genre.html";
+        return "forward:/html/pages/genre.html";
     }
 
     @GetMapping("/genre/{id}")
     public String genreIndex(){
-        return "forward:/music/genreIndex.html";
+        return "forward:/html/pages/genre-index.html";
     }
 
     @GetMapping("/sound/{id}")
     public String soundIndex(){
-        return "forward:/music/soundIndex.html";
+        return "forward:/html/pages/sound-index.html";
     }
 }
