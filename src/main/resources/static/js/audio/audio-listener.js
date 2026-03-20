@@ -1,4 +1,4 @@
-import {playTracks} from "./playTracks.js";
+import {playTracks} from "../module/playTracks.js";
 
 export function audioListener(playerState, player, playBtn, nextBtn, prevBtn){
 

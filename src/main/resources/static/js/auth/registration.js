@@ -90,7 +90,7 @@ form.addEventListener("submit", async (event) => {
         feedback.style.display = "block";
 
         setTimeout(() => {
-            window.location.href = "/music/main.html";
+            window.location.href = "/main";
         }, 500);
 
     } catch (e) {

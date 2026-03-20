@@ -72,7 +72,6 @@ form.addEventListener("submit", async (event) => {
                 default:
                     showGlobalError("Произошла неизвестная ошибка");
             }
-
             return;
         }
 
@@ -83,7 +82,7 @@ form.addEventListener("submit", async (event) => {
         feedback.style.display = "block";
 
         setTimeout(() => {
-            window.location.href = "/music/main.html";
+            window.location.href = "/main";
         }, 1000);
 
     } catch (e) {

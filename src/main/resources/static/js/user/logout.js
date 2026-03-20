@@ -11,7 +11,7 @@ export async function logout() {
         clearAuth();
         if (response.ok) {
             console.log("Выход выполнен успешно");
-            window.location.href = "/music/main.html";
+            window.location.href = "/main";
         } else {
             console.warn("Ошибка при выходе:", response.status);
         }

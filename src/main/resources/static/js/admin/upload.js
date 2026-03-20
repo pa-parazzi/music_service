@@ -42,3 +42,7 @@ export async function upload() {
         }
     });
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await upload();
+});

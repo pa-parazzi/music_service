@@ -2,13 +2,13 @@ import {logout} from "./logout.js";
 import {apiFetch} from "./api.js";
 import {clearAuth} from "./auth.js";
 
-export async function loadProfile(url='/user/profile') {
+export async function loadProfile() {
 
-    const nav = document.getElementById("sign-in/up-buttons");
+    const nav = document.getElementById("auth-buttons");
     const userInfoDiv = document.getElementById("userInfo");
 
     try {
-        const response = await apiFetch(url, {
+        const response = await apiFetch('/user/profile', {
             method: "GET"
         });
 
@@ -58,3 +58,6 @@ export async function loadProfile(url='/user/profile') {
         nav.style.display = "flex";
     }
 }
+document.addEventListener("componentsLoaded", async () => {
+    await loadProfile();
+});
