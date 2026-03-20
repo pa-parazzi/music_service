@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск</title>
+    <link rel="stylesheet" href="/css/base/body.css">
+    <link rel="stylesheet" href="/css/layout/header.css">
+    <link rel="stylesheet" href="/css/layout/sidebar.css">
+    <link rel="stylesheet" href="/css/layout/search-bar.css">
+    <link rel="stylesheet" href="/css/layout/user-info.css">
+    <link rel="stylesheet" href="/css/components/auth-button.css">
+    <link rel="stylesheet" href="/css/components/search-result.css">
+    <link rel="stylesheet" href="/css/components/track.css">
+    <link rel="stylesheet" href="/css/components/albums.css">
+    <link rel="stylesheet" href="/css/layout/audio-player.css">
+</head>
+<body>
+
+<div data-component="header"></div>
+
+<div class="search-results" id="search-results">
+    <h2 class="found-tracks-title" id="found-tracks-title"></h2>
+    <div id="found-tracks" class="found-tracks"></div>
+
+    <h2 class="found-albums-title" id="found-albums-title"></h2>
+    <div id="found-albums" class="found-albums"></div>
+
+    <h2 class="found-artists-title" id="found-artists-title"></h2>
+    <div id="found-artists" class="found-artists"></div>
+
+    <div id="not-found" class="not-found"></div>
+</div>
+
+<div class="search-details" id="search-details"></div>
+
+<div data-component="sidebar"></div>
+
+<div data-component="audio-player"></div>
+
+<script src="/js/loader/componentsLoader.js" defer></script>
+<script type="module" src="/js/audio/audio-player.js"></script>
+<script type="module" src="/js/user/load-profile.js"></script>
+<script type="module" src="/js/pages/search.js"></script>
+</body>
+</html>

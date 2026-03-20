@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="/css/base/body.css">
+    <link rel="stylesheet" href="/css/auth/auth-form.css">
+</head>
+<body>
+
+<div class="form-wrapper">
+    <form id="loginForm">
+        <label for="username">Имя пользователя: </label>
+        <input type="text" name="username" id="username">
+        <div id="usernameError" class="error"></div>
+
+        <label for="password">Пароль: </label>
+        <input type="password" name="password" id="password">
+        <div id="passwordError" class="error"></div>
+
+        <div id="errorMessage" class="message errorMessage"></div>
+        <div id="feedback" class="message successMessage"></div>
+
+        <button type="submit">Войти</button>
+    </form>
+</div>
+
+<script src="/js/auth/login.js"></script>
+
+</body>
+</html>
