@@ -1,4 +1,4 @@
-import {escapeHtml} from "../util.js";
+import {escapeHtml} from "../utils/util.js";
 
 export function renderArtists(container, artists){
     container.innerHTML = artists.map((artist) => `

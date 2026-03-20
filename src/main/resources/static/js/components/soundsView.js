@@ -1,8 +1,8 @@
-import {escapeHtml, formatTime} from "../util.js";
+import {escapeHtml, formatTime} from "../utils/util.js";
 
 export function renderSounds(trackListContainer, soundList){
     trackListContainer.innerHTML = soundList.map((track, i) => `
-        <div class="track" id="track" data-index="${i}">
+        <div class="track-card" data-index="${i}">
           <div class="track-title">
             <span>${i + 1}</span>
               <a href="/sound/${track.id}" class="track-title-link">

@@ -1,4 +1,4 @@
-import {escapeHtml} from "../util.js";
+import {escapeHtml} from "../utils/util.js";
 
 export function renderAlbums(albumsContainer, albums){
     albumsContainer.innerHTML = albums.map((album) => `

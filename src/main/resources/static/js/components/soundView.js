@@ -1,4 +1,4 @@
-import {escapeHtml} from "../util.js";
+import {escapeHtml} from "../utils/util.js";
 
 export function renderSoundDetails(container, sound, trackDuration, artist, album){
     container.innerHTML = `
