@@ -1,5 +1,5 @@
 /* Карточка - трек */
-.track {
+.track-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -9,13 +9,13 @@
 }
 
 /* При наведении */
-.track:hover {
+.track-card:hover {
     background: #2b2b3a;
     cursor: default;
 }
 
 /* Активный трек */
-.track.active {
+.track-card.active {
     background: #4f4f7e;
 }
 
