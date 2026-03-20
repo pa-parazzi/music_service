@@ -1,6 +1,8 @@
 package org.musicservice.demo.repository.music;
 
 import org.musicservice.demo.entity.music.Album;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +16,12 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Optional<Album> findByTitle(String title);
 
-    @Query("select a from Album a join fetch a.artist join fetch a.image where a.title like concat(:title, '%')")
-    List<Album> findAllByTitleStartingWith(@Param("title") String title);
+    @Query("select a from Album a join fetch a.artist join fetch a.image where lower(a.title) like concat(:title, '%')")
+    List<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title);
+
+    @EntityGraph(attributePaths = {"artist", "image"})
+    @Query("select a from Album a where lower(a.title) like concat(:title, '%')")
+    List<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title, Pageable pageable);
 
     // Возвращает список всех альбомов со связями: Исполнитель, Обложка - для главной страницы, где не нужен список песен
     @Query("select a from Album a join fetch a.artist join fetch a.image")
