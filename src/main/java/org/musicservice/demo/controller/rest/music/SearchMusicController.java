@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/search")
+@RequestMapping("/api/search")
 public class SearchMusicController {
 
     private final SearchMusicService searchMusicService;
@@ -17,8 +17,8 @@ public class SearchMusicController {
         this.searchMusicService = searchMusicService;
     }
 
-    @GetMapping
-    public ResponseEntity<SearchMusicResponse> searchStartingWith(@RequestParam (value = "fragment", required = false) String fragment){
+    @GetMapping("/{fragment}")
+    public ResponseEntity<SearchMusicResponse> searchStartingWith(@PathVariable (value = "fragment", required = false) String fragment){
         return ResponseEntity.ok(searchMusicService.searchMusicResult(fragment));
     }
 }
