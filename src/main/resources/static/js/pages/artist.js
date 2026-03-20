@@ -6,11 +6,15 @@ import {getSoundListByArtistId} from "../api/soundApi.js";
 import {getToken} from "../user/auth.js";
 import {renderSounds} from "../components/soundsView.js";
 import {initSoundLikes} from "../module/soundLikes.js";
+import {initSearchForm} from "../module/search.js";
 
 async function initArtistPage() {
     const jwt = getToken();
     const id = window.location.pathname.split('/').pop();
     const artist = await getArtistById(id);
+
+    const searchForm = document.getElementById("search-form");
+    initSearchForm(searchForm);
 
     const player = document.getElementById('player');
     const playBtn = document.getElementById('play-btn');

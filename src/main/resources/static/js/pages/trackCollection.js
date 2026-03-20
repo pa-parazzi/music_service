@@ -5,8 +5,12 @@ import {getToken} from "../user/auth.js";
 import {getSoundCollection} from "../api/soundCollectionApi.js";
 import {renderSounds} from "../components/soundsView.js";
 import {initSoundLikes} from "../module/soundLikes.js";
+import {initSearchForm} from "../module/search.js";
 
 export async function initTrackCollectionPage(){
+    const searchForm = document.getElementById("search-form");
+    initSearchForm(searchForm);
+
     const jwt = getToken();
     const player = document.getElementById('player');
     const playBtn = document.getElementById('play-btn');

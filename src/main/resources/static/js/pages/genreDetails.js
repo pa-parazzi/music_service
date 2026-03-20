@@ -2,10 +2,14 @@ import {apiFetch} from "../user/api.js";
 import {escapeHtml} from "../util.js";
 import {playAlbums} from "../module/playAlbums.js";
 import {initSidebar} from "../module/sidebar.js";
-import {renderGenreDetails} from "../components/genreDetailsView";
+import {renderGenreDetails} from "../components/genreDetailsView.js";
+import {initSearchForm} from "../module/search.js";
 
 //TODO: редактировать содержимое страницы
 async function genreDetails(){
+    const searchForm = document.getElementById("search-form");
+    initSearchForm(searchForm);
+
     const genreId = window.location.pathname.split("/").pop();
 
     const genreContainer = document.getElementById('genre-container');

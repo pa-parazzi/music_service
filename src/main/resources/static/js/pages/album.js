@@ -10,12 +10,16 @@ import {getAlbumLike} from "../api/albumLikeApi.js";
 import {initAlbumLikes} from "../module/albumLikes.js";
 import {renderSounds} from "../components/soundsView.js";
 import {initSoundLikes} from "../module/soundLikes.js";
+import {initSearchForm} from "../module/search.js";
 
 async function initAlbumPage() {
     const id = window.location.pathname.split('/').pop();
 
     const album = await getAlbumById(id);
     const soundList = await getSoundListByAlbumId(id);
+
+    const searchForm = document.getElementById("search-form");
+    initSearchForm(searchForm);
 
     const albumContainer = document.getElementById('album-container');
     renderAlbum(albumContainer, album);

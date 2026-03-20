@@ -6,8 +6,12 @@ import {renderSoundDetails} from "../components/soundView.js";
 import {playSound} from "../module/playSound.js";
 import {getSoundLikeStatusResponseBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
+import {initSearchForm} from "../module/search.js";
 
 async function initSoundPage(){
+    const searchForm = document.getElementById("search-form");
+    initSearchForm(searchForm);
+
     const jwt = getToken();
     const soundId = window.location.pathname.split('/').pop();
 
