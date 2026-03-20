@@ -6,6 +6,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class FrontendController {
 
+    @GetMapping("/main")
+    public String mainPage(){
+        return "forward:/html/pages/main.html";
+    }
+
+    @GetMapping("/search/**")
+    public String search(){
+        return "forward:/html/pages/search.html";
+    }
+
+    @GetMapping("/auth/login")
+    public String login(){
+        return "forward:/html/pages/auth/login.html";
+    }
+
+    @GetMapping("/auth/registration")
+    public String registration(){
+        return "forward:/html/pages/auth/registration.html";
+    }
+
     @GetMapping("/album/{id}")
     public String album(){
         return "forward:/html/pages/album-index.html";
