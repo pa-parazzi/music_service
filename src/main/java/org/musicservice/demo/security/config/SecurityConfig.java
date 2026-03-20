@@ -37,10 +37,9 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
-                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
-                        .requestMatchers("/auth/*.html", "/music/*.html", "/admin/*.html").permitAll()
+                        .requestMatchers("/css/**", "/html/**","/js/**", "/image/**").permitAll()
                         .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
-                        .requestMatchers("/api/**", "/search/**", "/album/**", "/artist/**",
+                        .requestMatchers("/api/**", "/auth/**", "/main", "/search/**", "/album/**", "/artist/**",
                                 "/collection/**", "/genre/**", "/sound/**").permitAll()
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().denyAll())
