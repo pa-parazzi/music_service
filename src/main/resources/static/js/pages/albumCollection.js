@@ -1,4 +1,4 @@
-import {playAlbums} from "../module/playAlbums.js";
+import {playAlbums} from "../module/player.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {getToken} from "../user/auth.js";
 import {initSidebar} from "../module/sidebar.js";
