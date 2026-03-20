@@ -1,41 +1,15 @@
 import {apiFetch} from "../user/api.js";
 import {escapeHtml} from "../util.js";
-import {loadProfile} from "../user/loadProfile.js";
-import {playAlbums} from "../audio/playAlbums.js";
+import {playAlbums} from "../module/playAlbums.js";
+import {initSidebar} from "../module/sidebar.js";
+import {renderGenreDetails} from "../components/genreDetailsView";
 
-async function loadGenreContent(){
-
+//TODO: редактировать содержимое страницы
+async function genreDetails(){
     const genreId = window.location.pathname.split("/").pop();
 
-    const response = await fetch(`/api/genre/${genreId}`);
-    if (!response.ok){
-        console.log("Ошибка загрузки контента");
-        return;
-    }
-
-    const genre = await response.json();
-
-    const genreNameHeader = document.getElementById("genre-name-header");
-    genreNameHeader.textContent = genre.name;
-
     const genreContainer = document.getElementById('genre-container');
-    genreContainer.innerHTML = `
-        <div class="genre-content">
-          <section class="albums-section">
-            <h2 class="section-title">Альбомы</h2>
-            <div class="albums-row">
-                <div class="albums-${genreId}"></div>
-                <a href="/genre/${genreId}/albums" class="show-all-btn">
-                    Показать все
-                </a>
-            </div>
-          </section>
-          <section class="artists-section">
-            <h2 class="section-title">Исполнители</h2>
-            <div class="artists-container artists-${genreId}"></div>
-          </section>
-    </div>`;
-
+    renderGenreDetails(genreContainer, genreId);
 
     const artistsResponse = await apiFetch(`/api/genre/${genreId}/artists`, {
         method: "GET"
@@ -65,17 +39,17 @@ function renderArtists(genreId, artists) {
 
 }
 
-const player = document.getElementById('player');
-const playBtn = document.getElementById('play-btn');
-const nextBtn = document.getElementById('next-btn');
-const prevBtn = document.getElementById('prev-btn');
-
 let currentAlbum = null;
 let currentAlbumButton = null;
 let currentTrackIndex = 0;
 let isPlaying = false;
 
 async function renderAlbums(genreId, albums) {
+
+    const player = document.getElementById('player');
+    const playBtn = document.getElementById('play-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
 
     const container = document.querySelector(`.albums-${genreId}`);
 
@@ -104,7 +78,7 @@ async function renderAlbums(genreId, albums) {
         currentTrackIndex, isPlaying, playAlbumButtons);
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-    await loadProfile();
-    await loadGenreContent();
+document.addEventListener("componentsLoaded", async () => {
+    initSidebar();
+    await genreDetails();
 });

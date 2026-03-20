@@ -1,7 +1,7 @@
 import {escapeHtml} from "../util.js";
 
-export async function initAlbums(albumsContainer, data){
-    albumsContainer.innerHTML = data.albums.map((album) => `
+export function renderAlbums(albumsContainer, albums){
+    albumsContainer.innerHTML = albums.map((album) => `
      <div class="album-card">
          <div class="cover-wrapper">
              <a href="/album/${album.albumId}" class="album-card-link">
