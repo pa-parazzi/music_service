@@ -74,7 +74,7 @@
 }
 
 /* показываем при наведении на трек */
-.track:hover .like-btn {
+.track-card:hover .like-btn {
     opacity: 1;
 }
 

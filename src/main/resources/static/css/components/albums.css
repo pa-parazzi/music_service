@@ -1,8 +1,6 @@
 .album-card {
     width: 200px;
     text-align: center;
-    font-family: sans-serif;
-    color: #fff;
 }
 
 .cover-wrapper {
@@ -39,22 +37,17 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(1.2);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     width: 48px;
     height: 48px;
-
-    background: rgba(0, 0, 0, 0.6);
+    background: black;
     border: none;
     border-radius: 50%;
-    color: white;
-    font-size: 20px;
-
+    color: #aa9f68;
+    font-size: 24px;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .album-meta {
