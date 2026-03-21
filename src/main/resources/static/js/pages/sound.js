@@ -7,7 +7,6 @@ import {getSoundLikeStatusResponseBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {playerState} from "../store/playerState.js";
 
 async function initSoundPage(){
     const searchForm = document.getElementById("search-form");
@@ -28,8 +27,7 @@ async function initSoundPage(){
     const playSoundBtn = document.querySelector('.play-sound-btn');
     const likeBtn = document.querySelector('.like-btn');
 
-    playerState.soundList = [sound];
-    initPlayer({playSoundBtn});
+    await initPlayer({tracks: [sound], playSoundBtn: playSoundBtn});
 
     const likeSoundStatus = await getSoundLikeStatusResponseBySoundId(soundId);
 

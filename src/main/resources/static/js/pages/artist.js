@@ -7,7 +7,6 @@ import {renderSounds} from "../components/soundsView.js";
 import {initSoundLikes} from "../module/soundLikes.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {playerState} from "../store/playerState.js";
 
 async function initArtistPage() {
     const jwt = getToken();
@@ -29,8 +28,7 @@ async function initArtistPage() {
     await initSoundLikes(likedSounds, soundLikeButtons, jwt);
 
     const trackCards = document.querySelectorAll('.track-card');
-    playerState.soundList = soundList;
-    initPlayer({trackCards});
+    await initPlayer({tracks: soundList, trackCards: trackCards});
 }
 
 document.addEventListener("componentsLoaded", async () => {

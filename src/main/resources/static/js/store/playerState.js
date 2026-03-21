@@ -1,6 +1,7 @@
 export const playerState = {
     currentAlbum: null,
+    currentPlayAlbumButton: null,
     currentTrackIndex: 0,
-    isPlaying: false,
-    soundList: []
+    soundList: [],
+    source: null
 }

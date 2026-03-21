@@ -7,15 +7,14 @@ import {
     renderSearchResult
 } from "../module/search.js";
 import {search} from "../api/searchApi.js";
-import {initPlayer, playAlbums} from "../module/player.js";
-import {playerState} from "../store/playerState.js";
-
-let currentAlbum = null;
-let currentAlbumButton = null;
-let currentTrackIndex = 0;
-let isPlaying = false;
+import {initPlayer} from "../module/player.js";
+import {initSoundLikes} from "../module/soundLikes.js";
+import {getSoundLikes} from "../api/soundLikesApi.js";
+import {getToken} from "../user/auth.js";
 
 async function initSearchPage(){
+    const jwt = getToken();
+
     const searchForm = document.getElementById("search-form");
     const searchResults = document.getElementById("search-results");
     const foundTracksTitle = document.getElementById("found-tracks-title");
@@ -27,25 +26,21 @@ async function initSearchPage(){
     const notFoundResult = document.getElementById("not-found");
     const searchDetails = document.getElementById("search-details");
 
-    const player = document.getElementById('player');
-    const playBtn = document.getElementById('play-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const prevBtn = document.getElementById('prev-btn');
-
     initSearchForm(searchForm);
     const fragment = getFragmentFromUrl();
     const type = getTypeFromUrl();
-    //TODO: исправить конфликт проигрывания треков и альбомов на странице
     if(!type){
         const searchData = await search(fragment);
         renderSearchResult(searchData, fragment, foundTracks, foundTracksTitle, foundAlbums,
             foundAlbumsTitle, foundArtists, foundArtistsTitle, searchDetails, notFoundResult);
-        playerState.soundList = searchData.tracks;
+        const tracks = searchData.tracks;
+        const albums = searchData.albums;
         const trackCards = document.querySelectorAll('.track-card');
-        initPlayer({trackCards});
-
+        const trackLikes = document.querySelectorAll('.like-btn');
+        const likedSounds = await getSoundLikes(jwt);
+        await initSoundLikes(likedSounds, trackLikes, jwt);
         const playAlbumButtons = document.querySelectorAll('.play-album-btn');
-        await playAlbums(searchData.albums, player, playBtn,nextBtn, prevBtn, currentAlbum, currentAlbumButton, currentTrackIndex, isPlaying, playAlbumButtons);
+        await initPlayer({albums: albums, tracks: tracks, playAlbumButtons: playAlbumButtons, trackCards: trackCards});
     } else {
         await initSearchDetails(fragment, type, searchResults, searchDetails);
     }

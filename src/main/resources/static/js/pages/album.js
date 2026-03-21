@@ -10,7 +10,6 @@ import {renderSounds} from "../components/soundsView.js";
 import {initSoundLikes} from "../module/soundLikes.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {playerState} from "../store/playerState.js";
 
 async function initAlbumPage() {
     const id = window.location.pathname.split('/').pop();
@@ -32,8 +31,7 @@ async function initAlbumPage() {
     const albumLikeBtn = document.querySelector(".album-like-btn");
     const soundLikeButtons = document.querySelectorAll(".like-btn");
 
-    playerState.soundList = soundList;
-    initPlayer({playAlbumBtn, trackCards});
+    await initPlayer({tracks: soundList, playAlbumBtnFromSinglePage: playAlbumBtn, trackCards: trackCards});
 
     const jwt = getToken();
     const likedSounds = await getSoundLikes(jwt);

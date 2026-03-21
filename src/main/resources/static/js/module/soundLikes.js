@@ -16,7 +16,7 @@ export async function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soun
     await initSoundLikeButton(jwt, likeBtn, soundId);
 }
 
-export async function initSoundLikeButton(jwt, likeBtn, soundId){
+async function initSoundLikeButton(jwt, likeBtn, soundId) {
     likeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (likeBtn.classList.contains("liked")) {
