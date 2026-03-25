@@ -1,6 +1,7 @@
 package org.musicservice.demo.repository.music;
 
 import org.musicservice.demo.entity.music.Album;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,6 +36,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     @Query("select a from Album a join fetch a.artist join fetch a.image where a.id in :ids")
     List<Album> findAllByIdForCollectionPage(@Param("ids") Iterable<Long> ids);
 
-    @Query("select a from Album a join fetch a.artist join fetch a.image join fetch a.genre where a.genre.id=:genreId")
-    List<Album> findAllByGenreId(@Param("genreId") Long genreId);
+    @EntityGraph(attributePaths = {"artist", "image"})
+    @Query("select a from Album a where a.genre.id=:genreId order by a.id asc")
+    Page<Album> findAllByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 }

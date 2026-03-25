@@ -3,11 +3,15 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.album.AlbumsResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
+import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,9 +53,10 @@ public class AlbumService {
         return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new MusicNotFoundException("Album with id: " + id + " not found"));
     }
 
-    public AlbumsResponse findAllAlbumsByGenreId(Long genreId){
+    public PageResponse<AlbumResponse> findAlbumsByGenreIdPaged(Long genreId, int page, int size){
         genreService.checkExistById(genreId);
-        List<AlbumResponse> albumResponseList = albumRepository.findAllByGenreId(genreId).stream().map(albumMapper::toAlbumResponse).toList();
-        return new AlbumsResponse(albumResponseList);
+        Page<Album> pageResponse = albumRepository.findAllByGenreId(genreId, PageRequest.of(page, size));
+        List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
+        return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
 }

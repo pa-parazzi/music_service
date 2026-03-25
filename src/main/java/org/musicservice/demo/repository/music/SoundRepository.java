@@ -2,6 +2,7 @@ package org.musicservice.demo.repository.music;
 
 import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.entity.music.Sound;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,6 +25,8 @@ public interface SoundRepository extends JpaRepository<Sound, Long> {
     List<Sound> findAllByArtistId(Long artistId);
 
     List<Sound> findAllByAlbumId(Long albumId);
+
+    Page<Sound> findAllByGenreId(Long genreId, Pageable pageable);
 
     boolean existsByKey(String key);
 

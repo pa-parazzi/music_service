@@ -23,7 +23,8 @@ public class GenreService {
     }
 
     public GenresResponse genresNames(){
-        List<GenreResponse> genresList = genreRepository.findAll().stream().map(genre -> new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName())).toList();
+        List<GenreResponse> genresList = genreRepository.findAll()
+                .stream().map(genre -> new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName())).toList();
         return new GenresResponse(genresList);
     }
 
@@ -31,7 +32,7 @@ public class GenreService {
         if(!genreRepository.existsById(id)) throw new GenreDoesNotExistException("Такой жанр не существует");
     }
 
-    public GenreResponse findGenreNameById(Long id){
+    public GenreResponse genreResponseById(Long id){
         Genre genre = genreRepository.findById(id).orElseThrow(()-> new GenreDoesNotExistException("Такой жанр не существует"));
         return new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName());
     }

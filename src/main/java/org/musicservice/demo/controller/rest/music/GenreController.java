@@ -1,12 +1,13 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
-import org.musicservice.demo.dto.music.artist.ArtistsResponse;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.genre.GenreResponse;
 import org.musicservice.demo.dto.music.genre.GenresResponse;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.service.music.AlbumService;
-import org.musicservice.demo.service.music.ArtistService;
 import org.musicservice.demo.service.music.GenreService;
+import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,13 @@ import org.springframework.web.bind.annotation.*;
 public class GenreController {
 
     private final GenreService genreService;
-    private final ArtistService artistService;
+    private final SoundService soundService;
     private final AlbumService albumService;
 
     @Autowired
-    public GenreController(GenreService genreService, ArtistService artistService, AlbumService albumService) {
+    public GenreController(GenreService genreService, SoundService soundService, AlbumService albumService) {
         this.genreService = genreService;
-        this.artistService = artistService;
+        this.soundService = soundService;
         this.albumService = albumService;
     }
 
@@ -33,17 +34,23 @@ public class GenreController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GenreResponse> genrePage(@PathVariable("id") Long genreId){
-        return ResponseEntity.ok(genreService.findGenreNameById(genreId));
+        return ResponseEntity.ok(genreService.genreResponseById(genreId));
     }
 
-    @GetMapping("/{id}/artists")
-    public ResponseEntity<ArtistsResponse> artistsByGenre(@PathVariable("id") Long genreId){
-        return ResponseEntity.ok(artistService.findAllArtistsByGenreId(genreId));
+    @GetMapping("/{id}/tracks")
+    public ResponseEntity<PageResponse<SoundResponse>> pagedArtistsByGenre(
+            @PathVariable("id") Long genreId,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size){
+        return ResponseEntity.ok(soundService.findTracksByGenreIdPaged(genreId, page, size));
     }
 
     @GetMapping("/{id}/albums")
-    public ResponseEntity<AlbumsResponse> albumsByGenre(@PathVariable("id") Long genreId){
-        return ResponseEntity.ok(albumService.findAllAlbumsByGenreId(genreId));
+    public ResponseEntity<PageResponse<AlbumResponse>> pagedAlbumsByGenre(
+            @PathVariable("id") Long genreId,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size){
+        return ResponseEntity.ok(albumService.findAlbumsByGenreIdPaged(genreId, page, size));
     }
 
 

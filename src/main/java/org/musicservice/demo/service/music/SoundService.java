@@ -1,10 +1,12 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.likes.LikedContentIds;
+import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.SoundMapper;
@@ -12,6 +14,10 @@ import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,5 +63,12 @@ public class SoundService {
     public SoundPageResponse viewById(Long id) {
         SoundPageProjection soundPageProjection = soundRepository.findByIdForSoundPage(id).orElseThrow(()-> new MusicNotFoundException("Песня не найдена"));
         return soundMapper.toPageResponse(soundPageProjection);
+    }
+
+    public PageResponse<SoundResponse> findTracksByGenreIdPaged(Long genreId, int page, int size){
+        Page<Sound> soundPage = soundRepository.findAllByGenreId
+                (genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<SoundResponse> soundResponseList = soundPage.getContent().stream().map(soundMapper::toResponse).toList();
+        return new PageResponse<>(soundResponseList, soundPage.hasNext());
     }
 }

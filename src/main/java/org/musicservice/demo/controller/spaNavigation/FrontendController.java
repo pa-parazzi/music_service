@@ -51,7 +51,7 @@ public class FrontendController {
         return "forward:/html/pages/genre.html";
     }
 
-    @GetMapping("/genre/{id}")
+    @GetMapping("/genre/**")
     public String genreIndex(){
         return "forward:/html/pages/genre-index.html";
     }
