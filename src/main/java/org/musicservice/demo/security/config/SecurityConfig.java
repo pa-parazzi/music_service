@@ -38,10 +38,10 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/html/**","/js/**", "/image/**").permitAll()
+                        .requestMatchers("/api/user/**").authenticated()
                         .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
                         .requestMatchers("/api/**", "/auth/**", "/main", "/search/**", "/album/**", "/artist/**",
                                 "/collection/**", "/genre/**", "/sound/**").permitAll()
-                        .requestMatchers("/user/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
