@@ -18,14 +18,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthRestController {
+public class AuthenticationController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
     private final VerificationTokenService verificationTokenService;
 
     @Autowired
-    public AuthRestController(AuthService authService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService) {
+    public AuthenticationController(AuthService authService, RefreshTokenService refreshTokenService, VerificationTokenService verificationTokenService) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
         this.verificationTokenService = verificationTokenService;
