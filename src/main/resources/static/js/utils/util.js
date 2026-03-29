@@ -30,3 +30,12 @@ export function initInfiniteScroll({ loadFn, hasNextFn, isLoadingFn, anchor }) {
     observer.observe(anchor);
     return observer;
 }
+
+export function resetPaginationState(){
+    paginationState.currentPage = 0;
+    paginationState.isLoading = false;
+    paginationState.hasNext = true;
+    paginationState.artists = [];
+    paginationState.albums = [];
+    paginationState.tracks = [];
+}

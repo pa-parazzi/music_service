@@ -1,8 +1,7 @@
 import {playerState} from "../store/playerState.js";
 import {formatTime} from "../utils/util.js";
-import {getSoundListByAlbumId} from "../api/soundApi.js";
 
-export function playTracks(index, playBtn, player){
+export function playTracks(index){
     const track = playerState.soundList[index];
     if (!player.src || !player.src.includes(track.url)) {
         player.src = track.url;
@@ -11,20 +10,17 @@ export function playTracks(index, playBtn, player){
     return index;
 }
 
-function toggleActiveTrack(index, trackCards){
-    if(!trackCards || playerState.source === 'album') return;
-    trackCards.forEach((trackEl, i) => {
-        trackEl.classList.toggle("active", i === index);
-    });
-}
-
-function setTrack(index, playBtn, player, trackCards){
+export function setTrack(index){
     playerState.currentTrackIndex = index;
-    playTracks(index, playBtn, player);
-    toggleActiveTrack(index, trackCards);
+    playTracks(index);
+    document.dispatchEvent(new CustomEvent('trackChanged', {
+        detail: {
+            index
+        }
+    }))
 }
 
-function togglePlayer(player) {
+export function togglePlayer() {
     if (player.paused) {
         player.play().catch(() => {});
     } else {
@@ -32,37 +28,12 @@ function togglePlayer(player) {
     }
 }
 
-function initPlayAlbumButton(tracks, trackCards, player, playAlbumBtn, playBtn){
-    if(!playAlbumBtn) return;
-    playAlbumBtn.addEventListener("click", () => {
-        if (!player.src) {
-            playerState.soundList = tracks;
-            playerState.source = 'album';
-            setTrack(0, playBtn, player, trackCards);
-        } else {
-            togglePlayer(player);
-        }
-    });
-}
+let player;
+let playBtn;
 
-function initPlaySoundButton(tracks, player, playSoundBtn, playBtn){
-    if(!playSoundBtn) return;
-    playSoundBtn.addEventListener("click", () => {
-        if (!player.src) {
-            playerState.soundList = tracks;
-            playerState.source = 'track';
-            setTrack(0, playBtn, player, null);
-        } else {
-            togglePlayer(player);
-        }
-    });
-}
-
-export async function initPlayer(extra = {}){
+export function initPlayer(){
     const elements = getPlayerElements();
     const {
-        player,
-        playBtn,
         nextBtn,
         prevBtn,
         progressBar,
@@ -70,74 +41,51 @@ export async function initPlayer(extra = {}){
         durationEl,
         currentTimeEl
     } = elements;
-    const {
-        albums,
-        tracks,
-        playAlbumBtnFromSinglePage,
-        playSoundBtn,
-        trackCards,
-        playAlbumButtons
-    } = extra;
 
-    initPlayAlbumButton(tracks, trackCards, player, playAlbumBtnFromSinglePage, playBtn);
-    initPlaySoundButton(tracks, player, playSoundBtn, playBtn);
-    await initPlayAlbums(albums, playAlbumButtons, playBtn, player, trackCards);
+    player = elements.player;
+    playBtn = elements.playBtn;
 
     // Play / Pause
     playBtn.addEventListener("click", () => {
         if (!player.src) {
-            setTrack(0, playBtn, player, trackCards);
+            setTrack(0);
         } else {
-            togglePlayer(player);
+            togglePlayer();
         }
     });
 
     // Если проигрывается трек - меняем иконки
     player.addEventListener("play", () => {
         playBtn.textContent = "⏸";
-        if(playSoundBtn) playSoundBtn.textContent = "⏸";
-        if(playAlbumBtnFromSinglePage) playAlbumBtnFromSinglePage.textContent = "⏸";
-        if(playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "⏸";
+        if (playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "⏸";
+        if(playerState.currentPlaySoundButton) playerState.currentPlaySoundButton.textContent = "⏸";
     });
 
     // Если пауза - сменили значки
     player.addEventListener("pause", () => {
         playBtn.textContent = "▶";
-        if(playSoundBtn) playSoundBtn.textContent = "▶";
-        if(playAlbumBtnFromSinglePage) playAlbumBtnFromSinglePage.textContent = "▶";
-        if(playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "▶";
+        if (playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "▶";
+        if(playerState.currentPlaySoundButton) playerState.currentPlaySoundButton.textContent = "▶";
     });
-
-    // Клики на карточки треков
-    if (trackCards) {
-        trackCards.forEach((trackEl) => {
-            const index = Number(trackEl.dataset.index);
-            trackEl.addEventListener("click", () => {
-                playerState.soundList = tracks;
-                playerState.source = 'track';
-                setTrack(index, playBtn, player, trackCards);
-            });
-        });
-    }
 
     // По окончанию следующий трек
     player.addEventListener("ended", () => {
         if (playerState.currentTrackIndex < playerState.soundList.length - 1) {
-            setTrack(playerState.currentTrackIndex + 1, playBtn, player, trackCards);
+            setTrack(playerState.currentTrackIndex + 1);
         }
     });
 
     // Следующий трек
     nextBtn.addEventListener("click", () => {
         if (playerState.currentTrackIndex < playerState.soundList.length - 1) {
-            setTrack(playerState.currentTrackIndex + 1, playBtn, player, trackCards);
+            setTrack(playerState.currentTrackIndex + 1);
         }
     });
 
     // Предыдущий трек
     prevBtn.addEventListener("click", () => {
         if (playerState.currentTrackIndex > 0) {
-            setTrack(playerState.currentTrackIndex - 1, playBtn, player, trackCards);
+            setTrack(playerState.currentTrackIndex - 1);
         }
     });
 
@@ -163,35 +111,6 @@ export async function initPlayer(extra = {}){
     // Громкость
     volumeEl.addEventListener("input", () => {
         player.volume = volumeEl.value;
-    });
-}
-
-export async function initPlayAlbums(albums, playAlbumButtons, playBtn, player){
-    if(!albums && !playAlbumButtons) return;
-    const albumTracksCache = new Map();
-    playAlbumButtons.forEach(btn => {
-        btn.textContent = "▶";
-        const albumId = Number(btn.dataset.albumId);
-        const album = albums.find(a => a.albumId === albumId);
-        btn.addEventListener('click', async () => {
-            // если это новый альбом
-            if (playerState.currentAlbum !== album) {
-                if(playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "▶";
-                playerState.currentAlbum = album;
-                playerState.currentPlayAlbumButton = btn;
-                playerState.currentTrackIndex = 0;
-                // загружаем если ещё не загружали
-                if (!albumTracksCache.has(albumId)) {
-                    const tracks = await getSoundListByAlbumId(albumId);
-                    albumTracksCache.set(albumId, tracks);
-                }
-                playerState.soundList = albumTracksCache.get(albumId);
-                playerState.source = 'album';
-                setTrack(playerState.currentTrackIndex, playBtn, player, null);
-                return;
-            }
-            togglePlayer(player);
-        });
     });
 }
 

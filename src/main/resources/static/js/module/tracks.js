@@ -1,0 +1,85 @@
+import {paginationState} from "../store/PaginationState.js";
+import {getTracksByGenreId} from "../api/genreApi.js";
+import {renderSounds} from "../components/soundsView.js";
+import {playerState} from "../store/playerState.js";
+import {setTrack, togglePlayer} from "./player.js";
+
+export async function loadTracksByGenreId(genreId, container, soundLikes){
+    if(paginationState.isLoading || !paginationState.hasNext) return;
+    paginationState.isLoading = true;
+
+    const tracksPageResponse = await getTracksByGenreId(genreId);
+    const tracks = tracksPageResponse.contentList;
+    const startIndex = paginationState.tracks.length;
+
+    paginationState.tracks.push(...tracks);
+    paginationState.hasNext = tracksPageResponse.hasNextPage;
+
+    renderSounds({container: container, soundList: tracks, startIndex: startIndex, soundLikedIds: soundLikes});
+
+    paginationState.currentPage++;
+    paginationState.isLoading = false;
+}
+
+export function initPlaySoundButton(soundId, sound, playSoundBtn){
+    if(!playSoundBtn) return;
+    playSoundBtn.addEventListener("click", () => {
+        if(playerState.currentSoundId !== soundId){
+            playerState.currentSoundId = soundId;
+            playerState.soundList = [sound];
+            playerState.currentTrackIndex = 0;
+            setTrack(playerState.currentTrackIndex);
+            return;
+        }
+        togglePlayer();
+    });
+}
+
+export function initTracksDelegation(container, likedSoundsIds = new Set(), jwt, albumId){
+    container.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        if (likeBtn && container.contains(likeBtn)) {
+            e.stopPropagation();
+
+            const trackId = Number(likeBtn.dataset.trackId);
+            if (likedSoundsIds.has(trackId)) {
+                likeBtn.classList.add("liked");
+            }
+            if (likeBtn.classList.contains("liked")) {
+                await fetch(`/api/liked-sounds/${trackId}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+                likedSoundsIds.delete(trackId);
+                likeBtn.classList.toggle("liked", false);
+            } else if (!likeBtn.classList.contains("liked")){
+                await fetch(`/api/liked-sounds/${trackId}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+                likedSoundsIds.add(trackId);
+                likeBtn.classList.toggle("liked", true);
+            }
+            return;
+        }
+
+        const trackEl = e.target.closest('.track-card');
+        if (!trackEl) return;
+        const index = Number(trackEl.dataset.index);
+        if(albumId) playerState.currentAlbumId = albumId;
+        playerState.soundList = paginationState.tracks;
+        setTrack(index);
+    });
+    document.addEventListener('trackChanged', (e) => {
+        toggleActiveTrack(container, e.detail.index);
+    });
+}
+
+
+function toggleActiveTrack(container, index) {
+    const allTracks = container.querySelectorAll('.track-card');
+    allTracks.forEach(el => el.classList.remove('active'));
+
+    const current = container.querySelector(`[data-index="${index}"]`);
+    if (current) current.classList.add('active');
+}

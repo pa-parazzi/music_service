@@ -1,7 +1,8 @@
 import {renderSounds} from "../components/soundsView.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {renderArtists} from "../components/artistsView.js";
-import {getAllFoundAlbums, getAllFoundArtists, getAllFoundTracks} from "../api/searchApi.js";
+import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundTracksByFragment} from "../api/searchApi.js";
+import {paginationState} from "../store/PaginationState.js";
 
 export function initSearchForm(searchForm){
     searchForm.addEventListener("submit", (e) => {
@@ -14,39 +15,53 @@ export function initSearchForm(searchForm){
     });
 }
 
-export function renderSearchResult(searchData, fragment, foundTracks, foundTracksTitle, foundAlbums, foundAlbumsTitle,
-                                         foundArtists, foundArtistsTitle, searchDetails, notFoundResult){
-    const tracks = searchData.tracks;
-    const albums = searchData.albums;
-    const artists = searchData.artists;
+export async function loadFoundArtistsByFragment(fragment, container){
+    if(paginationState.isLoading || !paginationState.hasNext) return;
+    paginationState.isLoading = true;
 
-    if ((tracks.length === 0 && albums.length === 0 && artists.length === 0)) {
-        foundTracks.innerHTML = "";
-        foundArtists.innerHTML = "";
-        foundAlbums.innerHTML = "";
-        notFoundResult.textContent = "Ничего не найдено";
-        return;
-    }
+    const response = await getFoundArtistsByFragment(fragment);
+    const artists = response.contentList;
 
-    // очищаем прежние
-    foundTracks.innerHTML = "";
-    foundArtists.innerHTML = "";
-    foundAlbums.innerHTML = "";
-    searchDetails.innerHTML = "";
-    notFoundResult.innerHTML = "";
+    paginationState.artists.push(...artists);
+    paginationState.hasNext = response.hasNextPage;
 
-    foundTracksTitle.innerHTML = `<a href="/search/${fragment}/tracks" class="found-tracks-title-link">Треки</a>`
-    // Найденные треки
-    renderSounds(foundTracks, tracks);
+    renderArtists(container, artists);
 
-    foundAlbumsTitle.innerHTML = `<a href="/search/${fragment}/albums" class="found-albums-title-link">Альбомы</a>`
-    // Найденные альбомы
-    renderAlbums(foundAlbums, albums);
+    paginationState.currentPage++;
+    paginationState.isLoading = false;
+}
 
-    foundArtistsTitle.innerHTML = `<a href="/search/${fragment}/artists" class="found-artists-title-link">Исполнители</a>`
-    // Найденные исполнители
-    renderArtists(foundArtists, artists);
-    return searchData;
+export async function loadFoundAlbumsByFragment(fragment, container){
+    if(paginationState.isLoading || !paginationState.hasNext) return;
+    paginationState.isLoading = true;
+
+    const response = await getFoundAlbumsByFragment(fragment);
+    const albums = response.contentList;
+
+    paginationState.albums.push(...albums);
+    paginationState.hasNext = response.hasNextPage;
+
+    renderAlbums(container, albums);
+
+    paginationState.currentPage++;
+    paginationState.isLoading = false;
+}
+
+export async function loadFoundTracksByFragment(fragment, container, likedSoundsIds){
+    if(paginationState.isLoading || !paginationState.hasNext) return;
+    paginationState.isLoading = true;
+
+    const response = await getFoundTracksByFragment(fragment);
+    const tracks = response.contentList;
+    const startIndex = paginationState.tracks.length;
+
+    paginationState.tracks.push(...tracks);
+    paginationState.hasNext = response.hasNextPage;
+
+    renderSounds({container: container, soundList: tracks, startIndex: startIndex, likedSoundsIds: likedSoundsIds});
+
+    paginationState.currentPage++;
+    paginationState.isLoading = false;
 }
 
 export function getFragmentFromUrl(){
@@ -57,22 +72,4 @@ export function getFragmentFromUrl(){
 export function getTypeFromUrl(){
     const path = window.location.pathname.split('/');
     return path[3];
-}
-
-export async function initSearchDetails(fragment, type, searchMainContainer, searchDetailsContainer){
-    searchMainContainer.innerHTML = "";
-    searchDetailsContainer.innerHTML = "";
-    if(type === "tracks"){
-        const tracksResponse = await getAllFoundTracks(fragment);
-        const tracks = tracksResponse.soundList;
-        renderSounds(searchDetailsContainer, tracks);
-    } else if(type === "albums"){
-        const albumsResponse = await getAllFoundAlbums(fragment);
-        const albums = albumsResponse.albums;
-        renderAlbums(searchDetailsContainer, albums);
-    } else if(type === "artists"){
-        const artistsResponse = await getAllFoundArtists(fragment);
-        const artists = artistsResponse.artists;
-        renderArtists(searchDetailsContainer, artists);
-    }
 }
