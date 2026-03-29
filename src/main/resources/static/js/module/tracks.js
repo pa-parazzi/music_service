@@ -4,7 +4,7 @@ import {renderSounds} from "../components/soundsView.js";
 import {playerState} from "../store/playerState.js";
 import {setTrack, togglePlayer} from "./player.js";
 
-export async function loadTracksByGenreId(genreId, container, soundLikes){
+export async function loadTracksByGenreId(genreId, container, likedSoundsIds){
     if(paginationState.isLoading || !paginationState.hasNext) return;
     paginationState.isLoading = true;
 
@@ -15,7 +15,7 @@ export async function loadTracksByGenreId(genreId, container, soundLikes){
     paginationState.tracks.push(...tracks);
     paginationState.hasNext = tracksPageResponse.hasNextPage;
 
-    renderSounds({container: container, soundList: tracks, startIndex: startIndex, soundLikedIds: soundLikes});
+    renderSounds({container: container, soundList: tracks, startIndex: startIndex, likedSoundsIds: likedSoundsIds});
 
     paginationState.currentPage++;
     paginationState.isLoading = false;
