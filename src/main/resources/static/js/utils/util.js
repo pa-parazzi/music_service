@@ -1,3 +1,5 @@
+import {paginationState} from "../store/PaginationState.js";
+
 export function escapeHtml(str = '') {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -16,4 +18,15 @@ export function formatTime(seconds) {
     const s = seconds % 60;
 
     return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+export function initInfiniteScroll({ loadFn, hasNextFn, isLoadingFn, anchor }) {
+    const observer = new IntersectionObserver(async (entries) => {
+        if (entries[0].isIntersecting) {
+            if (!hasNextFn() || isLoadingFn()) return;
+            await loadFn();
+        }
+    });
+    observer.observe(anchor);
+    return observer;
 }
