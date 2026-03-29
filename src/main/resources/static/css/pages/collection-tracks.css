@@ -1,5 +1,13 @@
-.track-collection {
-    max-width: 1200px;
-    margin: 40px 80px 120px; /* центр + место под плеер */
-    padding: 0 16px;
+.track-collection-page {
+    margin: 40px 0 120px 150px;
+}
+
+.track-collection-header {
+    color: white;
+    font-size: 26px;
+    padding-left: 12px;
+}
+
+.track-collection{
+    max-width: 800px;
 }
