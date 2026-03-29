@@ -1,9 +1,9 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
-import org.musicservice.demo.dto.music.artist.ArtistsResponse;
-import org.musicservice.demo.dto.music.search.SearchMusicResponse;
-import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.artist.ArtistResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.service.search.SearchMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +20,27 @@ public class SearchMusicController {
         this.searchMusicService = searchMusicService;
     }
 
-    @GetMapping("/{fragment}")
-    public ResponseEntity<SearchMusicResponse> searchStartingWith(@PathVariable (value = "fragment", required = false) String fragment){
-        return ResponseEntity.ok(searchMusicService.searchMusicResult(fragment));
-    }
-
     @GetMapping("/{fragment}/artists")
-    public ResponseEntity<ArtistsResponse> foundArtistsView(@PathVariable (value = "fragment", required = false) String fragment){
-        return ResponseEntity.ok(searchMusicService.getAllFoundArtists(fragment));
+    public ResponseEntity<PageResponse<ArtistResponse>> foundArtistsView(
+            @PathVariable (value = "fragment") String fragment,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size){
+        return ResponseEntity.ok(searchMusicService.getArtistsByNameStartingWith(fragment, page, size));
     }
 
     @GetMapping("/{fragment}/albums")
-    public ResponseEntity<AlbumsResponse> foundAlbumsView(@PathVariable (value = "fragment", required = false) String fragment){
-        return ResponseEntity.ok(searchMusicService.getAllFoundAlbums(fragment));
+    public ResponseEntity<PageResponse<AlbumResponse>> foundAlbumsView(
+            @PathVariable (value = "fragment") String fragment,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size){
+        return ResponseEntity.ok(searchMusicService.getAlbumsByTitleStartingWith(fragment, page, size));
     }
 
     @GetMapping("/{fragment}/tracks")
-    public ResponseEntity<TracksResponse> foundTracksView(@PathVariable (value = "fragment", required = false) String fragment){
-        return ResponseEntity.ok(searchMusicService.getAllFoundTracks(fragment));
+    public ResponseEntity<PageResponse<SoundResponse>> foundTracksView(
+            @PathVariable (value = "fragment") String fragment,
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size){
+        return ResponseEntity.ok(searchMusicService.getTracksByTitleStartingWith(fragment, page, size));
     }
 }
