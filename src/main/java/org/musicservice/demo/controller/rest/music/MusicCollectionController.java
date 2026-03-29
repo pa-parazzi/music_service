@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/collection")
+@RequestMapping("/api/collection")
 public class MusicCollectionController {
 
     private final SoundService soundService;
