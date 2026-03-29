@@ -12,6 +12,7 @@ import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class AlbumService {
 
     public PageResponse<AlbumResponse> findAlbumsByGenreIdPaged(Long genreId, int page, int size){
         genreService.checkExistById(genreId);
-        Page<Album> pageResponse = albumRepository.findAllByGenreId(genreId, PageRequest.of(page, size));
+        Page<Album> pageResponse = albumRepository.findAllByGenreId(genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
