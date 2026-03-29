@@ -22,7 +22,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     @EntityGraph(attributePaths = {"artist", "image"})
     @Query("select a from Album a where lower(a.title) like concat(:title, '%')")
-    List<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title, Pageable pageable);
+    Page<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title, Pageable pageable);
 
     // Возвращает список всех альбомов со связями: Исполнитель, Обложка - для главной страницы, где не нужен список песен
     @Query("select a from Album a join fetch a.artist join fetch a.image")

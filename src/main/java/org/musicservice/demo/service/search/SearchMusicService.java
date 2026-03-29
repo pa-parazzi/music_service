@@ -1,20 +1,20 @@
 package org.musicservice.demo.service.search;
 
 import org.musicservice.demo.dto.music.album.AlbumResponse;
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
-import org.musicservice.demo.dto.music.artist.ArtistsResponse;
-import org.musicservice.demo.dto.music.search.SearchMusicResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TracksResponse;
-import org.musicservice.demo.exception.music.NoSuchMusicResultException;
+import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,45 +39,25 @@ public class SearchMusicService {
         this.soundMapper = soundMapper;
     }
 
-    public SearchMusicResponse searchMusicResult(String fragment){
-        if(isEmpty(fragment)) throw new NoSuchMusicResultException("Ничего не найдено");
-        List<SoundResponse> tracks = getTracksByTitleStartingWith(fragment);
-        List<AlbumResponse> albums = getAlbumsByTitleStartingWith(fragment);
-        List<ArtistResponse> artists = getArtistsByNameStartingWith(fragment);
-        return new SearchMusicResponse(tracks, albums, artists);
+    public PageResponse<SoundResponse> getTracksByTitleStartingWith(String fragment, int page, int size){
+        Page<Sound> pageResponse =  soundRepository.findAllByTitleStartingWithIgnoreCase
+                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<SoundResponse> soundResponseList = pageResponse.getContent().stream().map(soundMapper::toResponse).toList();
+        return new PageResponse<>(soundResponseList, pageResponse.hasNext());
     }
 
-    private List<SoundResponse> getTracksByTitleStartingWith(String fragment){
-        return soundRepository.findAllByTitleStartingWithIgnoreCase(fragment.toLowerCase(), PageRequest.ofSize(5))
-                .stream().map(soundMapper::toResponse).toList();
+    public PageResponse<AlbumResponse> getAlbumsByTitleStartingWith(String fragment, int page, int size){
+        Page<Album> pageResponse = albumRepository.findAllByTitleStartingWithIgnoreCase
+                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
+        return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
 
-    private List<AlbumResponse> getAlbumsByTitleStartingWith(String fragment){
-        return albumRepository.findAllByTitleStartingWithIgnoreCase(fragment.toLowerCase(), PageRequest.ofSize(5))
-                .stream().map(albumMapper::toAlbumResponse).toList();
+    public PageResponse<ArtistResponse> getArtistsByNameStartingWith(String fragment, int page, int size){
+        Page<ArtistResponse> pageResponse = artistRepository.findAllByNameStartingWithIgnoreCase
+                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<ArtistResponse> artistResponseList = pageResponse.getContent();
+        return new PageResponse<>(artistResponseList, pageResponse.hasNext());
     }
 
-    private List<ArtistResponse> getArtistsByNameStartingWith(String fragment){
-        return artistRepository.findAllByNameStartingWithIgnoreCase(fragment.toLowerCase(), PageRequest.ofSize(5))
-                .stream().toList();
-    }
-
-    public ArtistsResponse getAllFoundArtists(String fragment){
-        List<ArtistResponse> artists = artistRepository.findAllByNameStartingWithIgnoreCase(fragment.toLowerCase());
-        return new ArtistsResponse(artists);
-    }
-
-    public AlbumsResponse getAllFoundAlbums(String fragment){
-        List<AlbumResponse> albums = albumRepository.findAllByTitleStartingWithIgnoreCase(fragment.toLowerCase()).stream().map(albumMapper::toAlbumResponse).toList();
-        return new AlbumsResponse(albums);
-    }
-
-    public TracksResponse getAllFoundTracks(String fragment){
-        List<SoundResponse> tracks = soundRepository.findAllByTitleStartingWithIgnoreCase(fragment.toLowerCase()).stream().map(soundMapper::toResponse).toList();
-        return new TracksResponse(tracks);
-    }
-
-    private boolean isEmpty(String fragment){
-        return fragment == null || fragment.trim().isEmpty();
-    }
 }
