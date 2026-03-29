@@ -1,5 +1,5 @@
 export async function getSoundCollection(likedSounds){
-    const trackCollectionResponse = await fetch('/collection/tracks', {
+    const trackCollectionResponse = await fetch('/api/collection/tracks', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(likedSounds)
