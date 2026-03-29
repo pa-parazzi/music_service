@@ -1,9 +1,16 @@
-/* Коллекция - общий контейнер*/
+.album-collection-page{
+    margin: 40px 0 120px 150px;
+}
+
+.album-collection-header{
+    color: white;
+    font-size: 26px;
+    padding-left: 12px;
+}
+
 .album-collection {
-    margin-bottom: 120px;
-    padding-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: center;
+    max-width: 1300px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 25px;
 }
