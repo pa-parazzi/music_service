@@ -1,63 +1,58 @@
 /* Общий контейнер */
-.search-results {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-    margin-top: 20px;
-    margin-bottom: 140px;
+.search {
+    margin: 30px 0 120px 90px;
 }
 
-.found-tracks-title,
-.found-albums-title,
-.found-artists-title{
-    margin-left: 90px;
-    max-width: fit-content;
-    font-weight: 600;
-    font-size: 25px;
-}
-
-.found-tracks-title-link,
-.found-albums-title-link,
-.found-artists-title-link {
+.title-link {
     text-decoration: none;
     color: white;
+    font-size: 24px;
 }
 
-.found-tracks-title-link:hover,
-.found-albums-title-link:hover,
-.found-artists-title-link:hover {
+.title-link:hover {
     text-decoration: underline;
 }
 
 /* Найденные треки */
-.found-tracks {
-    margin-left: 90px;
+.tracks {
     max-width: 800px;
 }
 
+.albums-title {
+    margin-top: 30px;
+}
+
 /* Найденные альбомы */
-.found-albums {
-    margin-left: 90px;
+.albums, .artists {
     max-width: 1300px;
-    display: flex;
-    gap: 25px;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 20px;
+}
+
+.artists-title{
+    margin-top: 35px;
 }
 
 /* Найденные исполнители */
-.found-artists {
-    margin-left: 90px;
+.artists {
     max-width: 1300px;
-    display: flex;
-    flex-direction: row;
-    gap: 50px;
+    padding-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 45px;
 }
 
 /* текст "ничего не найдено" */
-.not-found {
+.empty-result {
     display: flex;
     justify-content: center;
     font-size: 1.3em;
     color: #aaa;
+}
+
+.search-title {
+    padding-left: 12px;
+    font-size: 26px;
+    color: white;
 }
