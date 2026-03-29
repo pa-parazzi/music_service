@@ -1,81 +1,89 @@
-.genre-container{
-    max-width: 1200px;
-    margin: 40px 80px 120px;
+.genre-page{
+    margin-bottom: 120px;
 }
 
-.albums-row {
+.general-genre-content{
+    max-width: 1300px;
+    margin-top: 20px;
+    margin-left: 100px;
+}
+
+.tracks-section{
+    max-width: 800px;
+}
+
+.header-albums-row{
+    max-width: 1250px;
+}
+
+.header-tracks-row{
+    max-width: 780px;
+}
+
+.header-albums-row,
+.header-tracks-row{
     display: flex;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.albums-row > div {
-    display: flex;
-    gap: 20px;
-}
-
-/* Исполнитель - текст*/
-.artist-name {
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-
-/* Исполнитель - ссылка*/
-.artist-name-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-.show-all-btn {
-    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-
-    min-width: 120px;
-    height: 200px;
-
-    text-decoration: none;
-    color: white;
-    font-weight: 600;
-
-    border-radius: 10px;
-    background: #2a2a2a;
-
-    transition: background 0.2s;
-}
-
-.show-all-btn:hover {
-    background: #3a3a3a;
 }
 
 .section-title {
-    font-size: 22px;
-    margin-bottom: 40px;
+    font-size: 24px;
     color: white;
 }
 
-.artists-section {
-    margin-top: 80px;
-}
-
-.artists-container {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 30px 40px;
-}
-
-.artist-card {
-    width: 280px;
-}
-
-.artist-name-link {
-    font-size: 20px;
-    font-weight: 600;
+.show-all-btn {
+    cursor: pointer;
     text-decoration: none;
     color: white;
 }
 
-.artist-name-link:hover {
+.show-all-btn:hover {
     text-decoration: underline;
+}
+
+.tracks-general-container > div{
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.albums-general-container > div {
+    display: flex;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+
+/* Для отдельных страниц со всеми треками и альбомами по жанру*/
+
+.extended-genre-content {
+    margin: 40px 100px;
+}
+
+.genre-name-header {
+    padding-left: 12px;
+    font-size: 35px;
+    color: white;
+}
+
+.tracks-container {
+    max-width: 800px;
+}
+
+.tracks-container > div{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.albums-container {
+    max-width: 1300px;
+}
+
+.albums-container > div {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 20px;
 }

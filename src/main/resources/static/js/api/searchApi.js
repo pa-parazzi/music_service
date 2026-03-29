@@ -1,26 +1,21 @@
-export async function search(fragment){
-    const response = await fetch(`/api/search/${fragment}`,{
+import {paginationState} from "../store/PaginationState.js";
+
+export async function getFoundTracksByFragment(fragment){
+    const response = await fetch(`/api/search/${fragment}/tracks?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
     return await response.json();
 }
 
-export async function getAllFoundTracks(fragment){
-    const response = await fetch(`/api/search/${fragment}/tracks`, {
+export async function getFoundAlbumsByFragment(fragment){
+    const response = await fetch(`/api/search/${fragment}/albums?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
     return await response.json();
 }
 
-export async function getAllFoundAlbums(fragment){
-    const response = await fetch(`/api/search/${fragment}/albums`, {
-        method: "GET"
-    });
-    return await response.json();
-}
-
-export async function getAllFoundArtists(fragment){
-    const response = await fetch(`/api/search/${fragment}/artists`, {
+export async function getFoundArtistsByFragment(fragment){
+    const response = await fetch(`/api/search/${fragment}/artists?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
     return await response.json();

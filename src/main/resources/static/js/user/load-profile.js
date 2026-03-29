@@ -8,7 +8,7 @@ export async function loadProfile() {
     const userInfoDiv = document.getElementById("userInfo");
 
     try {
-        const response = await apiFetch('/user/profile', {
+        const response = await apiFetch('/api/user/profile', {
             method: "GET"
         });
 
