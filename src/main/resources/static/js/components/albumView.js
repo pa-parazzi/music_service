@@ -1,7 +1,7 @@
 import {escapeHtml} from "../utils/util.js";
 
 export function renderAlbum(albumContainer, album){
-    albumContainer.outerHTML = `
+    albumContainer.innerHTML = `
     <div class="album-page">
         <div class="album-header">
         <div class="album-cover">
@@ -15,7 +15,8 @@ export function renderAlbum(albumContainer, album){
                 </a>
             </div>
             <div class="functionalities-of-album">
-                <button class="play-album-btn" id="play-album-btn" aria-label="Play album">▶</button>
+                <button class="play-album-btn" id="play-album-btn" aria-label="Play album"
+                data-album-id="${album.albumId}">▶</button>
                 <button class="album-like-btn" id="album-like-btn"></button>
             </div>
         </div>
