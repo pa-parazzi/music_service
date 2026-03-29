@@ -1,11 +1,11 @@
 package org.musicservice.demo.exception.handler;
 
+import org.musicservice.demo.error.ApiErrorResponse;
+import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.exception.music.GenreDoesNotExistException;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.exception.user.UserNotFoundException;
-import org.musicservice.demo.error.ApiErrorResponse;
-import org.musicservice.demo.error.ErrorType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

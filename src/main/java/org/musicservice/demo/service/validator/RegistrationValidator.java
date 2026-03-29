@@ -1,7 +1,7 @@
 package org.musicservice.demo.service.validator;
 
-import org.musicservice.demo.exception.user.RegistrationException;
 import org.musicservice.demo.error.user.UniqueFieldErrorCode;
+import org.musicservice.demo.exception.user.RegistrationException;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

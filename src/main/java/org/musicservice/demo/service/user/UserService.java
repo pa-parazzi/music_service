@@ -8,14 +8,10 @@ import org.musicservice.demo.exception.user.UserNotFoundException;
 import org.musicservice.demo.mapper.image.UserAvatarMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.security.userDetails.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)

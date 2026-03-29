@@ -1,7 +1,7 @@
 package org.musicservice.demo.controller.rest.music;
 
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.service.music.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
