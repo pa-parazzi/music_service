@@ -19,7 +19,7 @@ public class Artist {
     @Column(name = "name")
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 

@@ -27,7 +27,7 @@ public class Album{
     @OneToOne(mappedBy = "album")
     private AlbumImage image;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
