@@ -49,7 +49,7 @@ public class MusicCatalogService {
     public Album createAlbumWithImageOrGet(MusicResponse response, Artist artist, Genre genre) {
         Optional<Album> foundAlbum = albumRepository.findByTitle(response.getAlbum_name());
         if(foundAlbum.isEmpty()){
-            Album newAlbum = albumRepository.save(new Album(response.getAlbum_name(), artist, genre));
+            Album newAlbum = albumRepository.save(new Album(response.getAlbum_name(), response.getReleasedate(), artist, genre));
             AlbumImage albumImage = albumImageRepository.save(new AlbumImage(response.getAlbumImgKey(), newAlbum));
             newAlbum.setImage(albumImage);
             return newAlbum;

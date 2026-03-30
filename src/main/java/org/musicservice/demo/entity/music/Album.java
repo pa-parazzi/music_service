@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.image.AlbumImage;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "album")
 @Getter
@@ -20,6 +22,9 @@ public class Album{
     @Column(name = "title")
     private String title;
 
+    @Column(name = "release_date")
+    private LocalDate releaseDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id")
     private Artist artist;
@@ -33,8 +38,9 @@ public class Album{
 
     public Album(){}
 
-    public Album(String title, Artist artist, Genre genre) {
+    public Album(String title, LocalDate releaseDate, Artist artist, Genre genre) {
         this.title = title;
+        this.releaseDate = releaseDate;
         this.artist = artist;
         this.genre = genre;
     }
