@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.error.ApiErrorResponse;
@@ -12,6 +13,7 @@ import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,19 +49,25 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
     private AlbumRepository albumRepository;
     @Autowired
     private AlbumImageRepository albumImageRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE artist, album, album_image RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, album_image RESTART IDENTITY CASCADE");
     }
 
     @Test
     void shouldReturnValidMainAlbumResponseAndStatusIsOk() throws Exception {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Artist artist2 = artistRepository.save(MusicFactoryIT.artist2());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        Album album2 = albumRepository.save(MusicFactoryIT.album2(artist2));
-        Album album3 = albumRepository.save(MusicFactoryIT.album3(artist));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Artist artist2 = artistRepository.save(MusicFactoryIT.artist2(genre));
+
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        Album album2 = albumRepository.save(MusicFactoryIT.album2(artist2, genre));
+        Album album3 = albumRepository.save(MusicFactoryIT.album3(artist, genre));
+
         List<Album> albums = List.of(album, album2, album3);
         albums.forEach(el -> el.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(el))));
         Map<Long, Album> albumsByIdMap = albums.stream().collect(Collectors.toMap(Album::getId, Function.identity()));
@@ -76,8 +84,9 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidAlbumResponseAndStatusIsOk() throws Exception {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
         album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
 
         MvcResult result = mockMvc.perform(get("/api/album/{id}", album.getId()))
@@ -91,8 +100,9 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFoundAndValidApiErrorResponse_WhenAlbumIdInvalid() throws Exception {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
         album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
 
         MvcResult result = mockMvc.perform(get("/api/album/{id}", 126L))

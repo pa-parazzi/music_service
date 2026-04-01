@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -12,6 +13,7 @@ import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
@@ -48,17 +50,20 @@ public class SoundControllerIT extends AbstractIntegrationTest {
     private AlbumRepository albumRepository;
     @Autowired
     private SoundRepository soundRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE artist, album, sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, sound RESTART IDENTITY CASCADE");
     }
 
     @Test
     void shouldReturnValidTrackListByAlbumIdAndStatusIsOk() throws Exception{
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundListByAlbum(artist, album));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundListByAlbum(artist, album, genre));
         Map<Long, Sound> soundByIdMap = soundList.stream().collect(Collectors.toMap(Sound::getId, Function.identity()));
 
         MvcResult result = mockMvc.perform(get("/api/sound/album/{id}", album.getId()))
@@ -73,9 +78,10 @@ public class SoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidTrackListByArtistIdAndStatusIsOk() throws Exception {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundListByArtist(artist, album));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundListByArtist(artist, album, genre));
         Map<Long, Sound> soundByIdMap = soundList.stream().collect(Collectors.toMap(Sound::getId, Function.identity()));
 
         MvcResult result = mockMvc.perform(get("/api/sound/artist/{id}", artist.getId()))
@@ -90,9 +96,10 @@ public class SoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFound_WhenAlbumIsNotExistsById() throws Exception{
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        soundRepository.saveAll(MusicFactoryIT.soundListByAlbum(artist, album));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        soundRepository.saveAll(MusicFactoryIT.soundListByAlbum(artist, album, genre));
 
         MvcResult result = mockMvc.perform(get("/api/sound/album/{id}", 238))
                 .andExpect(status().isNotFound())
@@ -105,9 +112,10 @@ public class SoundControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFound_WhenArtistIsNotExistsById() throws Exception {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        soundRepository.saveAll(MusicFactoryIT.soundListByArtist(artist, album));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        soundRepository.saveAll(MusicFactoryIT.soundListByArtist(artist, album, genre));
 
         MvcResult result = mockMvc.perform(get("/api/sound/artist/{id}", 254))
                 .andExpect(status().isNotFound())
@@ -121,6 +129,8 @@ public class SoundControllerIT extends AbstractIntegrationTest {
     private void assertThatApiErrorResponse(ApiErrorResponse errorResponse){
         assertThat(errorResponse.code()).isEqualTo(ErrorType.API_ERROR.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(errorResponse.timestamp()).isPositive();
+        assertThat(errorResponse.message()).isNotEmpty();
     }
 
     private void assertSoundResponse(SoundResponse response, Sound sound){

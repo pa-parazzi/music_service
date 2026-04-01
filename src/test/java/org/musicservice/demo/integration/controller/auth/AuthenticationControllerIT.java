@@ -57,7 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
-public class AuthRestControllerIT extends AbstractIntegrationTest {
+public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -8,6 +8,7 @@ import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -16,6 +17,7 @@ import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
@@ -52,22 +54,27 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
     private AlbumImageRepository albumImageRepository;
     @Autowired
     private SoundRepository soundRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image, sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, genre, artist, album, album_image, sound RESTART IDENTITY CASCADE");
     }
 
     @Test
     void shouldReturnCollectionTracksOrderByCreatedAtAndStatusIsOk() throws Exception{
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        Album album = albumRepository.save(MusicFactoryIT.album(artist));
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+
+        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album, genre));
         List<Long> orderedSoundIds = List.of(soundList.get(2).getId(), soundList.get(0).getId(), soundList.get(1).getId());
         LikedContentIds likedSounds = new LikedContentIds(orderedSoundIds);
+
         String jsonContent = objectMapper.writeValueAsString(likedSounds);
 
-        MvcResult result = mockMvc.perform(post("/collection/tracks")
+        MvcResult result = mockMvc.perform(post("/api/collection/tracks")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonContent))
                 .andExpect(status().isOk())
@@ -77,19 +84,23 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         TracksResponse tracksResponse = objectMapper.readValue(jsonResult, TracksResponse.class);
         List<SoundResponse> soundListResponse = tracksResponse.soundList();
         List<Long> actualSoundsIds = soundListResponse.stream().map(SoundResponse::getId).toList();
+
         assertThat(actualSoundsIds).containsExactlyElementsOf(orderedSoundIds);
     }
 
     @Test
     void shouldReturnCollectionAlbumsOrderByCreatedAtAndStatusIsOk() throws Exception{
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
-        List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist));
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist, genre));
         albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));
+
         List<Long> orderedAlbumIds = List.of(albumList.get(2).getId(), albumList.get(0).getId(), albumList.get(1).getId());
         LikedContentIds likedContentIds = new LikedContentIds(orderedAlbumIds);
+
         String contentJson = objectMapper.writeValueAsString(likedContentIds);
 
-        MvcResult result = mockMvc.perform(post("/collection/albums")
+        MvcResult result = mockMvc.perform(post("/api/collection/albums")
                         .content(contentJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -107,7 +118,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         LikedContentIds likedSounds = new LikedContentIds(List.of());
         String contentJson = objectMapper.writeValueAsString(likedSounds);
 
-        MvcResult result = mockMvc.perform(post("/collection/tracks")
+        MvcResult result = mockMvc.perform(post("/api/collection/tracks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentJson))
                 .andExpect(status().isNoContent())
@@ -123,7 +134,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         LikedContentIds likedContentIds = new LikedContentIds(List.of());
         String contentJson = objectMapper.writeValueAsString(likedContentIds);
 
-        MvcResult result = mockMvc.perform(post("/collection/albums")
+        MvcResult result = mockMvc.perform(post("/api/collection/albums")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentJson))
                 .andExpect(status().isNoContent())

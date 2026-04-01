@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +36,18 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private ArtistRepository artistRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE artist RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE genre, artist RESTART IDENTITY CASCADE");
     }
 
     @Test
     void shouldReturnValidArtistResponseAndStatusIsOk() throws Exception{
-        Artist artist = artistRepository.save(MusicFactoryIT.artist());
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
 
         MvcResult result = mockMvc.perform(get("/api/artist/{id}", artist.getId()))
                 .andExpect(status().isOk())
@@ -56,7 +61,8 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFoundAndValidApiErrorResponse_WhenArtistIdInvalid() throws Exception {
-        artistRepository.save(MusicFactoryIT.artist());
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        artistRepository.save(MusicFactoryIT.artist(genre));
 
         MvcResult result = mockMvc.perform(get("/api/artist/{id}", 234L))
                 .andExpect(status().isNotFound())
