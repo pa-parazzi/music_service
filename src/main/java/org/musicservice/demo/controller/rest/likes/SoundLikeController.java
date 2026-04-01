@@ -25,20 +25,20 @@ public class SoundLikeController {
         return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(userId));
     }
 
-    @GetMapping("/is-liked/{soundId}")
+    @GetMapping("/is-liked/{id}")
     public ResponseEntity<LikeStatusResponse> statusIsLikedSound(@AuthenticationPrincipal Long userId,
-                                                                 @PathVariable ("soundId") Long soundId){
+                                                                 @PathVariable ("id") Long soundId){
         return ResponseEntity.ok(soundLikeService.findLikedSound(userId, soundId));
     }
 
-    @PostMapping("/{soundId}")
-    public ResponseEntity<Void> likeSound(@AuthenticationPrincipal Long userId, @PathVariable ("soundId") Long soundId){
+    @PostMapping("/{id}")
+    public ResponseEntity<Void> likeSound(@AuthenticationPrincipal Long userId, @PathVariable ("id") Long soundId){
         soundLikeService.create(userId, soundId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/{soundId}")
-    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("soundId") Long soundId){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("id") Long soundId){
         soundLikeService.delete(userId, soundId);
         return ResponseEntity.noContent().build();
     }

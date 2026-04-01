@@ -31,14 +31,14 @@ public class AlbumLikeController {
         return ResponseEntity.ok(albumLikeService.findLikedAlbum(userId, albumId));
     }
 
-    @PostMapping("/{albumId}")
-    public ResponseEntity<Void> likeAlbum(@AuthenticationPrincipal Long userId, @PathVariable ("albumId") Long albumId){
+    @PostMapping("/{id}")
+    public ResponseEntity<Void> likeAlbum(@AuthenticationPrincipal Long userId, @PathVariable ("id") Long albumId){
         albumLikeService.create(userId, albumId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/{albumId}")
-    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("albumId") Long albumId){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> dropLike(@AuthenticationPrincipal Long userId, @PathVariable ("id") Long albumId){
         albumLikeService.delete(userId, albumId);
         return ResponseEntity.noContent().build();
     }
