@@ -24,7 +24,8 @@ public class Genre {
 
     public Genre() {}
 
-    public Genre(GenreName name) {
+    public Genre(GenreName name, String imageName) {
         this.name = name;
+        this.imageName = imageName;
     }
 }
