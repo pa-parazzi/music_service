@@ -40,7 +40,7 @@ public class ApiGlobalHandler {
 
     @ExceptionHandler(GenreDoesNotExistException.class)
     public ResponseEntity<ApiErrorResponse> genreDoesNotExistHandle(GenreDoesNotExistException e){
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+        HttpStatus status = HttpStatus.NOT_FOUND;
         return ResponseEntity.status(status).body(
                 new ApiErrorResponse(ErrorType.MUSIC_GENRE_DOES_NOT_EXIST.name(), e.getMessage(),
                         status.value(), System.currentTimeMillis(), null));
