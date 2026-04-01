@@ -2,6 +2,7 @@ package org.musicservice.demo.controller.rest.music;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.common.PageResponse;
@@ -26,7 +27,7 @@ public class SearchMusicController {
 
     @GetMapping("/{fragment}/artists")
     public ResponseEntity<PageResponse<ArtistResponse>> foundArtistsView(
-            @PathVariable (value = "fragment") String fragment,
+            @PathVariable (value = "fragment") @NotBlank String fragment,
             @RequestParam (name = "page") @Min(0) int page,
             @RequestParam(name = "size") @Min(1) @Max(30) int size){
         return ResponseEntity.ok(searchMusicService.getArtistsByNameStartingWith(fragment, page, size));
@@ -34,7 +35,7 @@ public class SearchMusicController {
 
     @GetMapping("/{fragment}/albums")
     public ResponseEntity<PageResponse<AlbumResponse>> foundAlbumsView(
-            @PathVariable (value = "fragment") String fragment,
+            @PathVariable (value = "fragment") @NotBlank String fragment,
             @RequestParam (name = "page") @Min(0) int page,
             @RequestParam(name = "size") @Min(1) @Max(30) int size){
         return ResponseEntity.ok(searchMusicService.getAlbumsByTitleStartingWith(fragment, page, size));
@@ -42,7 +43,7 @@ public class SearchMusicController {
 
     @GetMapping("/{fragment}/tracks")
     public ResponseEntity<PageResponse<SoundResponse>> foundTracksView(
-            @PathVariable (value = "fragment") String fragment,
+            @PathVariable (value = "fragment") @NotBlank String fragment,
             @RequestParam (name = "page") @Min(0) int page,
             @RequestParam(name = "size") @Min(1) @Max(30) int size){
         return ResponseEntity.ok(searchMusicService.getTracksByTitleStartingWith(fragment, page, size));
