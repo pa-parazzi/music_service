@@ -17,7 +17,7 @@ import java.util.UUID;
 public class MusicFactoryIT {
 
     public static Genre genre(){
-        return new Genre(GenreName.ROCK);
+        return new Genre(GenreName.ROCK, "rock.jpg");
     }
 
     public static Artist artist(Genre genre) {

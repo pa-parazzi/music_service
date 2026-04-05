@@ -3,7 +3,6 @@ package org.musicservice.demo.support.factory.unit.user;
 import org.musicservice.demo.dto.image.ImageResponse;
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
-import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.Authority;
 import org.musicservice.demo.entity.user.User;
@@ -83,10 +82,7 @@ public class UserDataFactory {
     }
 
     public static ImageResponse avatarResponse(){
-        ImageResponse response = new ImageResponse();
-        response.setKey(AVATAR_KEY);
-        response.setUrl(AVATAR_URL);
-        return response;
+        return new ImageResponse(AVATAR_KEY, AVATAR_URL);
     }
 
     public static User userWithFailedLoginAttemptsZero(){
