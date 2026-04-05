@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.rest.likes;
 
 import org.musicservice.demo.dto.likes.LikeStatusResponse;
-import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.service.likes.SoundLikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,11 +17,6 @@ public class SoundLikeController {
     @Autowired
     public SoundLikeController(SoundLikeService soundLikeService) {
         this.soundLikeService = soundLikeService;
-    }
-
-    @GetMapping
-    public ResponseEntity<LikedContentIds> getSoundLikes(@AuthenticationPrincipal Long userId){
-        return ResponseEntity.ok().body(soundLikeService.getAllLikedSounds(userId));
     }
 
     @GetMapping("/is-liked/{id}")

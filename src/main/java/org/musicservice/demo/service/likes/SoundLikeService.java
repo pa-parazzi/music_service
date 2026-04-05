@@ -2,7 +2,6 @@ package org.musicservice.demo.service.likes;
 
 import jakarta.persistence.EntityManager;
 import org.musicservice.demo.dto.likes.LikeStatusResponse;
-import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
@@ -10,8 +9,6 @@ import org.musicservice.demo.repository.likes.SoundLikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -37,12 +34,6 @@ public class SoundLikeService {
     @Transactional
     public void delete(Long userId, Long soundId){
         soundLikeRepository.deleteByUserIdAndSoundId(userId, soundId);
-    }
-
-    public LikedContentIds getAllLikedSounds(Long userId){
-        List<Long> likedSoundsIdsList = soundLikeRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
-                .stream().map(soundLike -> soundLike.getSound().getId()).toList();
-        return new LikedContentIds(likedSoundsIdsList);
     }
 
     public LikeStatusResponse findLikedSound(Long userId, Long soundId){

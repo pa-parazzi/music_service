@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,26 +16,12 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Optional<Album> findByTitle(String title);
 
-    @Query("select a from Album a join fetch a.artist join fetch a.image where lower(a.title) like concat(:title, '%')")
-    List<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title);
-
-    @EntityGraph(attributePaths = {"artist", "image"})
-    @Query("select a from Album a where lower(a.title) like concat(:title, '%')")
-    Page<Album> findAllByTitleStartingWithIgnoreCase(@Param("title") String title, Pageable pageable);
-
-    // Возвращает список всех альбомов со связями: Исполнитель, Обложка - для главной страницы, где не нужен список песен
-    @Query("select a from Album a join fetch a.artist join fetch a.image")
-    List<Album> findAllForMainPage();
-
-    // Возвращает альбом по заданному id со связями: Исполнитель, Обложка - для одиночной страницы альбома, список песен не загружает
     @Query("select a from Album a join fetch a.artist join fetch a.image where a.id= :id")
     Optional<Album> findByIdWithArtistAndImage(@Param("id") Long id);
 
-    // Возвращает список всех альбомов по списку их id со связями: Исполнитель, Обложка - для страницы Коллекций альбомов
-    @Query("select a from Album a join fetch a.artist join fetch a.image where a.id in :ids")
-    List<Album> findAllByIdForCollectionPage(@Param("ids") Iterable<Long> ids);
+    @EntityGraph(attributePaths = {"artist", "image"})
+    Page<Album> findAllByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
 
     @EntityGraph(attributePaths = {"artist", "image"})
-    @Query("select a from Album a where a.genre.id=:genreId order by a.id asc")
     Page<Album> findAllByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 }

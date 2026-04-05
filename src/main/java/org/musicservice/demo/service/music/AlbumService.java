@@ -1,53 +1,47 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.dto.music.common.PageResponse;
+import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
+import org.musicservice.demo.repository.likes.AlbumLikeRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
+    private final AlbumLikeRepository albumLikeRepository;
     private final AlbumMapper albumMapper;
     private final GenreService genreService;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumMapper albumMapper, GenreService genreService) {
+    public AlbumService(AlbumRepository albumRepository, AlbumLikeRepository albumLikeRepository, AlbumMapper albumMapper, GenreService genreService) {
         this.albumRepository = albumRepository;
+        this.albumLikeRepository = albumLikeRepository;
         this.albumMapper = albumMapper;
         this.genreService = genreService;
     }
 
-    public AlbumsResponse getAlbumCollectionByUserLikes(LikedContentIds contentIds){
-        if(contentIds == null || contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
-        List<Long> orderIds = contentIds.ids(); // порядок элементов сохранен
-        List<AlbumResponse> unorderResponse = albumRepository.findAllByIdForCollectionPage(orderIds).stream().map(albumMapper::toAlbumResponse).toList(); // порядок элементов не сохранился
-        Map<Long, AlbumResponse> mapById = unorderResponse.stream().collect(Collectors.toMap(AlbumResponse::getAlbumId, Function.identity()));
-        List<AlbumResponse> orderedResponse = orderIds.stream().map(mapById::get).toList();
-        return new AlbumsResponse(orderedResponse);
-    }
-
-    public AlbumsResponse getAllAlbumsByMainResponse(){
-        List<AlbumResponse> albumResponseList = albumRepository.findAllForMainPage().stream().map(albumMapper::toAlbumResponse).toList();
-        return new AlbumsResponse(albumResponseList);
+    public PageResponse<AlbumResponse> getAlbumCollectionByUserId(Long userId, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<AlbumLike> albumLikePage = albumLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        if(albumLikePage.isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
+        List<AlbumResponse> albumListResponse = albumLikePage.stream().map(AlbumLike::getAlbum).map(albumMapper::toAlbumResponse).toList();
+        return new PageResponse<>(albumListResponse, albumLikePage.hasNext());
     }
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){

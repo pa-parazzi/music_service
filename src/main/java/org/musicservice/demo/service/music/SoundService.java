@@ -1,15 +1,16 @@
 package org.musicservice.demo.service.music;
 
-import org.musicservice.demo.dto.likes.LikedContentIds;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.exception.music.NoSuchMusicResultException;
 import org.musicservice.demo.mapper.music.SoundMapper;
+import org.musicservice.demo.repository.likes.SoundLikeRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
@@ -27,13 +28,15 @@ import java.util.List;
 public class SoundService {
 
     private final SoundRepository soundRepository;
+    private final SoundLikeRepository soundLikeRepository;
     private final SoundMapper soundMapper;
     private final ArtistRepository artistRepository;
     private final AlbumRepository albumRepository;
 
     @Autowired
-    public SoundService(SoundRepository soundRepository, SoundMapper soundMapper, ArtistRepository artistRepository, AlbumRepository albumRepository) {
+    public SoundService(SoundRepository soundRepository, SoundLikeRepository soundLikeRepository, SoundMapper soundMapper, ArtistRepository artistRepository, AlbumRepository albumRepository) {
         this.soundRepository = soundRepository;
+        this.soundLikeRepository = soundLikeRepository;
         this.soundMapper = soundMapper;
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
@@ -51,15 +54,16 @@ public class SoundService {
         return new TracksResponse(soundResponseList);
     }
 
-    public TracksResponse getTrackCollectionByUserLikes(LikedContentIds contentIds){
-        if(contentIds == null || contentIds.ids().isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
-        List<Long> soundOrderIds = contentIds.ids();
-        Long[] orderIds = soundOrderIds.toArray(Long[]::new);
-        List<SoundResponse> response = soundRepository.findAllByIdForCollectionPage(orderIds).stream().map(soundMapper::toResponse).toList();
-        return new TracksResponse(response);
+    public PageResponse<SoundResponse> getTrackCollectionByUserId(Long userId, int page, int size){
+        Page<SoundLike> soundLikePage = soundLikeRepository
+                .findByUserIdOrderByCreatedAtDescIdDesc(userId, PageRequest.of(page, size));
+        List<SoundLike> soundLikes = soundLikePage.getContent();
+        if(soundLikes.isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся песен");
+        List<SoundResponse> response = soundLikes.stream().map(SoundLike::getSound).map(soundMapper::toResponse).toList();
+        return new PageResponse<>(response, soundLikePage.hasNext());
     }
 
-    public SoundPageResponse viewById(Long id) {
+    public SoundPageResponse getSoundPageResponseById(Long id) {
         SoundPageProjection soundPageProjection = soundRepository.findByIdForSoundPage(id).orElseThrow(()-> new MusicNotFoundException("Песня не найдена"));
         return soundMapper.toPageResponse(soundPageProjection);
     }
