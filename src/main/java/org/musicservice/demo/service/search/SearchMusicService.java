@@ -41,21 +41,21 @@ public class SearchMusicService {
 
     public PageResponse<SoundResponse> getTracksByTitleStartingWith(String fragment, int page, int size){
         Page<Sound> pageResponse =  soundRepository.findAllByTitleStartingWithIgnoreCase
-                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+                (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<SoundResponse> soundResponseList = pageResponse.getContent().stream().map(soundMapper::toResponse).toList();
         return new PageResponse<>(soundResponseList, pageResponse.hasNext());
     }
 
     public PageResponse<AlbumResponse> getAlbumsByTitleStartingWith(String fragment, int page, int size){
         Page<Album> pageResponse = albumRepository.findAllByTitleStartingWithIgnoreCase
-                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+                (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
 
     public PageResponse<ArtistResponse> getArtistsByNameStartingWith(String fragment, int page, int size){
         Page<ArtistResponse> pageResponse = artistRepository.findAllByNameStartingWithIgnoreCase
-                (fragment.toLowerCase(), PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+                (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<ArtistResponse> artistResponseList = pageResponse.getContent();
         return new PageResponse<>(artistResponseList, pageResponse.hasNext());
     }

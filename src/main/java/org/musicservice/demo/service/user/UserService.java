@@ -5,7 +5,7 @@ import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.exception.user.UserNotFoundException;
-import org.musicservice.demo.mapper.image.UserAvatarMapper;
+import org.musicservice.demo.mapper.image.ImageMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +19,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserAvatarRepository userAvatarRepository;
-    private final UserAvatarMapper userAvatarMapper;
+    private final ImageMapper imageMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserAvatarRepository userAvatarRepository, UserAvatarMapper userAvatarMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, UserAvatarRepository userAvatarRepository, ImageMapper imageMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userAvatarRepository = userAvatarRepository;
-        this.userAvatarMapper = userAvatarMapper;
+        this.imageMapper = imageMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -41,7 +41,7 @@ public class UserService {
         UserMainResponse userResponse = new UserMainResponse();
         userResponse.setUsername(getUsernameById(userId));
         UserAvatar userAvatar = userAvatarRepository.findByUserId(userId);
-        userResponse.setAvatar(userAvatarMapper.convertToDto(userAvatar));
+        userResponse.setAvatar(imageMapper.toImageResponse(userAvatar));
         return userResponse;
     }
 
