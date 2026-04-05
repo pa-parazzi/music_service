@@ -23,7 +23,7 @@ public class SoundController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SoundPageResponse> viewTrack(@PathVariable("id") Long id){
-        return ResponseEntity.ok(soundService.viewById(id));
+        return ResponseEntity.ok(soundService.getSoundPageResponseById(id));
     }
 
     @GetMapping("/album/{id}")
