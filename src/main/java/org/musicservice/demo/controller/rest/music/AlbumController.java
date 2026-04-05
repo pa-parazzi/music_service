@@ -1,7 +1,6 @@
 package org.musicservice.demo.controller.rest.music;
 
 import org.musicservice.demo.dto.music.album.AlbumResponse;
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
 import org.musicservice.demo.service.music.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +18,6 @@ public class AlbumController {
     @Autowired
     public AlbumController(AlbumService albumService) {
         this.albumService = albumService;
-    }
-
-    @GetMapping
-    public ResponseEntity<AlbumsResponse> view(){
-        return ResponseEntity.ok(albumService.getAllAlbumsByMainResponse());
     }
 
     @GetMapping("/{id}")
