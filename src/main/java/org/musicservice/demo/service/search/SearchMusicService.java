@@ -5,6 +5,7 @@ import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.mapper.music.SoundMapper;
@@ -40,23 +41,24 @@ public class SearchMusicService {
     }
 
     public PageResponse<SoundResponse> getTracksByTitleStartingWith(String fragment, int page, int size){
-        Page<Sound> pageResponse =  soundRepository.findAllByTitleStartingWithIgnoreCase
+        Page<Sound> pageResponse =  soundRepository.findByTitleStartingWithIgnoreCase
                 (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<SoundResponse> soundResponseList = pageResponse.getContent().stream().map(soundMapper::toResponse).toList();
         return new PageResponse<>(soundResponseList, pageResponse.hasNext());
     }
 
     public PageResponse<AlbumResponse> getAlbumsByTitleStartingWith(String fragment, int page, int size){
-        Page<Album> pageResponse = albumRepository.findAllByTitleStartingWithIgnoreCase
+        Page<Album> pageResponse = albumRepository.findByTitleStartingWithIgnoreCase
                 (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
 
     public PageResponse<ArtistResponse> getArtistsByNameStartingWith(String fragment, int page, int size){
-        Page<ArtistResponse> pageResponse = artistRepository.findAllByNameStartingWithIgnoreCase
+        Page<Artist> pageResponse = artistRepository.findByNameStartingWithIgnoreCase
                 (fragment, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
-        List<ArtistResponse> artistResponseList = pageResponse.getContent();
+        List<ArtistResponse> artistResponseList = pageResponse.getContent()
+                .stream().map(artist -> new ArtistResponse(artist.getId(), artist.getName())).toList();
         return new PageResponse<>(artistResponseList, pageResponse.hasNext());
     }
 

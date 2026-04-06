@@ -50,7 +50,7 @@ public class AlbumService {
 
     public PageResponse<AlbumResponse> findAlbumsByGenreIdPaged(Long genreId, int page, int size){
         genreService.checkExistById(genreId);
-        Page<Album> pageResponse = albumRepository.findAllByGenreId(genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        Page<Album> pageResponse = albumRepository.findByGenreId(genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }

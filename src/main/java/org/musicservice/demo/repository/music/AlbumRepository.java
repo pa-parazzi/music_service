@@ -20,8 +20,8 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     Optional<Album> findByIdWithArtistAndImage(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"artist", "image"})
-    Page<Album> findAllByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
+    Page<Album> findByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
 
     @EntityGraph(attributePaths = {"artist", "image"})
-    Page<Album> findAllByGenreId(@Param("genreId") Long genreId, Pageable pageable);
+    Page<Album> findByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 }
