@@ -86,10 +86,8 @@ public class ArtistRepositoryIT extends AbstractIntegrationTest {
     }
 
     private void prepareArtists(Genre genre, String artistNamePrefix){
-        List<Artist> artists = new ArrayList<>();
         for (int i = 0; i < totalElements; i++) {
-            artists.add(entityManager.persist
-                    (new Artist(artistNamePrefix + "_" + i, genre)));
+            entityManager.persist(new Artist(artistNamePrefix + "_" + i, genre));
         }
     }
 
