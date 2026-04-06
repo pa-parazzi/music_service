@@ -1,6 +1,7 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
+import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
 import org.musicservice.demo.repository.music.ArtistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class ArtistService {
     }
 
     public ArtistResponse viewArtistById(Long artistId){
-        return artistRepository.findArtistResponseById(artistId).orElseThrow(() -> new MusicNotFoundException("Artist with id: " + artistId + " not found"));
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new MusicNotFoundException("Artist with id: " + artistId + " not found"));
+        return new ArtistResponse(artist.getId(), artist.getName());
     }
 }
