@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -51,6 +52,10 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
 
         MvcResult result = mockMvc.perform(get("/api/artist/{id}", artist.getId()))
                 .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.id").exists(),
+                        jsonPath("$.name").exists()
+                )
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
@@ -61,16 +66,20 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFoundAndValidApiErrorResponse_WhenArtistIdInvalid() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        artistRepository.save(MusicFactoryIT.artist(genre));
-
-        MvcResult result = mockMvc.perform(get("/api/artist/{id}", 234L))
+        MvcResult result = mockMvc.perform(get("/api/artist/{id}", 234326L))
                 .andExpect(status().isNotFound())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists())
                 .andReturn();
 
         String jsonResult = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
         assertThat(errorResponse.code()).isEqualTo(ErrorType.API_ERROR.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(errorResponse.message()).isNotBlank();
+        assertThat(errorResponse.timestamp()).isPositive();
     }
 }
