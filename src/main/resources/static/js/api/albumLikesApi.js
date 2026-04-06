@@ -1,5 +1,5 @@
 export async function getAlbumLikes(jwt){
-    const likedAlbumsIdsResponse = await fetch('/api/liked-albums', {
+    const likedAlbumsIdsResponse = await fetch('/api/album-like', {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${jwt}`

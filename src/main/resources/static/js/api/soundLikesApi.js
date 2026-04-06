@@ -1,7 +1,7 @@
 import {apiFetch} from "../user/api.js";
 
 export async function getSoundLikes(jwt){
-    const likedSoundsIdsResponses = await fetch('/api/liked-sounds', {
+    const likedSoundsIdsResponses = await fetch('/api/sound-like', {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${jwt}`
@@ -16,6 +16,6 @@ export async function getSoundLikes(jwt){
 }
 
 export async function getSoundLikeStatusResponseBySoundId(soundId){
-    const likeStatusResponse = await apiFetch(`/api/liked-sounds/is-liked/${soundId}`);
+    const likeStatusResponse = await apiFetch(`/api/sound-like/is-liked/${soundId}`);
     return await likeStatusResponse.json();
 }

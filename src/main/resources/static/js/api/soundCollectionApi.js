@@ -1,3 +1,4 @@
+//TODO: исправить запрос
 export async function getSoundCollection(likedSounds){
     const trackCollectionResponse = await fetch('/api/collection/tracks', {
         method: "POST",

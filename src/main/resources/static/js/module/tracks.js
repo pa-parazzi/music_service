@@ -46,14 +46,14 @@ export function initTracksDelegation(container, likedSoundsIds = new Set(), jwt,
                 likeBtn.classList.add("liked");
             }
             if (likeBtn.classList.contains("liked")) {
-                await fetch(`/api/liked-sounds/${trackId}`, {
+                await fetch(`/api/sound-like/${trackId}`, {
                     method: "DELETE",
                     headers: { "Authorization": `Bearer ${jwt}` }
                 });
                 likedSoundsIds.delete(trackId);
                 likeBtn.classList.toggle("liked", false);
             } else if (!likeBtn.classList.contains("liked")){
-                await fetch(`/api/liked-sounds/${trackId}`, {
+                await fetch(`/api/sound-like/${trackId}`, {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${jwt}` }
                 });

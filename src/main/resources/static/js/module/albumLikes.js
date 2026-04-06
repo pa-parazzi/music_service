@@ -6,7 +6,7 @@ export async function initAlbumLikes(albumId, statusLikedAlbum, albumLikeBtn, jw
     albumLikeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (albumLikeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-albums/${albumId}`, {
+            await fetch(`/api/album-like/${albumId}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${jwt}`
@@ -14,7 +14,7 @@ export async function initAlbumLikes(albumId, statusLikedAlbum, albumLikeBtn, jw
             });
             albumLikeBtn.classList.toggle("liked", false);
         } else if (!albumLikeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-albums/${albumId}`, {
+            await fetch(`/api/album-like/${albumId}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${jwt}`

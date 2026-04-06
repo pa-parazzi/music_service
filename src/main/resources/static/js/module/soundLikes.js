@@ -5,7 +5,7 @@ export async function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soun
     likeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (likeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-sounds/${soundId}`, {
+            await fetch(`/api/sound-like/${soundId}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${jwt}`
@@ -13,7 +13,7 @@ export async function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soun
             });
             likeBtn.classList.toggle("liked", false);
         } else if (!likeBtn.classList.contains("liked")) {
-            await fetch(`/api/liked-sounds/${soundId}`, {
+            await fetch(`/api/sound-like/${soundId}`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${jwt}`
