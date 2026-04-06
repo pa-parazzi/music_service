@@ -56,9 +56,9 @@ public class UserRepositoryIT extends AbstractIntegrationTest {
         User user = entityManager.persistAndFlush(UserDataFactoryIT.user());
         entityManager.clear();
 
-        Optional<String> actualUsername = repository.getUsernameById(user.getId());
-        assertThat(actualUsername).isNotEmpty();
-        assertThat(actualUsername.get()).isEqualTo(user.getUsername());
+        String actualUsername = repository.getUsernameById(user.getId()).orElseThrow();
+        assertThat(actualUsername).isNotBlank();
+        assertThat(actualUsername).isEqualTo(user.getUsername());
     }
 
     @Test
@@ -66,8 +66,7 @@ public class UserRepositoryIT extends AbstractIntegrationTest {
         entityManager.persistAndFlush(UserDataFactoryIT.user());
         entityManager.clear();
 
-        Optional<String> actualUsername = repository.getUsernameById(2654L);
-        assertThat(actualUsername).isEmpty();
+        assertThat(repository.getUsernameById(2654L)).isEmpty();
     }
 
 }

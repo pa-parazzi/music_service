@@ -1,9 +1,7 @@
 package org.musicservice.demo.integration.repository.likes;
 
-import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
-import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
@@ -20,13 +18,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.musicservice.demo.support.pageable.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithOutRelations;
+import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSoundWithAllRelations;
+import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
 
 @DataJpaTest
 public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
@@ -40,7 +39,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     @Test
     void deleteByUserIdAndSoundId_ShouldDeleteRecord() {
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -57,7 +56,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     @Test
     void deleteByUserIdAndSoundId_ShouldDoNothing_WhenUserIdIsIncorrectly() {
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -74,7 +73,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     @Test
     void deleteByUserIdAndSoundId_ShouldDoNothing_WhenSoundIdIsIncorrectly() {
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -94,7 +93,9 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
         Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        List<Sound> sounds = prepareSounds(genre, soundTitlePrefix, endKeyName);
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
         prepareSoundLikes(user, sounds);
 
         entityManager.flush();
@@ -107,7 +108,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertFirstPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSounds(soundsBySoundLikes, genre.getName(), soundTitlePrefix, endKeyName);
+        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test
@@ -116,7 +117,9 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
         Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        List<Sound> sounds = prepareSounds(genre, soundTitlePrefix, endKeyName);
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
         prepareSoundLikes(user, sounds);
 
         entityManager.flush();
@@ -129,7 +132,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertSecondPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSounds(soundsBySoundLikes, genre.getName(), soundTitlePrefix, endKeyName);
+        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test
@@ -138,7 +141,9 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
         Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        List<Sound> sounds = prepareSounds(genre, soundTitlePrefix, endKeyName);
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
         prepareSoundLikes(user, sounds);
 
         entityManager.flush();
@@ -151,20 +156,20 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertLastPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSounds(soundsBySoundLikes, genre.getName(), soundTitlePrefix, endKeyName);
+        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test
     void findByUserIdOrderByCreatedAtDescIdDesc_ShouldReturnsEmptyPage_WhenUserIdIsInvalid() {
         Page<SoundLike> soundLikePage = repository
-                .findByUserIdOrderByCreatedAtDescIdDesc(8491L, PageRequest.of(page + 2, size));
+                .findByUserIdOrderByCreatedAtDescIdDesc(8491L, PageRequest.of(page, size));
         assertEmptyPage(soundLikePage);
     }
 
     @Test
     void existsByUserIdAndSoundId_ShouldReturnIsTrue_WhenSoundLikeIsExists(){
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -177,7 +182,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     @Test
     void existsByUserIdAndSoundId_ShouldReturnFalse_WhenAlbumIdIsInvalid(){
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -190,7 +195,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     @Test
     void existsByUserIdAndSoundId_ShouldReturnFalse_WhenUserIdIsInvalid(){
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSound();
+        Sound sound = prepareSoundWithAllRelations(entityManager);
         entityManager.persist(MusicFactoryIT.soundLike(user, sound));
 
         entityManager.flush();
@@ -205,28 +210,6 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         assertThat(createdAtSoundLikesOrder).isSortedAccordingTo(Comparator.reverseOrder());
     }
 
-    private void assertSounds(List<Sound> sounds, GenreName genreName, String titlePrefix, String endKeyName) {
-        assertThat(sounds).extracting(Sound::getTitle).allMatch(title -> title.startsWith(titlePrefix));
-        assertThat(sounds).extracting(Sound::getDuration).isNotEmpty();
-        assertThat(sounds).extracting(Sound::getKey).allMatch(key -> key.endsWith(endKeyName));
-        assertThat(sounds).extracting(Sound::getArtist).allMatch(artist -> !Hibernate.isInitialized(artist));
-        assertThat(sounds).extracting(Sound::getAlbum).allMatch(artist -> !Hibernate.isInitialized(artist));
-        assertThat(sounds).extracting(Sound::getReleaseDate).isNotEmpty();
-        assertThat(sounds).extracting(sound -> sound.getGenre().getName()).allMatch(gName -> gName.equals(genreName));
-    }
-
-    private List<Sound> prepareSounds(Genre genre, String soundTitlePrefix, String endKeyName) {
-        List<Sound> sounds = new ArrayList<>();
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        for (int i = 0; i < totalElements; i++) {
-            sounds.add(entityManager.persist
-                    (new Sound(soundTitlePrefix + "_" + i, 265, artist, album,
-                            "sound_" + i + endKeyName, LocalDate.of(2012, 6, 19), genre)));
-        }
-        return sounds;
-    }
-
     private void prepareSoundLikes(User user, List<Sound> sounds) {
         Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
         int second = 1;
@@ -234,12 +217,5 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
             SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
             soundLike.setCreatedAt(createdAt.plusSeconds(second++));
         }
-    }
-
-    private Sound prepareSound(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        return entityManager.persist(MusicFactoryIT.sound(artist, album, genre));
     }
 }

@@ -1,21 +1,32 @@
 package org.musicservice.demo.integration.repository.music;
 
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsWithArtistAndImage;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumWithAllRelations;
+import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumsWithAllRelations;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -25,94 +36,158 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
     private TestEntityManager entityManager;
 
     @Test
-    void findAllByTitleStartingWith_ShouldReturnsValidAlbumList_WhenFragmentIsCorrect(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album3(artist));
-        Album album2 = entityManager.persistAndFlush(MusicFactoryIT.album4(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
-        album2.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album2)));
-        entityManager.clear();
-
-        String fragment = "A";
-        List<Album> result = repository.findAllByTitleStartingWith(fragment);
-        assertAlbumList(result, album, album2);
-    }
-
-    @Test
-    void findAllByTitleStartingWith_ShouldReturnsValidAlbumList_WhenFragmentIsIncorrect(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
-        entityManager.clear();
-
-        String fragmentTitle = "incorrect";
-        List<Album> result = repository.findAllByTitleStartingWith(fragmentTitle);
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void findAllForMainPage_ShouldReturnsValidAlbumList(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Album album2 = entityManager.persistAndFlush(MusicFactoryIT.album2(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
-        album2.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album2)));
-        entityManager.clear();
-
-        List<Album> result = repository.findAllForMainPage();
-        assertAlbumList(result, album, album2);
-    }
-
-    @Test
     void findByIdWithArtistAndImage_ShouldReturnsAlbumWithArtistAndImage(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
+        Album expectedAlbum = prepareAlbumWithAllRelations(entityManager);
+
+        entityManager.flush();
         entityManager.clear();
 
-        Album actualAlbum = repository.findByIdWithArtistAndImage(album.getId()).orElseThrow();
-        assertAlbumWithArtistAndImage(actualAlbum, album);
+        Album actualAlbum = repository.findByIdWithArtistAndImage(expectedAlbum.getId()).orElseThrow();
+        assertThat(actualAlbum.getId()).isEqualTo(expectedAlbum.getId());
+        assertThat(actualAlbum.getTitle()).isEqualTo(expectedAlbum.getTitle());
+        assertThat(actualAlbum.getReleaseDate()).isEqualTo(expectedAlbum.getReleaseDate());
+
+        assertThat(actualAlbum.getArtist()).isNotNull().isNotInstanceOf(HibernateProxy.class);
+        assertThat(Hibernate.isInitialized(actualAlbum.getArtist())).isTrue();
+
+        assertThat(actualAlbum.getImage()).isNotNull().isNotInstanceOf(HibernateProxy.class);
+        assertThat(Hibernate.isInitialized(actualAlbum.getImage())).isTrue();
     }
 
     @Test
     void findByIdWithArtistAndImage_ShouldReturnsEmpty_WhenIdIsInvalid(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
+        prepareAlbumWithAllRelations(entityManager);
+
+        entityManager.flush();
         entityManager.clear();
 
         assertThat(repository.findByIdWithArtistAndImage(156L)).isEmpty();
     }
 
     @Test
-    void findAllByIdForCollectionPage_ShouldReturnsValidAlbumList(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Album album2 = entityManager.persistAndFlush(MusicFactoryIT.album2(artist));
-        album.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album)));
-        album2.setImage(entityManager.persistAndFlush(MusicFactoryIT.albumImage(album2)));
-        List<Long> albumIds = List.of(album.getId(), album2.getId());
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsFirstPageCorrectly(){
+        String albumTitlePrefix = "bad romance";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+
+        entityManager.flush();
         entityManager.clear();
 
-        List<Album> result = repository.findAllByIdForCollectionPage(albumIds);
-        assertAlbumList(result, album, album2);
+        Page<Album> albumPage = repository.findByTitleStartingWithIgnoreCase
+                (albumTitlePrefix, PageRequest.of(page, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertFirstPage(albumPage);
     }
 
-    private void assertAlbumList(List<Album> result, Album album, Album album2){
-        assertThat(result)
-                .extracting(Album::getId, Album::getTitle, albumEntity -> albumEntity.getArtist().getId(), albumEntity -> albumEntity.getImage().getId())
-                .containsExactlyInAnyOrder(
-                        tuple(album.getId(), album.getTitle(), album.getArtist().getId(), album.getImage().getId()),
-                        tuple(album2.getId(), album2.getTitle(), album2.getArtist().getId(), album2.getImage().getId())
-                );
+    @Test
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsSecondPageCorrectly(){
+        String albumTitlePrefix = "just dance";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> albumPage = repository.findByTitleStartingWithIgnoreCase
+                        (albumTitlePrefix, PageRequest.of(page + 1, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertSecondPage(albumPage);
     }
 
-    private void assertAlbumWithArtistAndImage(Album actual, Album expected){
-        assertThat(actual.getId()).isEqualTo(expected.getId());
-        assertThat(actual.getTitle()).isEqualTo(expected.getTitle());
-        assertThat(actual.getArtist().getId()).isEqualTo(expected.getArtist().getId());
-        assertThat(actual.getArtist().getName()).isEqualTo(expected.getArtist().getName());
-        assertThat(actual.getImage().getId()).isEqualTo(expected.getImage().getId());
-        assertThat(actual.getImage().getKey()).isEqualTo(expected.getImage().getKey());
+    @Test
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsLastPageCorrectly(){
+        String albumTitlePrefix = "after dark";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> albumPage = repository.findByTitleStartingWithIgnoreCase
+                (albumTitlePrefix, PageRequest.of(page + 2, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertLastPage(albumPage);
     }
+
+    @Test
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsEmptyPage_WhenAlbumsNotFoundByPrefix(){
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        prepareAlbumsWithAllRelations(entityManager, genre, artist,"some album");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> result = repository.findByTitleStartingWithIgnoreCase
+                ("incorrectly prefix", PageRequest.of(page, size));
+
+        assertEmptyPage(result);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        String albumTitlePrefix = "supermassive";
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> albumPage = repository.findByGenreId(genre.getId(), PageRequest.of(page, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertFirstPage(albumPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        String albumTitlePrefix = "just dance";
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> albumPage = repository.findByGenreId(genre.getId(), PageRequest.of(page + 1, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertSecondPage(albumPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsLastPageCorrectly(){
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        String albumTitlePrefix = "just";
+        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Album> albumPage = repository.findByGenreId(genre.getId(), PageRequest.of(page + 2, size));
+        List<Album> albums = albumPage.getContent();
+
+        assertAlbumsWithArtistAndImage(albums, albumTitlePrefix);
+        assertLastPage(albumPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsEmptyPage_WhenGenreIdIsInvalid(){
+        Page<Album> albumPage = repository.findByGenreId(893234L, PageRequest.of(page + 2, size));
+
+        assertEmptyPage(albumPage);
+    }
+
 }

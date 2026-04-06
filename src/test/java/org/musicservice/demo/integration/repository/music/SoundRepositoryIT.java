@@ -1,6 +1,9 @@
 package org.musicservice.demo.integration.repository.music;
 
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
+import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
@@ -10,11 +13,16 @@ import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithOutRelations;
+import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
 
 @DataJpaTest
 public class SoundRepositoryIT extends AbstractIntegrationTest {
@@ -26,100 +34,310 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
     private TestEntityManager entityManager;
 
     @Test
-    void findAllByIdForCollectionPage_ShouldReturnsCorrectSoundList(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Sound sound2 = entityManager.persistAndFlush(MusicFactoryIT.sound2(artist, album));
-        Sound sound = entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
-        Sound sound3 = entityManager.persistAndFlush(MusicFactoryIT.sound3(artist, album));
-        entityManager.clear();
-        Long [] orderSoundIds = List.of(sound2.getId(), sound.getId(), sound3.getId()).toArray(Long[]::new);
+    void findByIdForSoundPage_ShouldReturnSoundWithCorrectlyRelations(){
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        album.setImage(entityManager.persist(MusicFactoryIT.albumImage(album)));
+        Sound expectedSound = entityManager.persist(MusicFactoryIT.sound(artist, album, genre));
 
-        List<Sound> result = repository.findAllByIdForCollectionPage(orderSoundIds);
-        assertSoundListContainsExactly(result, sound2, sound, sound3);
+        entityManager.flush();
+        entityManager.clear();
+
+        Sound actualSound = repository.findByIdForSoundPage(expectedSound.getId()).orElseThrow();
+
+        assertThat(actualSound.getId()).isEqualTo(expectedSound.getId());
+        assertThat(actualSound.getTitle()).isEqualTo(expectedSound.getTitle());
+        assertThat(actualSound.getDuration()).isEqualTo(expectedSound.getDuration());
+        assertThat(actualSound.getReleaseDate()).isEqualTo(expectedSound.getReleaseDate());
+        assertThat(actualSound.getKey()).isEqualTo(expectedSound.getKey());
+
+        assertThat(actualSound.getArtist()).isNotNull().isNotInstanceOf(HibernateProxy.class);
+        assertThat(Hibernate.isInitialized(actualSound.getArtist())).isTrue();
+
+        assertThat(actualSound.getAlbum()).isNotNull().isNotInstanceOf(HibernateProxy.class);
+        assertThat(Hibernate.isInitialized(actualSound.getAlbum())).isTrue();
+
+        assertThat(actualSound.getAlbum().getImage()).isNotNull().isNotInstanceOf(HibernateProxy.class);
+        assertThat(Hibernate.isInitialized(actualSound.getAlbum().getImage())).isTrue();
     }
 
     @Test
-    void findAllByIdForCollectionPage_ShouldReturnsEmptyList_WhenSoundsIdsIsIncorrect(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
-        entityManager.clear();
-        Long [] orderSoundIds = {123L, 234L, 345L};
-
-        List<Sound> result = repository.findAllByIdForCollectionPage(orderSoundIds);
+    void findByIdForSoundPage_ShouldReturnEmpty_WhenIdIsInvalid(){
+        Optional<Sound> result = repository.findByIdForSoundPage(89283L);
         assertThat(result).isEmpty();
     }
 
     @Test
-    void findAllByArtistId_ShouldReturnsValidSoundList(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Sound sound = entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
-        Sound sound2 = entityManager.persistAndFlush(MusicFactoryIT.sound2(artist, album));
-        Sound sound3 = entityManager.persistAndFlush(MusicFactoryIT.sound3(artist, album));
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsFirstPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
         entityManager.clear();
 
-        List<Sound> result = repository.findAllByArtistId(artist.getId());
-        assertSoundListContainsExactlyInAnyOrder(result, sound, sound2, sound3);
+        Page<Sound> soundPage = repository
+                .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertFirstPage(soundPage);
     }
 
     @Test
-    void findAllByArtistId_ShouldReturnsEmptyList_WhenArtistIdIsIncorrect(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsSecondPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
         entityManager.clear();
 
-        List<Sound> result = repository.findAllByArtistId(2385L);
-        assertThat(result).isEmpty();
+        Page<Sound> soundPage = repository
+                .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page + 1, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSecondPage(soundPage);
     }
 
     @Test
-    void findAllByAlbumId_ShouldReturnsValidSoundList(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        Sound sound = entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
-        Sound sound2 = entityManager.persistAndFlush(MusicFactoryIT.sound2(artist, album));
-        Sound sound3 = entityManager.persistAndFlush(MusicFactoryIT.sound3(artist, album));
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsLastPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
         entityManager.clear();
 
-        List<Sound> result = repository.findAllByAlbumId(album.getId());
-        assertSoundListContainsExactlyInAnyOrder(result, sound, sound2, sound3);
+        Page<Sound> soundPage = repository
+                .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page + 2, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertLastPage(soundPage);
     }
 
     @Test
-    void findAllByAlbumId_ShouldReturnsEmptyList_WhenAlbumIdIsIncorrect(){
-        Artist artist = entityManager.persistAndFlush(MusicFactoryIT.artist());
-        Album album = entityManager.persistAndFlush(MusicFactoryIT.album(artist));
-        entityManager.persistAndFlush(MusicFactoryIT.sound(artist, album));
+    void findByTitleStartingWithIgnoreCase_ShouldReturnsEmpty_WhenSoundNotFoundByPrefix(){
+        Page<Sound> soundPage = repository
+                .findByTitleStartingWithIgnoreCase("incorrect sound prefix", PageRequest.of(page, size));
+
+        assertEmptyPage(soundPage);
+    }
+
+    @Test
+    void findByArtistId_ShouldReturnsFirstPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
         entityManager.clear();
 
-        List<Sound> result = repository.findAllByAlbumId(2567L);
-        assertThat(result).isEmpty();
+        Page<Sound> soundPage = repository
+                .findByArtistId(artist.getId(), PageRequest.of(page, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertFirstPage(soundPage);
     }
 
-    private void assertSoundListContainsExactlyInAnyOrder(List<Sound> result, Sound sound, Sound sound2, Sound sound3){
-        assertThat(result)
-                .extracting(Sound::getId, Sound::getTitle, Sound::getKey, Sound::getDuration,
-                        soundEntity -> soundEntity.getArtist().getId(), soundEntity -> soundEntity.getAlbum().getId())
-                .containsExactlyInAnyOrder(
-                        tuple(sound.getId(), sound.getTitle(), sound.getKey(), sound.getDuration(), sound.getArtist().getId(), sound.getAlbum().getId()),
-                        tuple(sound2.getId(), sound2.getTitle(), sound2.getKey(), sound2.getDuration(), sound2.getArtist().getId(), sound2.getAlbum().getId()),
-                        tuple(sound3.getId(), sound3.getTitle(), sound3.getKey(), sound3.getDuration(), sound3.getArtist().getId(), sound3.getAlbum().getId())
-                );
+    @Test
+    void findByArtistId_ShouldReturnsSecondPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByArtistId(artist.getId(), PageRequest.of(page + 1, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSecondPage(soundPage);
     }
 
-    private void assertSoundListContainsExactly(List<Sound> result, Sound sound, Sound sound2, Sound sound3){
-        assertThat(result)
-                .extracting(Sound::getId, Sound::getTitle, Sound::getKey, Sound::getDuration,
-                        soundEntity -> soundEntity.getArtist().getId(), soundEntity -> soundEntity.getAlbum().getId())
-                .containsExactly(
-                        tuple(sound.getId(), sound.getTitle(), sound.getKey(), sound.getDuration(), sound.getArtist().getId(), sound.getAlbum().getId()),
-                        tuple(sound2.getId(), sound2.getTitle(), sound2.getKey(), sound2.getDuration(), sound2.getArtist().getId(), sound2.getAlbum().getId()),
-                        tuple(sound3.getId(), sound3.getTitle(), sound3.getKey(), sound3.getDuration(), sound3.getArtist().getId(), sound3.getAlbum().getId())
-                );
+    @Test
+    void findByArtistId_ShouldReturnsLastPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByArtistId(artist.getId(), PageRequest.of(page + 2, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertLastPage(soundPage);
     }
 
+    @Test
+    void findByArtistId_ShouldReturnsEmpty_WhenArtistIdIsInvalid(){
+        Page<Sound> soundPage = repository
+                .findByArtistId(23616L, PageRequest.of(page, size));
+
+        assertEmptyPage(soundPage);
+    }
+
+    @Test
+    void findByAlbumId_ShouldReturnsFirstPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByAlbumId(album.getId(), PageRequest.of(page, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertFirstPage(soundPage);
+    }
+
+    @Test
+    void findByAlbumId_ShouldReturnsSecondPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByAlbumId(album.getId(), PageRequest.of(page + 1, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSecondPage(soundPage);
+    }
+
+    @Test
+    void findByAlbumId_ShouldReturnsLastPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByAlbumId(album.getId(), PageRequest.of(page + 2, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertLastPage(soundPage);
+    }
+
+    @Test
+    void findByAlbumId_ShouldReturnsEmpty_WhenAlbumIdIsInvalid(){
+        Page<Sound> soundPage = repository
+                .findByAlbumId(79129L, PageRequest.of(page, size));
+
+        assertEmptyPage(soundPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsFirstPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByGenreId(genre.getId(), PageRequest.of(page, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertFirstPage(soundPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsSecondPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByGenreId(genre.getId(), PageRequest.of(page + 1, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSecondPage(soundPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsLastPageCorrectly(){
+        String soundTitlePrefix = "poker face";
+        String endKeyName = "key";
+        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
+        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Sound> soundPage = repository
+                .findByGenreId(genre.getId(), PageRequest.of(page + 2, size));
+        List<Sound> sounds = soundPage.getContent();
+
+        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertLastPage(soundPage);
+    }
+
+    @Test
+    void findByGenreId_ShouldReturnsEmpty_WhenGenreIdIsInvalid(){
+        Page<Sound> soundPage = repository
+                .findByGenreId(8341L, PageRequest.of(page, size));
+
+        assertEmptyPage(soundPage);
+    }
 
 }

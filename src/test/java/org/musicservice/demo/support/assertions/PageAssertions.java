@@ -1,4 +1,4 @@
-package org.musicservice.demo.support.pageable;
+package org.musicservice.demo.support.assertions;
 
 import org.springframework.data.domain.Page;
 
