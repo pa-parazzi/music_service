@@ -1,15 +1,17 @@
 package org.musicservice.demo.controller.rest.music;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
-import org.musicservice.demo.dto.music.sound.TracksResponse;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
+@Validated
 @RestController
 @RequestMapping("/api/sound")
 public class SoundController {
@@ -27,12 +29,18 @@ public class SoundController {
     }
 
     @GetMapping("/album/{id}")
-    public ResponseEntity<TracksResponse> getTracksByAlbum(@PathVariable("id") Long id){
-        return ResponseEntity.ok().body(soundService.getSoundListByAlbumId(id));
+    public ResponseEntity<PageResponse<SoundResponse>> getTracksByAlbum(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "page") @Min(0) int page,
+            @RequestParam(name = "size") @Min(1) @Max(30) int size){
+        return ResponseEntity.ok().body(soundService.getSoundsByAlbumIdPaged(id, page, size));
     }
 
     @GetMapping("/artist/{id}")
-    public ResponseEntity<TracksResponse> getTracksByArtist(@PathVariable("id") Long id){
-        return ResponseEntity.ok().body(soundService.getSoundListByArtistId(id));
+    public ResponseEntity<PageResponse<SoundResponse>> getTracksByArtist(
+            @PathVariable("id") Long id,
+            @RequestParam(name = "page") @Min(0) int page,
+            @RequestParam(name = "size") @Min(1) @Max(30) int size){
+        return ResponseEntity.ok().body(soundService.getSoundsByArtistIdPaged(id, page, size));
     }
 }

@@ -1,6 +1,5 @@
 package org.musicservice.demo.repository.music;
 
-import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.entity.music.Sound;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,28 +7,21 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface SoundRepository extends JpaRepository<Sound, Long> {
 
-    Page<Sound> findAllByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
+    @Query("select s from Sound s join fetch s.artist join fetch s.album join fetch s.album.image where s.id = :id")
+    Optional<Sound> findByIdForSoundPage(Long id);
 
-    List<Sound> findAllByArtistId(Long artistId);
+    Page<Sound> findByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
 
-    List<Sound> findAllByAlbumId(Long albumId);
+    Page<Sound> findByArtistId(Long artistId, Pageable pageable);
 
-    Page<Sound> findAllByGenreId(Long genreId, Pageable pageable);
+    Page<Sound> findByAlbumId(Long albumId, Pageable pageable);
+
+    Page<Sound> findByGenreId(Long genreId, Pageable pageable);
 
     boolean existsByKey(String key);
-
-    @Query("""
-    select new org.musicservice.demo.dto.music.sound.SoundPageProjection(
-        s.title, s.duration, s.key, s.releaseDate,
-        new org.musicservice.demo.dto.music.artist.ArtistResponse (a.id, a.name),
-        new org.musicservice.demo.dto.music.album.AlbumInfo(al.id, al.title, al.image.key, null))
-        from Sound s join s.artist a join s.album al where s.id=:id
-    """)
-    Optional<SoundPageProjection> findByIdForSoundPage(Long id);
 }

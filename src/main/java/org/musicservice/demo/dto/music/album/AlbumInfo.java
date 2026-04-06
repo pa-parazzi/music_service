@@ -1,3 +1,5 @@
 package org.musicservice.demo.dto.music.album;
 
-public record AlbumInfo(Long id, String title, String albumImageKey, String albumImageUrl) {}
+import org.musicservice.demo.dto.image.ImageResponse;
+
+public record AlbumInfo(Long id, String title, ImageResponse image) {}

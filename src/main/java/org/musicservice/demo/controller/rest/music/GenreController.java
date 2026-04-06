@@ -46,7 +46,7 @@ public class GenreController {
             @PathVariable("id") Long genreId,
             @RequestParam(name = "page") @Min(0) int page,
             @RequestParam(name = "size") @Min(1) @Max(30) int size){
-        return ResponseEntity.ok(soundService.findTracksByGenreIdPaged(genreId, page, size));
+        return ResponseEntity.ok(soundService.getSoundsByGenreIdPaged(genreId, page, size));
     }
 
     @GetMapping("/{id}/albums")

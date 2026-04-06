@@ -15,6 +15,6 @@ public interface SoundMapper {
     SoundResponse toResponse(Sound sound);
 
     @Mapping(target = "url", source = "key", qualifiedByName = "mapMp3Url")
-    @Mapping(target = "album.albumImageUrl", source = "album.albumImageKey", qualifiedByName = "mapImgUrl")
-    SoundPageResponse toPageResponse(SoundPageProjection soundProjection);
+    @Mapping(target = "album.image.url", source = "album.image.key", qualifiedByName = "mapImgUrl")
+    SoundPageResponse toPageResponse(Sound sound);
 }

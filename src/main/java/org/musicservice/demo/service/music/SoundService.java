@@ -1,10 +1,8 @@
 package org.musicservice.demo.service.music;
 
 import org.musicservice.demo.dto.music.common.PageResponse;
-import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TracksResponse;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
@@ -42,16 +40,20 @@ public class SoundService {
         this.albumRepository = albumRepository;
     }
 
-    public TracksResponse getSoundListByArtistId(Long artistId){
+    public PageResponse<SoundResponse> getSoundsByArtistIdPaged(Long artistId, int page, int size){
         if(!artistRepository.existsById(artistId)) throw new MusicNotFoundException("Исполнитель не найден");
-        List<SoundResponse> soundResponseList = soundRepository.findAllByArtistId(artistId).stream().map(soundMapper::toResponse).toList();
-        return new TracksResponse(soundResponseList);
+        Page<Sound> soundPage = soundRepository.findByArtistId
+                (artistId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<SoundResponse> response = soundPage.getContent().stream().map(soundMapper::toResponse).toList();
+        return new PageResponse<>(response, soundPage.hasNext());
     }
 
-    public TracksResponse getSoundListByAlbumId(Long albumId){
+    public PageResponse<SoundResponse> getSoundsByAlbumIdPaged(Long albumId, int page, int size){
         if(!albumRepository.existsById(albumId)) throw new MusicNotFoundException("Альбом не найден");
-        List<SoundResponse> soundResponseList =  soundRepository.findAllByAlbumId(albumId).stream().map(soundMapper::toResponse).toList();
-        return new TracksResponse(soundResponseList);
+        Page<Sound> soundPage = soundRepository.findByAlbumId
+                (albumId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<SoundResponse> response = soundPage.getContent().stream().map(soundMapper::toResponse).toList();
+        return new PageResponse<>(response, soundPage.hasNext());
     }
 
     public PageResponse<SoundResponse> getTrackCollectionByUserId(Long userId, int page, int size){
@@ -64,12 +66,12 @@ public class SoundService {
     }
 
     public SoundPageResponse getSoundPageResponseById(Long id) {
-        SoundPageProjection soundPageProjection = soundRepository.findByIdForSoundPage(id).orElseThrow(()-> new MusicNotFoundException("Песня не найдена"));
-        return soundMapper.toPageResponse(soundPageProjection);
+        Sound sound = soundRepository.findByIdForSoundPage(id).orElseThrow(()-> new MusicNotFoundException("Песня не найдена"));
+        return soundMapper.toPageResponse(sound);
     }
 
-    public PageResponse<SoundResponse> findTracksByGenreIdPaged(Long genreId, int page, int size){
-        Page<Sound> soundPage = soundRepository.findAllByGenreId
+    public PageResponse<SoundResponse> getSoundsByGenreIdPaged(Long genreId, int page, int size){
+        Page<Sound> soundPage = soundRepository.findByGenreId
                 (genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         List<SoundResponse> soundResponseList = soundPage.getContent().stream().map(soundMapper::toResponse).toList();
         return new PageResponse<>(soundResponseList, soundPage.hasNext());
