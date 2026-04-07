@@ -24,12 +24,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -97,10 +98,7 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
         String resultJson = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
 
-        assertThat(errorResponse.code()).isEqualTo(ErrorType.API_ERROR.name());
-        assertThat(errorResponse.message()).isNotBlank();
-        assertThat(errorResponse.status()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(errorResponse.timestamp()).isPositive();
+        assertApiErrorResponse(errorResponse, ErrorType.API_ERROR, HttpStatus.NOT_FOUND);
     }
 
 }

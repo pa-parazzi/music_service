@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -32,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 public class AlbumLikeControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -41,8 +40,6 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -62,7 +59,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrue_WhenAlbumLikeExists() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
@@ -94,7 +91,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldCreateAlbumLike() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
@@ -112,7 +109,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldSuccessDeleteAlbumLike() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));

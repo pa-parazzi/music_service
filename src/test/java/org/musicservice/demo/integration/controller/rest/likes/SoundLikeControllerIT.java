@@ -44,8 +44,6 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private ArtistRepository artistRepository;
@@ -66,7 +64,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrueAndHttpStatusIsOk_WhenSoundLikeExists() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
@@ -86,13 +84,6 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsFalseAndHttpStatusIsOk_WhenSoundLikeIsNotExists() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album, genre));
-        soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
-
         MvcResult result = mockMvc.perform(get("/api/sound-like/is-liked/{id}", 256L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likeStatus").exists())
@@ -106,7 +97,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldCreateSoundLikeAndReturnStatusIsCreated() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
@@ -125,7 +116,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @Test
     @WithMockUserPrincipal
     void shouldDeleteSoundLikeAndReturnStatusIsNoContent() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Genre genre = genreRepository.save(MusicFactoryIT.genre());
         Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));

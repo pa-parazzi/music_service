@@ -11,6 +11,7 @@ import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
@@ -21,10 +22,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
-import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithOutRelations;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithoutRelations;
 import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -84,7 +86,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertFirstPage(soundPage);
     }
 
@@ -104,7 +106,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page + 1, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertSecondPage(soundPage);
     }
 
@@ -124,7 +126,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByTitleStartingWithIgnoreCase(soundTitlePrefix, PageRequest.of(page + 2, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertLastPage(soundPage);
     }
 
@@ -152,7 +154,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByArtistId(artist.getId(), PageRequest.of(page, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertFirstPage(soundPage);
     }
 
@@ -172,7 +174,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByArtistId(artist.getId(), PageRequest.of(page + 1, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertSecondPage(soundPage);
     }
 
@@ -192,7 +194,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByArtistId(artist.getId(), PageRequest.of(page + 2, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertLastPage(soundPage);
     }
 
@@ -220,7 +222,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByAlbumId(album.getId(), PageRequest.of(page, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertFirstPage(soundPage);
     }
 
@@ -240,7 +242,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByAlbumId(album.getId(), PageRequest.of(page + 1, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertSecondPage(soundPage);
     }
 
@@ -260,7 +262,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByAlbumId(album.getId(), PageRequest.of(page + 2, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertLastPage(soundPage);
     }
 
@@ -288,7 +290,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByGenreId(genre.getId(), PageRequest.of(page, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertFirstPage(soundPage);
     }
 
@@ -308,7 +310,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByGenreId(genre.getId(), PageRequest.of(page + 1, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertSecondPage(soundPage);
     }
 
@@ -328,7 +330,7 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
                 .findByGenreId(genre.getId(), PageRequest.of(page + 2, size));
         List<Sound> sounds = soundPage.getContent();
 
-        assertSoundsWithOutRelations(sounds, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
         assertLastPage(soundPage);
     }
 

@@ -263,7 +263,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldFailedLogin_WhenUsernameInvalid() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         LoginRequest loginRequest = UserDataFactoryIT.loginRequest("invalid username", user.getPassword());
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
@@ -291,7 +291,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldFailedLogin_WhenPasswordInvalid() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         LoginRequest loginRequest = UserDataFactoryIT.loginRequest(user.getUsername(), "newPass1234");
 
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
@@ -319,7 +319,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsPresent() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshToken refreshToken = RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
@@ -338,7 +338,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldSuccessLogoutWithStatusIsOkAndClearRefreshTokenCookie_WhenCookieRequestIsMissing() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
 
         MvcResult result = mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
@@ -351,7 +351,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNewAccessTokenByUsedRefreshTokenCookieRequest_WhenCookieRequestIsValid() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);
@@ -370,7 +370,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusUnauthorized_WhenCookieRequestIsMissing() throws Exception{
-        userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh"))
                 .andExpect(status().isUnauthorized())
@@ -385,7 +385,7 @@ public class AuthenticationControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusUnauthorized_WhenCookieInvalid() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String refreshTokenValue = refreshTokenCryptoService.generateRefreshToken();
         RefreshTokenFactoryIT.refreshToken(
                 refreshTokenValue, user, refreshTokenProperties, refreshTokenCryptoService, refreshTokenRepository);

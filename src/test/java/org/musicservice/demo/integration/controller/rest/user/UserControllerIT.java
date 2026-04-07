@@ -57,11 +57,11 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
-        MvcResult result = mockMvc.perform(get("/user/profile")
+        MvcResult result = mockMvc.perform(get("/api/user/profile")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -69,15 +69,15 @@ public class UserControllerIT extends AbstractIntegrationTest {
         String resultJson = result.getResponse().getContentAsString();
         UserMainResponse response = objectMapper.readValue(resultJson, UserMainResponse.class);
         assertThat(response.getUsername()).isEqualTo(user.getUsername());
-        assertThat(response.getAvatar().getKey()).isEqualTo(userAvatar.getKey());
+        assertThat(response.getAvatar().key()).isEqualTo(userAvatar.getKey());
     }
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
 
-        MvcResult result = mockMvc.perform(get("/user/profile"))
+        MvcResult result = mockMvc.perform(get("/api/user/profile"))
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
@@ -88,11 +88,11 @@ public class UserControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount(passwordEncoder));
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
-        MvcResult result = mockMvc.perform(get("/user/profile")
+        MvcResult result = mockMvc.perform(get("/api/user/profile")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken + "invalid.token"))
                 .andExpect(status().isUnauthorized())
                 .andReturn();

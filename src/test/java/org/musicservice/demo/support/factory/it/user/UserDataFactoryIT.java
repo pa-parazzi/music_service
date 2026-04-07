@@ -29,9 +29,8 @@ public class UserDataFactoryIT {
         return request;
     }
 
-    public static User userWithEnabledAccount(PasswordEncoder encoder){
-        String password = encodePassword(encoder, UUID.randomUUID().toString());
-        User user = new User(UUID.randomUUID().toString(), password, UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
+    public static User userWithEnabledAccount(){
+        User user = new User(UUID.randomUUID().toString(), "encoded password", UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
         user.setEnabled(true);
         return user;
     }

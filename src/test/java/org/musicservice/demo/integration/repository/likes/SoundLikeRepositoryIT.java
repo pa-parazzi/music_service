@@ -12,6 +12,7 @@ import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
@@ -23,11 +24,12 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
-import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithOutRelations;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithoutRelations;
 import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSoundWithAllRelations;
 import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -108,7 +110,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertFirstPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test
@@ -132,7 +134,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertSecondPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test
@@ -156,7 +158,7 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
         assertLastPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
-        assertSoundsWithOutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
+        assertSoundsWithoutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
 
     @Test

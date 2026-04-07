@@ -11,6 +11,7 @@ import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prep
 import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumsWithAllRelations;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Autowired
