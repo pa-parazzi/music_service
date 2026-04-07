@@ -1,0 +1,399 @@
+package org.musicservice.demo.integration.controller.rest.music;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
+import org.musicservice.demo.dto.music.genre.GenreResponse;
+import org.musicservice.demo.dto.music.genre.GenresResponse;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.image.AlbumImage;
+import org.musicservice.demo.entity.music.Album;
+import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.music.Sound;
+import org.musicservice.demo.error.ApiErrorResponse;
+import org.musicservice.demo.error.ErrorType;
+import org.musicservice.demo.repository.image.AlbumImageRepository;
+import org.musicservice.demo.repository.music.AlbumRepository;
+import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.repository.music.SoundRepository;
+import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.factory.it.music.GenreFactoryIT;
+import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+public class GenreControllerIT extends AbstractIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private GenreRepository genreRepository;
+    @Autowired
+    private ArtistRepository artistRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
+    @Autowired
+    private AlbumImageRepository albumImageRepository;
+    @Autowired
+    private SoundRepository soundRepository;
+
+    @BeforeEach
+    void cleanupDb() {
+        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, album_image, sound RESTART IDENTITY CASCADE");
+    }
+
+    @Test
+    void shouldReturnValidGenresResponse() throws Exception {
+        List<Genre> genres = genreRepository.saveAll(GenreFactoryIT.genres());
+        List<String> genresName = genres.stream().map(genre -> genre.getName().name()).toList();
+        List<String> imagesName = genres.stream().map(Genre::getImageName).toList();
+
+        MvcResult result = mockMvc.perform(get("/api/genre"))
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.genres[*].id").exists(),
+                        jsonPath("$.genres[*].name").exists(),
+                        jsonPath("$.genres[*].imageName").exists())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        GenresResponse response = objectMapper.readValue(json, GenresResponse.class);
+        List<GenreResponse> genresResponse = response.genres();
+
+        assertThat(genresResponse).hasSize(genres.size());
+        assertThat(genresResponse).extracting(GenreResponse::id).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+        assertThat(genresResponse).extracting(GenreResponse::name).containsExactlyInAnyOrderElementsOf(genresName);
+        assertThat(genresResponse).extracting(GenreResponse::imageName).containsExactlyInAnyOrderElementsOf(imagesName);
+    }
+
+    @Test
+    void shouldReturnValidGenreResponseById() throws Exception {
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+
+        MvcResult result = mockMvc.perform(get("/api/genre/{id}", genre.getId()))
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.id").exists(),
+                        jsonPath("$.name").exists(),
+                        jsonPath("$.imageName").exists())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        GenreResponse response = objectMapper.readValue(json, GenreResponse.class);
+
+        assertThat(response.id()).isEqualTo(genre.getId());
+        assertThat(response.name()).isEqualTo(genre.getName().name());
+        assertThat(response.imageName()).isEqualTo(genre.getImageName());
+    }
+
+    @Test
+    void shouldReturnNotFound_WhenIdIsInvalid() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/genre/{id}", 26732L))
+                .andExpect(status().isNotFound())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
+
+        assertApiErrorResponse(errorResponse, ErrorType.MUSIC_GENRE_DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void shouldReturnFirstPageOfSoundsCorrectly() throws Exception {
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        String titlePrefix = "just dance_";
+        String keyNameEndsWith = "key";
+        prepareSounds(genre, titlePrefix, keyNameEndsWith);
+
+        RequestBuilder request = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
+        MvcResult firstPageResult = mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].duration").exists(),
+                        jsonPath("$.contentList[*].key").exists(),
+                        jsonPath("$.contentList[*].url").exists(),
+                        jsonPath("$.hasNextPage").exists())
+                .andReturn();
+
+        PageResponse<SoundResponse> response = getResponse(firstPageResult, new TypeReference<>() {});
+        assertThat(response.hasNextPage()).isTrue();
+
+        List<SoundResponse> soundsResponseList = response.contentList();
+        assertThat(soundsResponseList).hasSize(size);
+        assertSoundsResponse(soundsResponseList, titlePrefix, keyNameEndsWith);
+    }
+
+    @Test
+    void shouldReturnSecondPageSoundsWithIdsGreaterThanFirstPage() throws Exception {
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        String titlePrefix = "just dance_";
+        String keyNameEndsWith = "key";
+        prepareSounds(genre, titlePrefix, keyNameEndsWith);
+
+        RequestBuilder firstPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
+        MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();
+
+        RequestBuilder secondPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page + 1, size);
+        MvcResult secondPageResult = mockMvc.perform(secondPageRequest).andExpect(status().isOk()).andReturn();
+
+        PageResponse<SoundResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>() {});
+
+        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
+
+        assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
+    }
+
+    @Test
+    void shouldReturnFirstPageOfAlbumsCorrectly() throws Exception {
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        String titlePrefix = "Black hole";
+        String imgKeyNameEndsWith = "album_key";
+        prepareAlbums(genre, titlePrefix, imgKeyNameEndsWith);
+
+        RequestBuilder requestBuilder = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].image").exists(),
+                        jsonPath("$.contentList[*].artist").exists(),
+                        jsonPath("$.hasNextPage").exists())
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        PageResponse<AlbumResponse> response = objectMapper.readValue(json, new TypeReference<>() {});
+        assertThat(response.hasNextPage()).isTrue();
+
+        List<AlbumResponse> albumResponseList = response.contentList();
+        assertThat(albumResponseList).hasSize(size);
+        assertAlbumsResponse(albumResponseList, titlePrefix, imgKeyNameEndsWith);
+    }
+
+    @Test
+    void shouldReturnSecondPageAlbumsWithIdsGreaterThanFirstPage() throws Exception {
+        Genre genre = genreRepository.save(MusicFactoryIT.genre());
+        String titlePrefix = "Black hole";
+        String imgKeyNameEndsWith = "album_key";
+        prepareAlbums(genre, titlePrefix, imgKeyNameEndsWith);
+
+        RequestBuilder firstPageRequest = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
+        MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();
+
+        RequestBuilder secondPageRequest = requestBuilder(albumsByGenreUrl, genre.getId(), page + 1, size);
+        MvcResult secondPageResult = mockMvc.perform(secondPageRequest).andExpect(status().isOk()).andReturn();
+
+        PageResponse<AlbumResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<AlbumResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>() {});
+
+        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+
+        assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenIncorrectPageValue(String url) throws Exception {
+        int page = -1;
+
+        RequestBuilder requestBuilder = requestBuilder(url, 1L, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenIncorrectSizeValue(String url) throws Exception {
+        int size = 50;
+
+        RequestBuilder requestBuilder = requestBuilder(url, 1L, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch(String url) throws Exception {
+        String page = "some page";
+
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("page", page)
+                .param("size", String.valueOf(size));
+
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch(String url) throws Exception {
+        int page = 2;
+        String size = "fifty";
+
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("page", String.valueOf(page))
+                .param("size", size);
+
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenPageParamIsMissing(String url) throws Exception {
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("size", String.valueOf(size));
+
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsByGenreUrl, tracksByGenreUrl})
+    void shouldReturnBadRequest_WhenSizeParamIsMissing(String url) throws Exception {
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("page", String.valueOf(page));
+
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpectAll(
+                        jsonPath("$.code").exists(),
+                        jsonPath("$.message").exists(),
+                        jsonPath("$.status").exists(),
+                        jsonPath("$.timestamp").exists(),
+                        jsonPath("$.fieldsError").exists())
+                .andReturn();
+
+        assertValidationError(result);
+    }
+
+    private final String albumsByGenreUrl = "/api/genre/{id}/albums";
+    private final String tracksByGenreUrl = "/api/genre/{id}/tracks";
+
+    private RequestBuilder requestBuilder(String url, Long genreId, int page, int size) {
+        return get(url, genreId)
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size));
+    }
+
+    private <T> PageResponse<T> getResponse(MvcResult result,
+                                            TypeReference<PageResponse<T>> typeReference) throws Exception {
+        String json = result.getResponse().getContentAsString();
+        return objectMapper.readValue(json, typeReference);
+    }
+
+    private void assertValidationError(MvcResult result) throws Exception {
+        String json = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
+        assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
+    }
+
+    private void prepareSounds(Genre genre, String titlePrefix, String keyNameEndsWith) {
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        for (int i = 0; i < totalElements; i++) {
+            soundRepository.save(new Sound(titlePrefix + "_" + i, 260, artist, album,
+                    i + "_" + keyNameEndsWith, LocalDate.of(2018, 5, 19), genre));
+        }
+    }
+
+    private void prepareAlbums(Genre genre, String titlePrefix, String imgKeyNameEndsWith){
+        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        for (int i = 0; i < totalElements; i++) {
+            Album album = albumRepository.save
+                    (new Album(titlePrefix + "_" + i,
+                            LocalDate.of(2004, 10, 15),
+                            artist, genre));
+            album.setImage(albumImageRepository.save
+                    (new AlbumImage(i + "_" + imgKeyNameEndsWith, album)));
+        }
+    }
+}
