@@ -34,7 +34,7 @@ public class ApiGlobalHandler {
     public ResponseEntity<ApiErrorResponse> noSuchMusicResultHandle(NoSuchMusicResultException e){
         HttpStatus status = HttpStatus.NO_CONTENT;
         return ResponseEntity.status(status).body(
-                new ApiErrorResponse(ErrorType.INVALID_MUSIC_CONTENT.name(), e.getMessage(),
+                new ApiErrorResponse(ErrorType.MISSING_MUSIC_CONTENT.name(), e.getMessage(),
                         status.value(), System.currentTimeMillis(), null));
     }
 
