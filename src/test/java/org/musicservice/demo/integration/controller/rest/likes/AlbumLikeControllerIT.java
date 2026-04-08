@@ -4,23 +4,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.likes.LikeStatusResponse;
-import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.likes.AlbumLikeRepository;
-import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.security.WithMockUserPrincipal;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
+import org.musicservice.demo.support.fixture.AlbumTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -32,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
+@Import(AlbumTestFixture.class)
 public class AlbumLikeControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -43,11 +41,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private GenreRepository genreRepository;
-    @Autowired
-    private ArtistRepository artistRepository;
-    @Autowired
-    private AlbumRepository albumRepository;
+    private AlbumTestFixture albumFixture;
     @Autowired
     private AlbumLikeRepository albumLikeRepository;
 
@@ -60,9 +54,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrue_WhenAlbumLikeExists() throws Exception {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        Album album = albumFixture.albumAggregateWithOneAlbum().albums().getFirst();
         albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
         MvcResult result = mockMvc.perform(get("/api/album-like/is-liked/{id}", album.getId()))
@@ -92,9 +84,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @WithMockUserPrincipal
     void shouldCreateAlbumLike() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        Album album = albumFixture.albumAggregateWithOneAlbum().albums().getFirst();
 
         mockMvc.perform(post("/api/album-like/{id}", album.getId()))
                 .andExpect(status().isCreated());
@@ -110,9 +100,7 @@ public class AlbumLikeControllerIT extends AbstractIntegrationTest {
     @WithMockUserPrincipal
     void shouldSuccessDeleteAlbumLike() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+        Album album = albumFixture.albumAggregateWithOneAlbum().albums().getFirst();
         AlbumLike albumLike = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
         mockMvc.perform(delete("/api/album-like/{id}", album.getId()))

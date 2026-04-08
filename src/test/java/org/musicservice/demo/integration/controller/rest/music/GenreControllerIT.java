@@ -12,30 +12,23 @@ import org.musicservice.demo.dto.music.genre.GenreResponse;
 import org.musicservice.demo.dto.music.genre.GenresResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.genre.Genre;
-import org.musicservice.demo.entity.image.AlbumImage;
-import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
-import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.repository.image.AlbumImageRepository;
-import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.GenreRepository;
-import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.GenreFactoryIT;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.fixture.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +36,8 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
 import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
-import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.PageAssertions.page;
+import static org.musicservice.demo.support.assertions.PageAssertions.size;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import({PageResponseTestFixture.class, SoundTestFixture.class, AlbumTestFixture.class})
 public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -62,13 +57,11 @@ public class GenreControllerIT extends AbstractIntegrationTest {
     @Autowired
     private GenreRepository genreRepository;
     @Autowired
-    private ArtistRepository artistRepository;
+    private PageResponseTestFixture pageResponseFixture;
     @Autowired
-    private AlbumRepository albumRepository;
+    private SoundTestFixture soundFixture;
     @Autowired
-    private AlbumImageRepository albumImageRepository;
-    @Autowired
-    private SoundRepository soundRepository;
+    private AlbumTestFixture albumFixture;
 
     @BeforeEach
     void cleanupDb() {
@@ -138,10 +131,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnFirstPageOfSoundsCorrectly() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        prepareSounds(genre, titlePrefix, keyNameEndsWith);
+        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith);
+        Genre genre = soundAggregate.genre();
 
         RequestBuilder request = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = mockMvc.perform(request)
@@ -155,7 +148,7 @@ public class GenreControllerIT extends AbstractIntegrationTest {
                         jsonPath("$.hasNextPage").exists())
                 .andReturn();
 
-        PageResponse<SoundResponse> response = getResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(firstPageResult, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
         List<SoundResponse> soundsResponseList = response.contentList();
@@ -165,10 +158,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnSecondPageSoundsWithIdsGreaterThanFirstPage() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        prepareSounds(genre, titlePrefix, keyNameEndsWith);
+        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith);
+        Genre genre = soundAggregate.genre();
 
         RequestBuilder firstPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();
@@ -176,8 +169,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         RequestBuilder secondPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page + 1, size);
         MvcResult secondPageResult = mockMvc.perform(secondPageRequest).andExpect(status().isOk()).andReturn();
 
-        PageResponse<SoundResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>() {});
-        PageResponse<SoundResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondPageResult, new TypeReference<>() {});
 
         List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
         List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
@@ -187,10 +180,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnFirstPageOfAlbumsCorrectly() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
         String titlePrefix = "Black hole";
         String imgKeyNameEndsWith = "album_key";
-        prepareAlbums(genre, titlePrefix, imgKeyNameEndsWith);
+        AlbumAggregate albumAggregate = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith);
+        Genre genre = albumAggregate.genre();
 
         RequestBuilder requestBuilder = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
         MvcResult result = mockMvc.perform(requestBuilder)
@@ -214,10 +207,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnSecondPageAlbumsWithIdsGreaterThanFirstPage() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
         String titlePrefix = "Black hole";
         String imgKeyNameEndsWith = "album_key";
-        prepareAlbums(genre, titlePrefix, imgKeyNameEndsWith);
+        AlbumAggregate albumAggregate = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith);
+        Genre genre = albumAggregate.genre();
 
         RequestBuilder firstPageRequest = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();
@@ -225,8 +218,11 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         RequestBuilder secondPageRequest = requestBuilder(albumsByGenreUrl, genre.getId(), page + 1, size);
         MvcResult secondPageResult = mockMvc.perform(secondPageRequest).andExpect(status().isOk()).andReturn();
 
-        PageResponse<AlbumResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>() {});
-        PageResponse<AlbumResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>() {});
+        PageResponse<AlbumResponse> firstPageResponse = pageResponseFixture.
+                getPageResponse(firstPageResult, new TypeReference<>() {});
+
+        PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondPageResult, new TypeReference<>() {});
 
         List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
         List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
@@ -355,8 +351,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         assertValidationError(result);
     }
 
-    private final String albumsByGenreUrl = "/api/genre/{id}/albums";
-    private final String tracksByGenreUrl = "/api/genre/{id}/tracks";
+    private static final String albumsByGenreUrl = "/api/genre/{id}/albums";
+    private static final String tracksByGenreUrl = "/api/genre/{id}/tracks";
 
     private RequestBuilder requestBuilder(String url, Long genreId, int page, int size) {
         return get(url, genreId)
@@ -364,36 +360,9 @@ public class GenreControllerIT extends AbstractIntegrationTest {
                 .param("size", String.valueOf(size));
     }
 
-    private <T> PageResponse<T> getResponse(MvcResult result,
-                                            TypeReference<PageResponse<T>> typeReference) throws Exception {
-        String json = result.getResponse().getContentAsString();
-        return objectMapper.readValue(json, typeReference);
-    }
-
     private void assertValidationError(MvcResult result) throws Exception {
         String json = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
         assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
-    }
-
-    private void prepareSounds(Genre genre, String titlePrefix, String keyNameEndsWith) {
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        for (int i = 0; i < totalElements; i++) {
-            soundRepository.save(new Sound(titlePrefix + "_" + i, 260, artist, album,
-                    i + "_" + keyNameEndsWith, LocalDate.of(2018, 5, 19), genre));
-        }
-    }
-
-    private void prepareAlbums(Genre genre, String titlePrefix, String imgKeyNameEndsWith){
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        for (int i = 0; i < totalElements; i++) {
-            Album album = albumRepository.save
-                    (new Album(titlePrefix + "_" + i,
-                            LocalDate.of(2004, 10, 15),
-                            artist, genre));
-            album.setImage(albumImageRepository.save
-                    (new AlbumImage(i + "_" + imgKeyNameEndsWith, album)));
-        }
     }
 }

@@ -1,43 +1,56 @@
 package org.musicservice.demo.integration.controller.rest.music;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.musicservice.demo.dto.likes.LikedContentIds;
-import org.musicservice.demo.dto.music.album.AlbumsResponse;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
-import org.musicservice.demo.dto.music.sound.TracksResponse;
-import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
+import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.repository.image.AlbumImageRepository;
-import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
-import org.musicservice.demo.repository.music.SoundRepository;
+import org.musicservice.demo.repository.likes.AlbumLikeRepository;
+import org.musicservice.demo.repository.likes.SoundLikeRepository;
+import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.factory.it.security.WithMockUserPrincipal;
+import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
+import org.musicservice.demo.support.fixture.AlbumTestFixture;
+import org.musicservice.demo.support.fixture.PageResponseTestFixture;
+import org.musicservice.demo.support.fixture.SoundTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertBadRequestErrorStructure;
+import static org.musicservice.demo.support.assertions.PageAssertions.page;
+import static org.musicservice.demo.support.assertions.PageAssertions.size;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
+@Import({PageResponseTestFixture.class, SoundTestFixture.class, AlbumTestFixture.class})
 public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -47,107 +60,244 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private ArtistRepository artistRepository;
+    private UserRepository userRepository;
     @Autowired
-    private AlbumRepository albumRepository;
+    private SoundLikeRepository soundLikeRepository;
     @Autowired
-    private AlbumImageRepository albumImageRepository;
+    private AlbumLikeRepository albumLikeRepository;
     @Autowired
-    private SoundRepository soundRepository;
+    private PageResponseTestFixture pageResponseFixture;
     @Autowired
-    private GenreRepository genreRepository;
+    private SoundTestFixture soundFixture;
+    @Autowired
+    private AlbumTestFixture albumFixture;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, genre, artist, album, album_image, sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, genre, artist, album, album_image," +
+                " sound, sound_like, album_like RESTART IDENTITY CASCADE");
     }
 
     @Test
-    void shouldReturnCollectionTracksOrderByCreatedAtAndStatusIsOk() throws Exception{
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
+    @WithMockUserPrincipal
+    void shouldReturnFirstPageOfCollectionTracks() throws Exception{
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+        String titlePrefix = "umbrella";
+        String keyNameEndsWith = "key";
+        List<Sound> sounds = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith).sounds();
+        sounds.forEach(sound -> soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound)));
 
-        List<Sound> soundList = soundRepository.saveAll(MusicFactoryIT.soundList(artist, album, genre));
-        List<Long> orderedSoundIds = List.of(soundList.get(2).getId(), soundList.get(0).getId(), soundList.get(1).getId());
-        LikedContentIds likedSounds = new LikedContentIds(orderedSoundIds);
-
-        String jsonContent = objectMapper.writeValueAsString(likedSounds);
-
-        MvcResult result = mockMvc.perform(post("/api/collection/tracks")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonContent))
+        RequestBuilder requestBuilder = requestBuilder(tracksCollectionUrl, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].duration").exists(),
+                        jsonPath("$.contentList[*].key").exists(),
+                        jsonPath("$.contentList[*].url").exists()
+                )
                 .andReturn();
 
-        String jsonResult = result.getResponse().getContentAsString();
-        TracksResponse tracksResponse = objectMapper.readValue(jsonResult, TracksResponse.class);
-        List<SoundResponse> soundListResponse = tracksResponse.soundList();
-        List<Long> actualSoundsIds = soundListResponse.stream().map(SoundResponse::getId).toList();
+        PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
+        assertThat(response.hasNextPage()).isTrue();
 
-        assertThat(actualSoundsIds).containsExactlyElementsOf(orderedSoundIds);
+        List<SoundResponse> soundResponseList = response.contentList();
+        assertThat(soundResponseList).hasSize(size);
+        assertSoundsResponse(soundResponseList, titlePrefix, keyNameEndsWith);
     }
 
     @Test
-    void shouldReturnCollectionAlbumsOrderByCreatedAtAndStatusIsOk() throws Exception{
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        List<Album> albumList = albumRepository.saveAll(MusicFactoryIT.albumList(artist, genre));
-        albumList.forEach(album -> album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album))));
+    @WithMockUserPrincipal
+    void shouldReturnFirstPageTracksWithIdsGreaterThanSecondPage_WhenDefaultOrderDesc() throws Exception{
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+        String titlePrefix = "umbrella";
+        String keyNameEndsWith = "key";
+        List<Sound> sounds = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith).sounds();
+        sounds.forEach(sound -> soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound)));
 
-        List<Long> orderedAlbumIds = List.of(albumList.get(2).getId(), albumList.get(0).getId(), albumList.get(1).getId());
-        LikedContentIds likedContentIds = new LikedContentIds(orderedAlbumIds);
+        RequestBuilder firstRequest = requestBuilder(tracksCollectionUrl, page, size);
+        MvcResult firstResult = mockMvc.perform(firstRequest).andExpect(status().isOk()).andReturn();
 
-        String contentJson = objectMapper.writeValueAsString(likedContentIds);
+        RequestBuilder secondRequest = requestBuilder(tracksCollectionUrl, page + 1, size);
+        MvcResult secondResult = mockMvc.perform(secondRequest).andExpect(status().isOk()).andReturn();
 
-        MvcResult result = mockMvc.perform(post("/api/collection/albums")
-                        .content(contentJson)
-                        .contentType(MediaType.APPLICATION_JSON))
+        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondResult, new TypeReference<>() {});
+
+        List<Long> firstPageSoundIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
+        List<Long> secondPageSoundIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
+
+        assertThat(Collections.min(firstPageSoundIds)).isGreaterThan(Collections.max(secondPageSoundIds));
+    }
+
+    @Test
+    @WithMockUserPrincipal
+    void shouldReturnApiErrorResponseWithStatusIsNoContent_WhenUserDoesNotHaveSoundLikes() throws Exception{
+        userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+
+        RequestBuilder requestBuilder = requestBuilder(tracksCollectionUrl, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent()).andReturn();
+
+        assertMissingMusicContentError(result);
+    }
+
+    @Test
+    @WithMockUserPrincipal
+    void shouldReturnFirstPageOfCollectionAlbums() throws Exception{
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+        String titlePrefix = "Tri Face";
+        String imgKeyNameEndsWith = "album-key";
+        List<Album> albums = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith).albums();
+        albums.forEach(album -> albumLikeRepository.save(MusicFactoryIT.albumLike(user, album)));
+
+        RequestBuilder requestBuilder = requestBuilder(albumsCollectionUrl, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].image").exists(),
+                        jsonPath("$.contentList[*].artist").exists())
                 .andReturn();
 
-        String jsonResult = result.getResponse().getContentAsString();
-        AlbumsResponse albumsResponse = objectMapper.readValue(jsonResult, AlbumsResponse.class);
-        List<AlbumResponse> albums = albumsResponse.albums();
-        List<Long> actualAlbumIds = albums.stream().map(AlbumResponse::getAlbumId).toList();
-        assertThat(actualAlbumIds).containsExactlyElementsOf(orderedAlbumIds);
+        PageResponse<AlbumResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
+        assertThat(response.hasNextPage()).isTrue();
+
+        List<AlbumResponse> albumResponseList = response.contentList();
+        assertThat(albumResponseList).hasSize(size);
+        assertAlbumsResponse(albumResponseList, titlePrefix, imgKeyNameEndsWith);
     }
 
     @Test
-    void shouldReturnStatusIsNoContent_WhenLikedTracksIsEmpty() throws Exception{
-        LikedContentIds likedSounds = new LikedContentIds(List.of());
-        String contentJson = objectMapper.writeValueAsString(likedSounds);
+    @WithMockUserPrincipal
+    void shouldReturnFirstPageAlbumsWithIdsGreaterThanSecondPage_WhenDefaultOrderDesc() throws Exception{
+        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+        String titlePrefix = "Tri Face";
+        String imgKeyNameEndsWith = "album-key";
+        List<Album> albums = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith).albums();
+        albums.forEach(album -> albumLikeRepository.save(MusicFactoryIT.albumLike(user, album)));
 
-        MvcResult result = mockMvc.perform(post("/api/collection/tracks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentJson))
-                .andExpect(status().isNoContent())
-                .andReturn();
+        RequestBuilder firstRequest = requestBuilder(albumsCollectionUrl, page, size);
+        MvcResult firstResult = mockMvc.perform(firstRequest).andExpect(status().isOk()).andReturn();
 
-        String jsonResult = result.getResponse().getContentAsString();
-        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
-        assertApiErrorResponse(errorResponse);
+        RequestBuilder secondRequest = requestBuilder(albumsCollectionUrl, page + 1, size);
+        MvcResult secondResult = mockMvc.perform(secondRequest).andExpect(status().isOk()).andReturn();
+
+        PageResponse<AlbumResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstResult, new TypeReference<>() {});
+        PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondResult, new TypeReference<>() {});
+
+        List<Long> firstPageSoundIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+        List<Long> secondPageSoundIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+
+        assertThat(Collections.min(firstPageSoundIds)).isGreaterThan(Collections.max(secondPageSoundIds));
     }
 
     @Test
-    void shouldReturnStatusIsNoContent_WhenLikedAlbumsIsEmpty() throws Exception{
-        LikedContentIds likedContentIds = new LikedContentIds(List.of());
-        String contentJson = objectMapper.writeValueAsString(likedContentIds);
+    @WithMockUserPrincipal
+    void shouldReturnApiErrorResponseWithStatusIsNoContent_WhenUserDoesNotHaveAlbumLikes() throws Exception{
+        userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
 
-        MvcResult result = mockMvc.perform(post("/api/collection/albums")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(contentJson))
-                .andExpect(status().isNoContent())
-                .andReturn();
+        RequestBuilder requestBuilder = requestBuilder(albumsCollectionUrl, page, size);
+        MvcResult result = mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent()).andReturn();
 
-        String jsonResult = result.getResponse().getContentAsString();
-        ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);
-        assertApiErrorResponse(errorResponse);
+        assertMissingMusicContentError(result);
     }
 
-    private void assertApiErrorResponse(ApiErrorResponse errorResponse){
-        assertThat(errorResponse.code()).isEqualTo(ErrorType.INVALID_MUSIC_CONTENT.name());
-        assertThat(errorResponse.status()).isEqualTo(HttpStatus.NO_CONTENT.value());
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenIncorrectPageValue(String url) throws Exception {
+        int page = -1;
+
+        RequestBuilder requestBuilder = requestBuilder(url, page, size);
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenIncorrectSizeValue(String url) throws Exception {
+        int size = 50;
+
+        RequestBuilder requestBuilder = requestBuilder(url, page, size);
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch(String url) throws Exception {
+        String page = "some page";
+
+        RequestBuilder requestBuilder = get(url)
+                .param("page", page)
+                .param("size", String.valueOf(size));
+
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch(String url) throws Exception {
+        int page = 2;
+        String size = "fifty";
+
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("page", String.valueOf(page))
+                .param("size", size);
+
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenPageParamIsMissing(String url) throws Exception {
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("size", String.valueOf(size));
+
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    void shouldReturnBadRequest_WhenSizeParamIsMissing(String url) throws Exception {
+        RequestBuilder requestBuilder = get(url, 1L)
+                .param("page", String.valueOf(page));
+
+        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+
+        assertValidationError(result);
+    }
+
+    private static final String albumsCollectionUrl = "/api/collection/albums";
+    private static final String tracksCollectionUrl = "/api/collection/tracks";
+
+    private RequestBuilder requestBuilder(String url, int page, int size) {
+        return get(url)
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size));
+    }
+
+    private void assertValidationError(MvcResult result) throws Exception {
+        String json = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
+        assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
+    }
+
+    private void assertMissingMusicContentError(MvcResult result) throws Exception{
+        String json = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
+        assertApiErrorResponse(errorResponse, ErrorType.MISSING_MUSIC_CONTENT, HttpStatus.NO_CONTENT);
     }
 
 }

@@ -4,20 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
-import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.repository.image.AlbumImageRepository;
-import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.fixture.AlbumTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc(printOnlyOnFailure = false)
+@Import(AlbumTestFixture.class)
 public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -40,13 +36,7 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private ArtistRepository artistRepository;
-    @Autowired
-    private AlbumRepository albumRepository;
-    @Autowired
-    private AlbumImageRepository albumImageRepository;
-    @Autowired
-    private GenreRepository genreRepository;
+    private AlbumTestFixture albumFixture;
 
     @BeforeEach
     void cleanupDb(){
@@ -55,10 +45,7 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidAlbumResponse() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
+        Album album = albumFixture.albumAggregateWithOneAlbum().albums().getFirst();
 
         MvcResult result = mockMvc.perform(get("/api/album/{id}", album.getId()))
                 .andExpect(status().isOk())
@@ -81,11 +68,6 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnApiErrorResponse_WhenAlbumIdInvalid() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
-
         MvcResult result = mockMvc.perform(get("/api/album/{id}", 126L))
                 .andExpect(status().isNotFound())
                 .andExpectAll(
