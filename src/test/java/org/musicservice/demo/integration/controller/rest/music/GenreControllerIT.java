@@ -128,8 +128,7 @@ public class GenreControllerIT extends AbstractSpringBootIT {
     void shouldReturnFirstPageOfSoundsCorrectly() throws Exception {
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
-        Genre genre = soundAggregate.genre();
+        soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
 
         RequestBuilder request = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(request));
@@ -147,8 +146,7 @@ public class GenreControllerIT extends AbstractSpringBootIT {
     void shouldReturnSecondPageSoundsWithIdsGreaterThanFirstPage() throws Exception {
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
-        Genre genre = soundAggregate.genre();
+        soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
 
         RequestBuilder firstPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();

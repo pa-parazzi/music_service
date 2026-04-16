@@ -7,7 +7,6 @@ import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class SoundTestFixture {
         Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
         album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
         Sound sound = soundRepository.save(MusicFactoryIT.sound(artist, album, genre));
-        return new SoundAggregate(genre, artist, album, List.of(sound));
+        return new SoundAggregate(artist, album, List.of(sound));
     }
 
     public SoundAggregate soundAggregateWithSounds(Genre genre, String titlePrefix, String keyNameEndsWith) {
@@ -48,6 +47,6 @@ public class SoundTestFixture {
             sounds.add(soundRepository.save(new Sound(titlePrefix + "_" + i, 260, artist, album,
                     i + "_" + keyNameEndsWith, LocalDate.of(2018, 5, 19), genre)));
         }
-        return new SoundAggregate(genre, artist, album, sounds);
+        return new SoundAggregate(artist, album, sounds);
     }
 }

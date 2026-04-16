@@ -27,7 +27,7 @@ public class SoundJpaFixture {
                             265, artist, album, "sound_" + i + endKeyName,
                             LocalDate.of(2012, 6, 19), genre)));
         }
-        return new SoundAggregate(genre, artist, album, sounds);
+        return new SoundAggregate(artist, album, sounds);
     }
 
     public static SoundAggregate soundAggregateWithOneSound(Genre genre, TestEntityManager entityManager){
@@ -35,6 +35,6 @@ public class SoundJpaFixture {
         Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
         album.setImage(entityManager.persist(MusicFactoryIT.albumImage(album)));
         Sound sound = entityManager.persist(MusicFactoryIT.sound(artist, album, genre));
-        return new SoundAggregate(genre, artist, album, List.of(sound));
+        return new SoundAggregate(artist, album, List.of(sound));
     }
 }
