@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @Transactional(readOnly = true)
 public class MusicCatalogService {
@@ -77,8 +75,7 @@ public class MusicCatalogService {
     }
 
     public TrackMetadata buildTrackMetadata(MusicResponse response){
-        return new TrackMetadata(response.name(), response.album_name(),
-                response.album_image(), response.audiodownload(),
+        return new TrackMetadata(response.audiodownload(), response.album_image(),
                 response.mp3Key(), response.albumImgKey());
     }
 

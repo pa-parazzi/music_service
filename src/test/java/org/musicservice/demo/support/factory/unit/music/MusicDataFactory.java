@@ -69,10 +69,8 @@ public class MusicDataFactory {
 
     public static TrackMetadata trackMetadata(){
         return new TrackMetadata(
-                "bad romance",
-                "Gaga",
-                "gaga.jpg",
                 "https://bad_romance.mp3",
+                "https://gaga.jpg",
                 "bad_romance_key",
                 "gaga-image_key");
     }
