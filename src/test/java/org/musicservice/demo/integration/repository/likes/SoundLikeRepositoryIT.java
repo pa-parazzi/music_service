@@ -2,18 +2,15 @@ package org.musicservice.demo.integration.repository.likes;
 
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.likes.SoundLike;
-import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.likes.SoundLikeRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,24 +22,30 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithoutRelations;
-import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSoundWithAllRelations;
-import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
+import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithOneSound;
+import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithSounds;
+import static org.musicservice.demo.support.fixture.jpa.SoundLikeJpaFixture.createSoundLikes;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
+public class SoundLikeRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private SoundLikeRepository repository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Autowired
     private TestEntityManager entityManager;
 
+    private Genre findGenre(){
+        return genreRepository.findByName(GenreName.ROCK).orElseThrow();
+    }
+
     @Test
     void deleteByUserIdAndSoundId_ShouldDeleteRecord() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -51,15 +54,16 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        SoundLike foundEntity = entityManager.find(SoundLike.class, soundLike.getId());
-        assertThat(foundEntity).isNull();
+        List<SoundLike> soundLikes = repository.findAll();
+        assertThat(soundLikes).isEmpty();
     }
 
     @Test
     void deleteByUserIdAndSoundId_ShouldDoNothing_WhenUserIdIsIncorrectly() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -68,15 +72,16 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        SoundLike foundEntity = entityManager.find(SoundLike.class, soundLike.getId());
-        assertThat(foundEntity).isNotNull();
+        List<SoundLike> soundLikes = repository.findAll();
+        assertThat(soundLikes).isNotEmpty();
     }
 
     @Test
     void deleteByUserIdAndSoundId_ShouldDoNothing_WhenSoundIdIsIncorrectly() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -85,20 +90,18 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        SoundLike foundEntity = entityManager.find(SoundLike.class, soundLike.getId());
-        assertThat(foundEntity).isNotNull();
+        List<SoundLike> soundLikes = repository.findAll();
+        assertThat(soundLikes).isNotEmpty();
     }
 
     @Test
     void findByUserIdOrderByCreatedAtDescIdDesc_ShouldReturnsFirstPageCorrectly() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        String soundTitlePrefix = "poker face";
+        String soundTitlePrefix = "bad romance";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
-        prepareSoundLikes(user, sounds);
+        List<Sound> sounds = soundAggregateWithSounds(genre, entityManager,soundTitlePrefix, endKeyName).sounds();
+        createSoundLikes(entityManager, user, sounds);
 
         entityManager.flush();
         entityManager.clear();
@@ -115,14 +118,12 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByUserIdOrderByCreatedAtDescIdDesc_ShouldReturnsSecondPageCorrectly() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        String soundTitlePrefix = "poker face";
+        String soundTitlePrefix = "starlight";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
-        prepareSoundLikes(user, sounds);
+        List<Sound> sounds = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).sounds();
+        createSoundLikes(entityManager, user, sounds);
 
         entityManager.flush();
         entityManager.clear();
@@ -139,14 +140,12 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByUserIdOrderByCreatedAtDescIdDesc_ShouldReturnsLastPageCorrectly() {
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        List<Sound> sounds = prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
-        prepareSoundLikes(user, sounds);
+        List<Sound> sounds = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).sounds();
+        createSoundLikes(entityManager, user, sounds);
 
         entityManager.flush();
         entityManager.clear();
@@ -170,9 +169,10 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndSoundId_ShouldReturnIsTrue_WhenSoundLikeIsExists(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -183,9 +183,10 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndSoundId_ShouldReturnFalse_WhenAlbumIdIsInvalid(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -196,9 +197,10 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndSoundId_ShouldReturnFalse_WhenUserIdIsInvalid(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Sound sound = prepareSoundWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.soundLike(user, sound));
+        Sound sound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
+        createSoundLikes(entityManager, user, List.of(sound));
 
         entityManager.flush();
         entityManager.clear();
@@ -210,14 +212,5 @@ public class SoundLikeRepositoryIT extends AbstractIntegrationTest {
     private void assertSoundLikesOrderByCreatedAtDesc(List<SoundLike> soundLikes) {
         List<Instant> createdAtSoundLikesOrder = soundLikes.stream().map(SoundLike::getCreatedAt).toList();
         assertThat(createdAtSoundLikesOrder).isSortedAccordingTo(Comparator.reverseOrder());
-    }
-
-    private void prepareSoundLikes(User user, List<Sound> sounds) {
-        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
-        int second = 1;
-        for (Sound sound : sounds) {
-            SoundLike soundLike = entityManager.persist(MusicFactoryIT.soundLike(user, sound));
-            soundLike.setCreatedAt(createdAt.plusSeconds(second++));
-        }
     }
 }

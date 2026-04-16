@@ -2,17 +2,15 @@ package org.musicservice.demo.integration.repository.likes;
 
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.likes.AlbumLikeRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,25 +22,30 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsWithArtistAndImage;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
-import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumWithAllRelations;
-import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumsWithAllRelations;
+import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithAlbums;
+import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithOneAlbum;
+import static org.musicservice.demo.support.fixture.jpa.AlbumLikeJpaFixture.createAlbumLikes;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
+public class AlbumLikeRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private AlbumLikeRepository repository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Autowired
     private TestEntityManager entityManager;
 
+    private Genre findGenre(){
+        return genreRepository.findByName(GenreName.ROCK).orElseThrow();
+    }
+
     @Test
     void deleteByUserIdAndAlbumId_ShouldDeleteRecord(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        AlbumLike albumLike = entityManager.persist(MusicFactoryIT.albumLike(user, album));
-
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
         entityManager.flush();
         entityManager.clear();
 
@@ -50,15 +53,16 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        AlbumLike foundEntity = entityManager.find(AlbumLike.class, albumLike.getId());
-        assertThat(foundEntity).isNull();
+        List<AlbumLike> albumLikes = repository.findAll();
+        assertThat(albumLikes).isEmpty();
     }
 
     @Test
     void deleteByUserIdAndAlbumId_ShouldDoNothing_WhenUserIdIsIncorrectly(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        AlbumLike albumLike = entityManager.persist(MusicFactoryIT.albumLike(user, album));
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
 
         entityManager.flush();
         entityManager.clear();
@@ -67,15 +71,16 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        AlbumLike foundEntity = entityManager.find(AlbumLike.class, albumLike.getId());
-        assertThat(foundEntity).isNotNull();
+        List<AlbumLike> albumLikes = repository.findAll();
+        assertThat(albumLikes).isNotEmpty();
     }
 
     @Test
     void deleteByUserIdAndAlbumId_ShouldDoNothing_WhenAlbumIdIsIncorrectly(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        AlbumLike albumLike = entityManager.persist(MusicFactoryIT.albumLike(user, album));
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
 
         entityManager.flush();
         entityManager.clear();
@@ -84,18 +89,17 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        AlbumLike foundEntity = entityManager.find(AlbumLike.class, albumLike.getId());
-        assertThat(foundEntity).isNotNull();
+        List<AlbumLike> albumLikes = repository.findAll();
+        assertThat(albumLikes).isNotEmpty();
     }
 
     @Test
     void findByUserIdOrderByCreatedAtDesc_ShouldReturnsFirstPageCorrectlyWithOrderByCreatedAtDescIdDesc(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
         String titleAlbumPrefix = "bad romance";
-        List<Album> albums = prepareAlbumsWithAllRelations(entityManager, genre, artist, titleAlbumPrefix);
-        prepareAlbumLikes(user, albums);
+        List<Album> albums = albumAggregateWithAlbums(genre, entityManager, titleAlbumPrefix).albums();
+        createAlbumLikes(entityManager, user, albums);
 
         entityManager.flush();
         entityManager.clear();
@@ -111,12 +115,11 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByUserIdOrderByCreatedAtDesc_ShouldReturnsSecondPageCorrectlyWithOrderByCreatedAtDescIdDesc(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
         String titleAlbumPrefix = "bad romance";
-        List<Album> albums = prepareAlbumsWithAllRelations(entityManager, genre, artist, titleAlbumPrefix);
-        prepareAlbumLikes(user, albums);
+        List<Album> albums = albumAggregateWithAlbums(genre, entityManager, titleAlbumPrefix).albums();
+        createAlbumLikes(entityManager, user, albums);
 
         entityManager.flush();
         entityManager.clear();
@@ -132,12 +135,11 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByUserIdOrderByCreatedAtDesc_ShouldReturnsLastPageCorrectlyWithOrderByCreatedAtDescIdDesc(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
         String titleAlbumPrefix = "bad romance";
-        List<Album> albums = prepareAlbumsWithAllRelations(entityManager, genre, artist, titleAlbumPrefix);
-        prepareAlbumLikes(user, albums);
+        List<Album> albums = albumAggregateWithAlbums(genre, entityManager, titleAlbumPrefix).albums();
+        createAlbumLikes(entityManager, user, albums);
 
         entityManager.flush();
         entityManager.clear();
@@ -160,9 +162,10 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndAlbumId_ShouldReturnTrue_WhenAlbumLikeIsExists(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.albumLike(user, album));
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
 
         entityManager.flush();
         entityManager.clear();
@@ -173,9 +176,10 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndAlbumId_ShouldReturnFalse_WhenAlbumIdIsInvalid(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.albumLike(user, album));
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
 
         entityManager.flush();
         entityManager.clear();
@@ -186,9 +190,10 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void existsByUserIdAndAlbumId_ShouldReturnFalse_WhenUserIdIsInvalid(){
+        Genre genre = findGenre();
         User user = entityManager.persist(UserDataFactoryIT.user());
-        Album album = prepareAlbumWithAllRelations(entityManager);
-        entityManager.persist(MusicFactoryIT.albumLike(user, album));
+        Album album = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
+        createAlbumLikes(entityManager, user, List.of(album));
 
         entityManager.flush();
         entityManager.clear();
@@ -200,14 +205,5 @@ public class AlbumLikeRepositoryIT extends AbstractIntegrationTest {
     private void assertAlbumLikesOrderByCreatedAtDesc(List<AlbumLike> albumLikes){
         List<Instant> createdAtAlbumLikesOrder = albumLikes.stream().map(AlbumLike::getCreatedAt).toList();
         assertThat(createdAtAlbumLikesOrder).isSortedAccordingTo(Comparator.reverseOrder());
-    }
-
-    private void prepareAlbumLikes(User user, List<Album> albums){
-        Instant createdAt = Instant.parse("2026-01-01T00:00:00Z");
-        int second = 1;
-        for (Album album : albums) {
-            AlbumLike albumLike = entityManager.persist(MusicFactoryIT.albumLike(user, album));
-            albumLike.setCreatedAt(createdAt.plusSeconds(second++));
-        }
     }
 }

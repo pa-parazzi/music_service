@@ -4,44 +4,44 @@ import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithoutRelations;
-import static org.musicservice.demo.support.factory.it.music.SoundFactoryIT.prepareSounds;
+import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithOneSound;
+import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithSounds;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class SoundRepositoryIT extends AbstractIntegrationTest {
+public class SoundRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private SoundRepository repository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Autowired
     private TestEntityManager entityManager;
 
+    private Genre findGenre(){
+        return genreRepository.findByName(GenreName.ROCK).orElseThrow();
+    }
+
     @Test
     void findByIdForSoundPage_ShouldReturnSoundWithCorrectlyRelations(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        album.setImage(entityManager.persist(MusicFactoryIT.albumImage(album)));
-        Sound expectedSound = entityManager.persist(MusicFactoryIT.sound(artist, album, genre));
+        Genre genre = findGenre();
+        Sound expectedSound = soundAggregateWithOneSound(genre, entityManager).sounds().getFirst();
 
         entityManager.flush();
         entityManager.clear();
@@ -66,18 +66,15 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByIdForSoundPage_ShouldReturnEmpty_WhenIdIsInvalid(){
-        Optional<Sound> result = repository.findByIdForSoundPage(89283L);
-        assertThat(result).isEmpty();
+        assertThat(repository.findByIdForSoundPage(89283L)).isEmpty();
     }
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();
@@ -92,12 +89,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();
@@ -112,12 +107,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsLastPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();
@@ -140,12 +133,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByArtistId_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Artist artist = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).artist();
 
         entityManager.flush();
         entityManager.clear();
@@ -160,12 +151,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByArtistId_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Artist artist = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).artist();
 
         entityManager.flush();
         entityManager.clear();
@@ -180,12 +169,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByArtistId_ShouldReturnsLastPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Artist artist = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).artist();
 
         entityManager.flush();
         entityManager.clear();
@@ -208,12 +195,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByAlbumId_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Album album = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).album();
 
         entityManager.flush();
         entityManager.clear();
@@ -228,12 +213,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByAlbumId_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Album album = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).album();
 
         entityManager.flush();
         entityManager.clear();
@@ -248,12 +231,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByAlbumId_ShouldReturnsLastPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        Album album = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).album();
 
         entityManager.flush();
         entityManager.clear();
@@ -276,12 +257,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();
@@ -296,12 +275,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();
@@ -316,12 +293,10 @@ public class SoundRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsLastPageCorrectly(){
+        Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        Album album = entityManager.persist(MusicFactoryIT.album(artist, genre));
-        prepareSounds(entityManager, genre, artist, album, soundTitlePrefix, endKeyName);
+        soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName);
 
         entityManager.flush();
         entityManager.clear();

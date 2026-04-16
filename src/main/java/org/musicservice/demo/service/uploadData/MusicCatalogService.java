@@ -41,41 +41,45 @@ public class MusicCatalogService {
         this.genreRepository = genreRepository;
     }
 
-    public Artist createOrGetArtist(MusicResponse response, Genre genre) {
-        return artistRepository.findByName(response.getArtist_name())
-                .orElseGet(() -> artistRepository.save(new Artist(response.getArtist_name(), genre)));
+    private Artist createOrGetArtist(MusicResponse response, Genre genre) {
+        return artistRepository.findByName(response.artist_name())
+                .orElseGet(() -> artistRepository.save(new Artist(response.artist_name(), genre)));
     }
 
-    public Album createAlbumWithImageOrGet(MusicResponse response, Artist artist, Genre genre) {
-        Optional<Album> foundAlbum = albumRepository.findByTitle(response.getAlbum_name());
-        if(foundAlbum.isEmpty()){
-            Album newAlbum = albumRepository.save(new Album(response.getAlbum_name(), response.getReleasedate(), artist, genre));
-            AlbumImage albumImage = albumImageRepository.save(new AlbumImage(response.getAlbumImgKey(), newAlbum));
-            newAlbum.setImage(albumImage);
-            return newAlbum;
-        }
-        return foundAlbum.get();
+    private Album createAlbumWithImageOrGet(MusicResponse response, Artist artist, Genre genre) {
+        return albumRepository.findByTitle(response.album_name())
+                .orElseGet(() -> {
+                    Album newAlbum = albumRepository.save
+                            (new Album(response.album_name(), response.releasedate(), artist, genre));
+                    AlbumImage albumImage = albumImageRepository.save
+                            (new AlbumImage(response.albumImgKey(), newAlbum));
+                    newAlbum.setImage(albumImage);
+                    return newAlbum;
+                });
     }
 
-    public void createSound(MusicResponse response, Artist artist, Album album, Genre genre) {
-        soundRepository.save(new Sound(response.getName(), response.getDuration(),
-                            artist, album, response.getMp3Key(),
-                            response.getReleasedate(), genre));
-    }
-
-    public Genre findGenreByName(String genreName){
-        return genreRepository.findByName(GenreName.valueOf(genreName)).orElseThrow(() -> new GenreDoesNotExistException("Такой жанр не существует"));
+    private void createSound(MusicResponse response, Artist artist, Album album, Genre genre) {
+        soundRepository.save(new Sound(response.name(), response.duration(), artist, album,
+                response.mp3Key(), response.releasedate(), genre));
     }
 
     @Transactional
-    public TrackMetadata saveMusicData(MusicResponse response, Genre genre) {
-        if(soundRepository.existsByKey(response.getMp3Key())) return null;
+    public void saveMusicData(MusicResponse response, Genre genre) {
+        if(soundRepository.existsByKey(response.mp3Key())) return;
         Artist artist = createOrGetArtist(response, genre);
         Album album = createAlbumWithImageOrGet(response, artist, genre);
         createSound(response, artist, album, genre);
-        return new TrackMetadata(response.getName(), response.getAlbum_name(),
-                response.getAlbum_image(), response.getAudiodownload(),
-                response.getMp3Key(), response.getAlbumImgKey());
+    }
+
+    public Genre findGenreByName(String genreName){
+        return genreRepository.findByName(GenreName.valueOf(genreName))
+                .orElseThrow(() -> new GenreDoesNotExistException("Такой жанр не существует"));
+    }
+
+    public TrackMetadata buildTrackMetadata(MusicResponse response){
+        return new TrackMetadata(response.name(), response.album_name(),
+                response.album_image(), response.audiodownload(),
+                response.mp3Key(), response.albumImgKey());
     }
 
 }

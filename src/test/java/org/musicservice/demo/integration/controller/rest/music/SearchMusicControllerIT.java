@@ -2,6 +2,7 @@ package org.musicservice.demo.integration.controller.rest.music;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,38 +12,39 @@ import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.genre.Genre;
-import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.repository.image.AlbumImageRepository;
-import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.GenreRepository;
-import org.musicservice.demo.repository.music.SoundRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
+import org.musicservice.demo.support.fixture.integration.AlbumTestFixture;
+import org.musicservice.demo.support.fixture.integration.ArtistTestFixture;
+import org.musicservice.demo.support.fixture.integration.PageResponseTestFixture;
+import org.musicservice.demo.support.fixture.integration.SoundTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponseStructure;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class SearchMusicControllerIT extends AbstractIntegrationTest {
+@Import({ArtistTestFixture.class, SoundTestFixture.class, AlbumTestFixture.class, PageResponseTestFixture.class})
+public class SearchMusicControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -53,30 +55,32 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
     @Autowired
     private GenreRepository genreRepository;
     @Autowired
-    private ArtistRepository artistRepository;
+    private PageResponseTestFixture pageResponseFixture;
     @Autowired
-    private AlbumRepository albumRepository;
+    private ArtistTestFixture artistFixture;
     @Autowired
-    private AlbumImageRepository albumImageRepository;
+    private AlbumTestFixture albumFixture;
     @Autowired
-    private SoundRepository soundRepository;
+    private SoundTestFixture soundFixture;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, album_image, sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE artist, album, album_image, sound RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
-    void shouldReturnFirstPageOfArtistsAndStatusIsOk() throws Exception {
-        String fragment = "Mu";
-        int page = 0;
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        for (int i = 0; i < 12; i++) {
-            artistRepository.save(new Artist("Mu_" + i, genre));
-        }
+    void shouldReturnFirstPageOfArtists() throws Exception {
+        String namePrefix = "Muse";
+        artistFixture.createArtists(genre, namePrefix);
 
-        RequestBuilder requestBuilder = requestBuilder(searchArtistsUrl, fragment, page, size);
+        RequestBuilder requestBuilder = requestBuilder(searchArtistsUrl, namePrefix, page, size);
         MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
                 .andExpectAll(
@@ -85,171 +89,127 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
                         jsonPath("$.hasNextPage").exists())
                 .andReturn();
 
-        PageResponse<ArtistResponse> response = getResponse(result, new TypeReference<>() {});
+        PageResponse<ArtistResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
 
         List<ArtistResponse> artistResponseList = response.contentList();
         assertThat(artistResponseList).hasSize(size);
         assertThat(artistResponseList).extracting(ArtistResponse::id).isSorted();
-        assertThat(artistResponseList).extracting(ArtistResponse::name).allMatch(name -> name.startsWith(fragment));
+        assertThat(artistResponseList).extracting(ArtistResponse::id).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+        assertThat(artistResponseList).extracting(ArtistResponse::name).allMatch(name -> name.startsWith(namePrefix));
         assertThat(response.hasNextPage()).isTrue();
     }
 
     @Test
-    void shouldReturnLastPageOfArtistsAndStatusIsOk() throws Exception {
-        String fragment = "Mu";
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        for (int i = 0; i < 17; i++) {
-            artistRepository.save(new Artist("Mu_" + i, genre));
-        }
+    void shouldReturnLastPageOfArtists() throws Exception {
+        String namePrefix = "Muse";
+        artistFixture.createArtists(genre, namePrefix);
 
-        RequestBuilder requestBuilderFirstPage = requestBuilder(searchArtistsUrl, fragment, 0, size);
+        RequestBuilder requestBuilderFirstPage = requestBuilder(searchArtistsUrl, namePrefix, 0, size);
         MvcResult firstPageResult = mockMvc.perform(requestBuilderFirstPage)
                 .andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderSecondPage = requestBuilder(searchArtistsUrl, fragment, 1, size);
+        RequestBuilder requestBuilderSecondPage = requestBuilder(searchArtistsUrl, namePrefix, 1, size);
         MvcResult secondPageResult = mockMvc.perform(requestBuilderSecondPage)
                 .andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderLastPage = requestBuilder(searchArtistsUrl, fragment, 2, size);
-        MvcResult lastPageResult = mockMvc.perform(requestBuilderLastPage)
-                .andExpect(status().isOk()).andReturn();
-
-        PageResponse<ArtistResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>(){});
-        PageResponse<ArtistResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>(){});
-        PageResponse<ArtistResponse> lastPageResponse = getResponse(lastPageResult, new TypeReference<>(){});
+        PageResponse<ArtistResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstPageResult, new TypeReference<>(){});
+        PageResponse<ArtistResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondPageResult, new TypeReference<>(){});
 
         List<Long> firstPageArtistsIds = firstPageResponse.contentList().stream().map(ArtistResponse::id).toList();
         List<Long> secondPageArtistsIds = secondPageResponse.contentList().stream().map(ArtistResponse::id).toList();
-        List<Long> lastPageArtistsIds = lastPageResponse.contentList().stream().map(ArtistResponse::id).toList();
 
-        assertLastPageResponse(firstPageResponse, secondPageResponse, lastPageResponse, firstPageArtistsIds, secondPageArtistsIds, lastPageArtistsIds);
+        assertThat(firstPageArtistsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+        assertThat(secondPageArtistsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+
+        assertThat(Collections.max(firstPageArtistsIds)).isLessThan(Collections.min(secondPageArtistsIds));
     }
 
     @Test
-    void shouldReturnFirstPageOfAlbumsAndStatusIsOk() throws Exception {
-        String fragment = "Tr";
-        int page = 0;
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        for (int i = 0; i < 12; i++) {
-            Album album = albumRepository.save(new Album("Tri face_" + i, LocalDate.of(2004, 4, 1), artist, genre));
-            album.setImage(albumImageRepository.save(MusicFactoryIT.albumImage(album)));
-        }
+    void shouldReturnFirstPageOfAlbums() throws Exception {
+        String titlePrefix = "Time";
+        String imgKeyNameEndsWith = "album_key";
+        albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith);
 
-        RequestBuilder requestBuilder = requestBuilder(searchAlbumsUrl, fragment, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].albumId").exists(),
-                        jsonPath("$.contentList[*].albumImage").exists(),
-                        jsonPath("$.contentList[*].artist").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.hasNextPage").exists())
-                .andReturn();
+        RequestBuilder requestBuilder = requestBuilder(searchAlbumsUrl, titlePrefix, page, size);
+        MvcResult result = assertPageResponseOfAlbumsStructure(mockMvc.perform(requestBuilder));
 
-        PageResponse<AlbumResponse> response = getResponse(result, new TypeReference<>() {});
+        PageResponse<AlbumResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
+        assertThat(response.hasNextPage()).isTrue();
 
         List<AlbumResponse> albumResponseList = response.contentList();
         assertThat(albumResponseList).hasSize(size);
-        assertThat(albumResponseList).extracting(AlbumResponse::getAlbumId).isSorted();
-        assertThat(albumResponseList).extracting(AlbumResponse::getTitle).allMatch(title -> title.startsWith(fragment));
-        assertThat(response.hasNextPage()).isTrue();
+        assertAlbumsResponse(albumResponseList, titlePrefix, imgKeyNameEndsWith);
     }
 
     @Test
-    void shouldReturnLastPageOfAlbumsAndStatusIsOk() throws Exception {
-        String fragment = "Ba";
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        for (int i = 0; i < 17; i++) {
-            albumRepository.save(new Album("Bad Face_" + i, LocalDate.of(2002, 3, 6), artist, genre));
-        }
+    void shouldReturnLastPageOfAlbums() throws Exception {
+        String titlePrefix = "Starboy";
+        String imgKeyNameEndsWith = "album_key";
+        albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith);
 
-        RequestBuilder requestBuilderFirstPage = requestBuilder(searchAlbumsUrl, fragment, 0, size);
+        RequestBuilder requestBuilderFirstPage = requestBuilder(searchAlbumsUrl, titlePrefix, page, size);
         MvcResult firstPageResult = mockMvc.perform(requestBuilderFirstPage).andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderSecondPage = requestBuilder(searchAlbumsUrl, fragment, 1, size);
+        RequestBuilder requestBuilderSecondPage = requestBuilder(searchAlbumsUrl, titlePrefix, page + 1, size);
         MvcResult secondPageResult = mockMvc.perform(requestBuilderSecondPage).andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderLastPage = requestBuilder(searchAlbumsUrl, fragment, 2, size);
-        MvcResult lastPageResult = mockMvc.perform(requestBuilderLastPage).andExpect(status().isOk()).andReturn();
+        PageResponse<AlbumResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstPageResult, new TypeReference<>(){});
+        PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondPageResult, new TypeReference<>(){});
 
-        PageResponse<AlbumResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>(){});
-        PageResponse<AlbumResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>(){});
-        PageResponse<AlbumResponse> lastPageResponse = getResponse(lastPageResult, new TypeReference<>(){});
+        List<Long> firstPageAlbumsIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+        List<Long> secondPageAlbumsIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
 
-        List<Long> firstPageAlbumsIds = firstPageResponse.contentList().stream().map(AlbumResponse::getAlbumId).toList();
-        List<Long> secondPageAlbumsIds = secondPageResponse.contentList().stream().map(AlbumResponse::getAlbumId).toList();
-        List<Long> lastPageAlbumsIds = lastPageResponse.contentList().stream().map(AlbumResponse::getAlbumId).toList();
+        assertThat(firstPageAlbumsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+        assertThat(secondPageAlbumsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
 
-        assertLastPageResponse(firstPageResponse, secondPageResponse, lastPageResponse, firstPageAlbumsIds, secondPageAlbumsIds, lastPageAlbumsIds);
+        assertThat(Collections.max(firstPageAlbumsIds)).isLessThan(Collections.min(secondPageAlbumsIds));
     }
 
     @Test
-    void shouldReturnFirstPageOfTracksAndStatusIsOk() throws Exception {
-        String fragment = "Super";
-        int page = 0;
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        for (int i = 0; i < 12; i++) {
-            soundRepository.save(MusicFactoryIT.sound(artist, album, genre));
-        }
+    void shouldReturnFirstPageOfTracks() throws Exception {
+        String titlePrefix = "Secrets";
+        String keyNameEndsWith = "key";
+        soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
 
-        RequestBuilder requestBuilder = requestBuilder(searchTracksUrl, fragment, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].duration").exists(),
-                        jsonPath("$.contentList[*].key").exists(),
-                        jsonPath("$.contentList[*].url").exists(),
-                        jsonPath("$.hasNextPage").exists())
-                .andReturn();
+        RequestBuilder requestBuilder = requestBuilder(searchTracksUrl, titlePrefix, page, size);
+        MvcResult result = assertPageResponseOfSoundsStructure(mockMvc.perform(requestBuilder));
 
-        PageResponse<SoundResponse> response = getResponse(result, new TypeReference<>() {});
-
-        List<SoundResponse> trackResponseList = response.contentList();
-        assertThat(trackResponseList).hasSize(size);
-        assertThat(trackResponseList).extracting(SoundResponse::getId).isSorted();
-        assertThat(trackResponseList).extracting(SoundResponse::getTitle).allMatch(title -> title.startsWith(fragment));
+        PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
+
+        List<SoundResponse> soundResponseList = response.contentList();
+        assertThat(soundResponseList).hasSize(size);
+        assertSoundsResponse(soundResponseList, titlePrefix, keyNameEndsWith);
     }
 
     @Test
-    void shouldReturnLastPageOfTracksAndStatusIsOk() throws Exception {
-        String fragment = "Take";
-        int size = 6;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        for (int i = 0; i < 17; i++) {
-            soundRepository.save(MusicFactoryIT.sound2(artist, album, genre));
-        }
+    void shouldReturnLastPageOfTracks() throws Exception {
+        String titlePrefix = "Attentions";
+        String keyNameEndsWith = "key";
+        soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
 
-        RequestBuilder requestBuilderFirstPage = requestBuilder(searchTracksUrl, fragment, 0, size);
+        RequestBuilder requestBuilderFirstPage = requestBuilder(searchTracksUrl, titlePrefix, page, size);
         MvcResult firstPageResult = mockMvc.perform(requestBuilderFirstPage).andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderSecondPage = requestBuilder(searchTracksUrl, fragment, 1, size);
+        RequestBuilder requestBuilderSecondPage = requestBuilder(searchTracksUrl, titlePrefix, page + 1, size);
         MvcResult secondPageResult = mockMvc.perform(requestBuilderSecondPage).andExpect(status().isOk()).andReturn();
 
-        RequestBuilder requestBuilderLastPage = requestBuilder(searchTracksUrl, fragment, 2, size);
-        MvcResult lastPageResult = mockMvc.perform(requestBuilderLastPage).andExpect(status().isOk()).andReturn();
+        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstPageResult, new TypeReference<>(){});
+        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondPageResult, new TypeReference<>(){});
 
-        PageResponse<SoundResponse> firstPageResponse = getResponse(firstPageResult, new TypeReference<>(){});
-        PageResponse<SoundResponse> secondPageResponse = getResponse(secondPageResult, new TypeReference<>(){});
-        PageResponse<SoundResponse> lastPageResponse = getResponse(lastPageResult, new TypeReference<>(){});
+        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
 
-        List<Long> firstPageTracksIds = firstPageResponse.contentList().stream().map(SoundResponse::getId).toList();
-        List<Long> secondPageTracksIds = secondPageResponse.contentList().stream().map(SoundResponse::getId).toList();
-        List<Long> lastPageTracksIds = lastPageResponse.contentList().stream().map(SoundResponse::getId).toList();
+        assertThat(firstPageSoundsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
+        assertThat(secondPageSoundsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
 
-        assertLastPageResponse(firstPageResponse, secondPageResponse, lastPageResponse, firstPageTracksIds, secondPageTracksIds, lastPageTracksIds);
+        assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
     }
 
     @ParameterizedTest
@@ -260,27 +220,10 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
     })
     void shouldReturnBadRequest_WhenFragmentIsEmpty(String url) throws Exception {
         String fragment = "    ";
-        int page = 2;
-        int size = 10;
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
-        Album album = albumRepository.save(MusicFactoryIT.album(artist, genre));
-        for (int i = 0; i < 23; i++) {
-            soundRepository.save(MusicFactoryIT.sound(artist, album, genre));
-        }
-        for (int i = 0; i < 23; i++) {
-            soundRepository.save(MusicFactoryIT.sound2(artist, album, genre));
-        }
+
         RequestBuilder requestBuilder = requestBuilder(url, fragment, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                        .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -294,19 +237,10 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
     void shouldReturnBadRequest_WhenIncorrectPageValue(String url) throws Exception {
         String fragment = "some fragment";
         int page = -1;
-        int size = 6;
 
         RequestBuilder requestBuilder = requestBuilder(url, fragment, page, size);
-
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -319,20 +253,11 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
     })
     void shouldReturnBadRequest_WhenIncorrectSizeValue(String url) throws Exception {
         String fragment = "some fragment";
-        int page = 0;
         int size = 50;
 
         RequestBuilder requestBuilder = requestBuilder(url, fragment, page, size);
-
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -343,24 +268,16 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
             searchAlbumsUrl,
             searchTracksUrl
     })
-    void shouldReturnBadRequest_WhenPageIsIncorrectParameterType(String url) throws Exception {
+    void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch(String url) throws Exception {
         String fragment = "some fragment";
         String page = "some page";
-        int size = 10;
 
         RequestBuilder requestBuilder = get(url, fragment)
                 .param("page", page)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -371,24 +288,16 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
             searchAlbumsUrl,
             searchTracksUrl
     })
-    void shouldReturnBadRequest_WhenSizeIsIncorrectParameterType(String url) throws Exception {
+    void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch(String url) throws Exception {
         String fragment = "some fragment";
-        int page = 1;
         String size = "fifty";
 
         RequestBuilder requestBuilder = get(url, fragment)
                 .param("page", String.valueOf(page))
                 .param("size", size);
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -399,22 +308,14 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
             searchAlbumsUrl,
             searchTracksUrl
     })
-    void shouldReturnBadRequest_WhenPageIsMissing(String url) throws Exception {
+    void shouldReturnBadRequest_WhenPageParamIsMissing(String url) throws Exception {
         String fragment = "some fragment";
-        int size = 15;
 
         RequestBuilder requestBuilder = get(url, fragment)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -425,22 +326,14 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
             searchAlbumsUrl,
             searchTracksUrl
     })
-    void shouldReturnBadRequest_WhenSizeIsMissing(String url) throws Exception {
+    void shouldReturnBadRequest_WhenSizeParamIsMissing(String url) throws Exception {
         String fragment = "some fragment";
-        int page = 1;
 
         RequestBuilder requestBuilder = get(url, fragment)
                 .param("page", String.valueOf(page));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -449,36 +342,16 @@ public class SearchMusicControllerIT extends AbstractIntegrationTest {
     private final String searchAlbumsUrl = "/api/search/{fragment}/albums";
     private final String searchTracksUrl = "/api/search/{fragment}/tracks";
 
-    private <T> PageResponse<T> getResponse(MvcResult result, TypeReference<PageResponse<T>> typeReference) throws Exception{
-        String json = result.getResponse().getContentAsString();
-        return objectMapper.readValue(json, typeReference);
-    }
-
     private RequestBuilder requestBuilder(String url, String fragment, int page, int size){
         return get(url, fragment)
                 .param("page", String.valueOf(page))
                 .param("size", String.valueOf(size));
     }
 
-    private <T> void assertLastPageResponse(PageResponse<T> firstPageResponse,
-                                            PageResponse<T> secondPageResponse,
-                                            PageResponse<T> lastPageResponse,
-                                            List<Long> firstPageIds, List<Long> secondPageIds, List<Long> lastPageIds){
-        assertThat(firstPageResponse.hasNextPage()).isTrue();
-        assertThat(secondPageResponse.hasNextPage()).isTrue();
-        assertThat(lastPageResponse.hasNextPage()).isFalse();
-        assertThat(lastPageResponse.contentList()).hasSize(5);
-
-        assertThat(Collections.max(firstPageIds)).isLessThan(Collections.min(secondPageIds));
-        assertThat(Collections.max(secondPageIds)).isLessThan(Collections.min(lastPageIds));
-    }
-
     private void assertValidationError(MvcResult result) throws Exception{
         String json = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
-
-        assertThat(errorResponse.code()).isEqualTo(ErrorType.VALIDATION_ERROR.name());
-        assertThat(errorResponse.status()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.timestamp()).isPositive();
+        assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
+        assertThat(errorResponse.fieldsError()).isNotEmpty();
     }
 }

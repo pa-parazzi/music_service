@@ -2,36 +2,41 @@ package org.musicservice.demo.integration.repository.music;
 
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.musicservice.demo.support.assertions.ArtistAssertions.assertArtists;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
+import static org.musicservice.demo.support.fixture.jpa.ArtistJpaFixture.createArtists;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class ArtistRepositoryIT extends AbstractIntegrationTest {
+public class ArtistRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private ArtistRepository repository;
     @Autowired
+    private GenreRepository genreRepository;
+
+    @Autowired
     private TestEntityManager entityManager;
+
+    private Genre findGenre(){
+        return genreRepository.findByName(GenreName.ROCK).orElseThrow();
+    }
 
     @Test
     void findByNameStartingWithIgnoreCase_ShouldReturnsFirstPageCorrectly() {
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Genre genre = findGenre();
         String artisNamePrefix = "Lady Gaga";
-        prepareArtists(genre, artisNamePrefix);
+        createArtists(genre, entityManager, artisNamePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -46,9 +51,9 @@ public class ArtistRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByNameStartingWithIgnoreCase_ShouldReturnsSecondPageCorrectly(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Genre genre = findGenre();
         String artisNamePrefix = "Lady Gaga";
-        prepareArtists(genre, artisNamePrefix);
+        createArtists(genre, entityManager, artisNamePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -63,9 +68,9 @@ public class ArtistRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByNameStartingWithIgnoreCase_ShouldReturnsLastPageCorrectly(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
+        Genre genre = findGenre();
         String artisNamePrefix = "Lady Gaga";
-        prepareArtists(genre, artisNamePrefix);
+        createArtists(genre, entityManager, artisNamePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -84,16 +89,5 @@ public class ArtistRepositoryIT extends AbstractIntegrationTest {
                 .findByNameStartingWithIgnoreCase("incorrect artist prefix", PageRequest.of(page, size));
 
         assertEmptyPage(artistPage);
-    }
-
-    private void prepareArtists(Genre genre, String artistNamePrefix){
-        for (int i = 0; i < totalElements; i++) {
-            entityManager.persist(new Artist(artistNamePrefix + "_" + i, genre));
-        }
-    }
-
-    private void assertArtists(List<Artist> artists, String artistNamePrefix){
-        assertThat(artists).extracting(Artist::getId).isNotEmpty();
-        assertThat(artists).extracting(Artist::getName).allMatch(name -> name.startsWith(artistNamePrefix));
     }
 }

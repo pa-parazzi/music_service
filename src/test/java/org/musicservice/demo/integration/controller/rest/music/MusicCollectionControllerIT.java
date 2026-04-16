@@ -2,6 +2,7 @@ package org.musicservice.demo.integration.controller.rest.music;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,6 +10,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
@@ -16,17 +19,16 @@ import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.likes.AlbumLikeRepository;
 import org.musicservice.demo.repository.likes.SoundLikeRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.security.WithMockUserPrincipal;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
-import org.musicservice.demo.support.fixture.AlbumTestFixture;
-import org.musicservice.demo.support.fixture.PageResponseTestFixture;
-import org.musicservice.demo.support.fixture.SoundTestFixture;
+import org.musicservice.demo.support.fixture.integration.AlbumTestFixture;
+import org.musicservice.demo.support.fixture.integration.PageResponseTestFixture;
+import org.musicservice.demo.support.fixture.integration.SoundTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,18 +42,15 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
 import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
-import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertBadRequestErrorStructure;
-import static org.musicservice.demo.support.assertions.PageAssertions.page;
-import static org.musicservice.demo.support.assertions.PageAssertions.size;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponseStructure;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc(printOnlyOnFailure = false)
 @Import({PageResponseTestFixture.class, SoundTestFixture.class, AlbumTestFixture.class})
-public class MusicCollectionControllerIT extends AbstractIntegrationTest {
+public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -66,6 +65,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
     @Autowired
     private AlbumLikeRepository albumLikeRepository;
     @Autowired
+    private GenreRepository genreRepository;
+    @Autowired
     private PageResponseTestFixture pageResponseFixture;
     @Autowired
     private SoundTestFixture soundFixture;
@@ -74,8 +75,15 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, genre, artist, album, album_image," +
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image," +
                 " sound, sound_like, album_like RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
@@ -84,20 +92,11 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "umbrella";
         String keyNameEndsWith = "key";
-        List<Sound> sounds = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith).sounds();
+        List<Sound> sounds = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).sounds();
         sounds.forEach(sound -> soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound)));
 
         RequestBuilder requestBuilder = requestBuilder(tracksCollectionUrl, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].duration").exists(),
-                        jsonPath("$.contentList[*].key").exists(),
-                        jsonPath("$.contentList[*].url").exists()
-                )
-                .andReturn();
+        MvcResult result = assertPageResponseOfSoundsStructure(mockMvc.perform(requestBuilder));
 
         PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
@@ -113,7 +112,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "umbrella";
         String keyNameEndsWith = "key";
-        List<Sound> sounds = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith).sounds();
+        List<Sound> sounds = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).sounds();
         sounds.forEach(sound -> soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound)));
 
         RequestBuilder firstRequest = requestBuilder(tracksCollectionUrl, page, size);
@@ -122,8 +121,10 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         RequestBuilder secondRequest = requestBuilder(tracksCollectionUrl, page + 1, size);
         MvcResult secondResult = mockMvc.perform(secondRequest).andExpect(status().isOk()).andReturn();
 
-        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstResult, new TypeReference<>() {});
-        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondResult, new TypeReference<>() {});
 
         List<Long> firstPageSoundIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
         List<Long> secondPageSoundIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
@@ -149,18 +150,11 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "Tri Face";
         String imgKeyNameEndsWith = "album-key";
-        List<Album> albums = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith).albums();
+        List<Album> albums = albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith).albums();
         albums.forEach(album -> albumLikeRepository.save(MusicFactoryIT.albumLike(user, album)));
 
         RequestBuilder requestBuilder = requestBuilder(albumsCollectionUrl, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].image").exists(),
-                        jsonPath("$.contentList[*].artist").exists())
-                .andReturn();
+        MvcResult result = assertPageResponseOfAlbumsStructure(mockMvc.perform(requestBuilder));
 
         PageResponse<AlbumResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
@@ -176,7 +170,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "Tri Face";
         String imgKeyNameEndsWith = "album-key";
-        List<Album> albums = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith).albums();
+        List<Album> albums = albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith).albums();
         albums.forEach(album -> albumLikeRepository.save(MusicFactoryIT.albumLike(user, album)));
 
         RequestBuilder firstRequest = requestBuilder(albumsCollectionUrl, page, size);
@@ -185,8 +179,10 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         RequestBuilder secondRequest = requestBuilder(albumsCollectionUrl, page + 1, size);
         MvcResult secondResult = mockMvc.perform(secondRequest).andExpect(status().isOk()).andReturn();
 
-        PageResponse<AlbumResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstResult, new TypeReference<>() {});
-        PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondResult, new TypeReference<>() {});
+        PageResponse<AlbumResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstResult, new TypeReference<>() {});
+        PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondResult, new TypeReference<>() {});
 
         List<Long> firstPageSoundIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
         List<Long> secondPageSoundIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
@@ -212,7 +208,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         int page = -1;
 
         RequestBuilder requestBuilder = requestBuilder(url, page, size);
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -223,7 +220,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         int size = 50;
 
         RequestBuilder requestBuilder = requestBuilder(url, page, size);
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -237,7 +235,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
                 .param("page", page)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -252,7 +251,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
                 .param("page", String.valueOf(page))
                 .param("size", size);
 
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -263,7 +263,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -274,7 +275,8 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("page", String.valueOf(page));
 
-        MvcResult result = assertBadRequestErrorStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -292,6 +294,7 @@ public class MusicCollectionControllerIT extends AbstractIntegrationTest {
         String json = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
         assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
+        assertThat(errorResponse.fieldsError()).isNotEmpty();
     }
 
     private void assertMissingMusicContentError(MvcResult result) throws Exception{

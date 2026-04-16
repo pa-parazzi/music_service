@@ -17,9 +17,8 @@ export async function initAlbumCollectionPage(){
 
     const albumCollectionContainer = document.getElementById('album-collection');
 
-    const likedAlbums = await getAlbumLikes(jwt);
 
-    const albumData = await getAlbumCollection(likedAlbums);
+    const albumData = await getAlbumCollection(jwt);
     const albums = albumData.albums;
 
     renderAlbums(albumCollectionContainer, albums);

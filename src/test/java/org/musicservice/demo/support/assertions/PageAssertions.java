@@ -1,8 +1,13 @@
 package org.musicservice.demo.support.assertions;
 
 import org.springframework.data.domain.Page;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class PageAssertions {
 
@@ -39,4 +44,30 @@ public class PageAssertions {
         assertThat(pageResponse.getTotalElements()).isZero();
         assertThat(pageResponse.getTotalPages()).isZero();
     }
+
+    public static MvcResult assertPageResponseOfAlbumsStructure(ResultActions resultActions) throws Exception{
+        return resultActions
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].image").exists(),
+                        jsonPath("$.contentList[*].artist").exists(),
+                        jsonPath("$.hasNextPage").exists())
+                .andReturn();
+    }
+
+    public static MvcResult assertPageResponseOfSoundsStructure(ResultActions resultActions) throws Exception{
+        return resultActions
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.contentList[*].id").exists(),
+                        jsonPath("$.contentList[*].title").exists(),
+                        jsonPath("$.contentList[*].duration").exists(),
+                        jsonPath("$.contentList[*].key").exists(),
+                        jsonPath("$.contentList[*].url").exists(),
+                        jsonPath("$.hasNextPage").exists())
+                .andReturn();
+    }
+
 }

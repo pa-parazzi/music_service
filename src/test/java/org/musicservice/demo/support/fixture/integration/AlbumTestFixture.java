@@ -7,6 +7,7 @@ import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;

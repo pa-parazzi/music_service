@@ -5,8 +5,11 @@ import org.musicservice.demo.dto.likes.LikeStatusResponse;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.repository.likes.SoundLikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,12 @@ public class SoundLikeService {
     @Transactional
     public void delete(Long userId, Long soundId){
         soundLikeRepository.deleteByUserIdAndSoundId(userId, soundId);
+    }
+
+    public Page<SoundLike> findSoundLikesByUserid(Long userId, Pageable pageable){
+        Page<SoundLike> pageResponse = soundLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        if(pageResponse.getContent().isEmpty()) throw new NoSuchMusicException("У вас нет понравившихся песен");
+        return pageResponse;
     }
 
     public LikeStatusResponse findLikedSound(Long userId, Long soundId){

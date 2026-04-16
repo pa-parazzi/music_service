@@ -4,14 +4,12 @@ import org.hibernate.Hibernate;
 import org.hibernate.proxy.HibernateProxy;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.repository.music.AlbumRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,27 +19,33 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsWithArtistAndImage;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
-import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumWithAllRelations;
-import static org.musicservice.demo.support.factory.it.music.AlbumFactoryIT.prepareAlbumsWithAllRelations;
+import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithAlbums;
+import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithOneAlbum;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class AlbumRepositoryIT extends AbstractIntegrationTest {
+public class AlbumRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private AlbumRepository repository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Autowired
     private TestEntityManager entityManager;
 
+    private Genre findGenre(){
+        return genreRepository.findByName(GenreName.ROCK).orElseThrow();
+    }
+
     @Test
     void findByIdWithArtistAndImage_ShouldReturnsAlbumWithArtistAndImage(){
-        Album expectedAlbum = prepareAlbumWithAllRelations(entityManager);
+        Genre genre = findGenre();
+        Album expectedAlbum = albumAggregateWithOneAlbum(genre, entityManager).albums().getFirst();
 
         entityManager.flush();
         entityManager.clear();
 
         Album actualAlbum = repository.findByIdWithArtistAndImage(expectedAlbum.getId()).orElseThrow();
+
         assertThat(actualAlbum.getId()).isEqualTo(expectedAlbum.getId());
         assertThat(actualAlbum.getTitle()).isEqualTo(expectedAlbum.getTitle());
         assertThat(actualAlbum.getReleaseDate()).isEqualTo(expectedAlbum.getReleaseDate());
@@ -55,20 +59,14 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByIdWithArtistAndImage_ShouldReturnsEmpty_WhenIdIsInvalid(){
-        prepareAlbumWithAllRelations(entityManager);
-
-        entityManager.flush();
-        entityManager.clear();
-
         assertThat(repository.findByIdWithArtistAndImage(156L)).isEmpty();
     }
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsFirstPageCorrectly(){
+        Genre genre = findGenre();
         String albumTitlePrefix = "bad romance";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -83,10 +81,9 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsSecondPageCorrectly(){
+        Genre genre = findGenre();
         String albumTitlePrefix = "just dance";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -101,10 +98,9 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsLastPageCorrectly(){
+        Genre genre = findGenre();
         String albumTitlePrefix = "after dark";
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -119,13 +115,6 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByTitleStartingWithIgnoreCase_ShouldReturnsEmptyPage_WhenAlbumsNotFoundByPrefix(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
-        prepareAlbumsWithAllRelations(entityManager, genre, artist,"some album");
-
-        entityManager.flush();
-        entityManager.clear();
-
         Page<Album> result = repository.findByTitleStartingWithIgnoreCase
                 ("incorrectly prefix", PageRequest.of(page, size));
 
@@ -134,10 +123,9 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsFirstPageCorrectly(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Genre genre = findGenre();
         String albumTitlePrefix = "supermassive";
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -151,10 +139,9 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsSecondPageCorrectly(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Genre genre = findGenre();
         String albumTitlePrefix = "just dance";
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
 
         entityManager.flush();
         entityManager.clear();
@@ -168,10 +155,10 @@ public class AlbumRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void findByGenreId_ShouldReturnsLastPageCorrectly(){
-        Genre genre = entityManager.persist(MusicFactoryIT.genre());
-        Artist artist = entityManager.persist(MusicFactoryIT.artist(genre));
+        Genre genre = findGenre();
         String albumTitlePrefix = "just";
-        prepareAlbumsWithAllRelations(entityManager, genre, artist, albumTitlePrefix);
+        albumAggregateWithAlbums(genre, entityManager, albumTitlePrefix);
+
         entityManager.flush();
         entityManager.clear();
 

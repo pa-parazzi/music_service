@@ -34,6 +34,6 @@ public class JamendoClient {
                         .retrieve()
                         .bodyToMono(JamendoResponse.class)
                         .block())
-                .getResults();
+                .results();
     }
 }

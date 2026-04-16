@@ -47,14 +47,16 @@ public class UserAvatarServiceTest {
         String bucketKey = "img";
         Map<String, String> bucket = Map.of(bucketKey, "mus-app-img");
         when(yandexStorageProperties.getBuckets()).thenReturn(bucket);
-        when(userAvatarRepository.save(any(UserAvatar.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userAvatarRepository.save(any(UserAvatar.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         UserAvatar userAvatar = userAvatarService.create(mockMultipartFile, user);
 
         assertNotNull(userAvatar.getKey());
         assertEquals(user.getId(), userAvatar.getUser().getId());
         verifyNoMoreInteractions(yandexStorageProperties);
-        verify(objectStorageService).upload(any(String.class), eq(bucket.get(bucketKey)), any(MultipartFileUploadS3ObjectAdapter.class));
+        verify(objectStorageService).upload(any(String.class), eq(bucket.get(bucketKey)),
+                any(MultipartFileUploadS3ObjectAdapter.class));
     }
 
     @Test
@@ -65,7 +67,8 @@ public class UserAvatarServiceTest {
         Map<String, String> bucket = Map.of(bucketKey, "mus-app-img");
         when(yandexStorageProperties.getDefaultAvatarKey()).thenReturn(defaultKey);
         when(yandexStorageProperties.getBuckets()).thenReturn(bucket);
-        when(userAvatarRepository.save(any(UserAvatar.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userAvatarRepository.save(any(UserAvatar.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         UserAvatar userAvatar = userAvatarService.create(null, user);
 

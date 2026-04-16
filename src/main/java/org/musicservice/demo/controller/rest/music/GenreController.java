@@ -33,7 +33,7 @@ public class GenreController {
 
     @GetMapping
     public ResponseEntity<GenresResponse> genres(){
-        return ResponseEntity.ok().body(genreService.genresNames());
+        return ResponseEntity.ok().body(genreService.findAllGenresResponse());
     }
 
     @GetMapping("/{id}")

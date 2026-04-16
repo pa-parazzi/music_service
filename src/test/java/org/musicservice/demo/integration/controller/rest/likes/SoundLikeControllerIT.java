@@ -1,22 +1,24 @@
 package org.musicservice.demo.integration.controller.rest.likes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.likes.LikeStatusResponse;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.likes.SoundLikeRepository;
+import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
 import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.musicservice.demo.support.factory.it.security.WithMockUserPrincipal;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
-import org.musicservice.demo.support.fixture.SoundTestFixture;
+import org.musicservice.demo.support.fixture.integration.SoundTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,10 +29,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 @Import(SoundTestFixture.class)
-public class SoundLikeControllerIT extends AbstractIntegrationTest {
+public class SoundLikeControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,17 +44,26 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     private SoundTestFixture soundFixture;
     @Autowired
     private SoundLikeRepository soundLikeRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, genre, artist, album, sound, sound_like RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, sound_like RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrueAndHttpStatusIsOk_WhenSoundLikeExists() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Sound sound = soundFixture.soundAggregateWithOneSound().sounds().getFirst();
+        Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
         MvcResult result = mockMvc.perform(get("/api/sound-like/is-liked/{id}", sound.getId()))
@@ -84,7 +93,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @WithMockUserPrincipal
     void shouldCreateSoundLikeAndReturnStatusIsCreated() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Sound sound = soundFixture.soundAggregateWithOneSound().sounds().getFirst();
+        Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
 
         mockMvc.perform(post("/api/sound-like/{id}", sound.getId()))
                 .andExpect(status().isCreated());
@@ -100,7 +109,7 @@ public class SoundLikeControllerIT extends AbstractIntegrationTest {
     @WithMockUserPrincipal
     void shouldDeleteSoundLikeAndReturnStatusIsNoContent() throws Exception{
         User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-        Sound sound = soundFixture.soundAggregateWithOneSound().sounds().getFirst();
+        Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
         mockMvc.perform(delete("/api/sound-like/{id}", sound.getId()))

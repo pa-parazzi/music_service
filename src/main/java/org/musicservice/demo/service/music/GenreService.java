@@ -22,14 +22,10 @@ public class GenreService {
         this.genreRepository = genreRepository;
     }
 
-    public GenresResponse genresNames(){
+    public GenresResponse findAllGenresResponse(){
         List<GenreResponse> genresList = genreRepository.findAll()
                 .stream().map(genre -> new GenreResponse(genre.getId(), genre.getName().name(), genre.getImageName())).toList();
         return new GenresResponse(genresList);
-    }
-
-    public void checkExistById(Long id){
-        if(!genreRepository.existsById(id)) throw new GenreDoesNotExistException("Такой жанр не существует");
     }
 
     public GenreResponse genreResponseById(Long id){

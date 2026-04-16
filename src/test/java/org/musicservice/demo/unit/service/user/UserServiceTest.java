@@ -12,7 +12,7 @@ import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.exception.user.UserNotFoundException;
-import org.musicservice.demo.mapper.image.UserAvatarMapper;
+import org.musicservice.demo.mapper.image.ImageMapper;
 import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.service.user.UserService;
@@ -34,7 +34,7 @@ public class UserServiceTest {
     @Mock
     private UserAvatarRepository userAvatarRepository;
     @Mock
-    private UserAvatarMapper userAvatarMapper;
+    private ImageMapper imageMapper;
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -70,12 +70,12 @@ public class UserServiceTest {
         ImageResponse expectedAvatarResponse = UserDataFactory.avatarResponse();
         when(userRepository.getUsernameById(userId)).thenReturn(Optional.of(username));
         when(userAvatarRepository.findByUserId(userId)).thenReturn(userAvatar);
-        when(userAvatarMapper.convertToDto(userAvatar)).thenReturn(expectedAvatarResponse);
+        when(imageMapper.toImageResponse(userAvatar)).thenReturn(expectedAvatarResponse);
 
         UserMainResponse result = userService.mainResponse(userId);
         assertEquals(username, result.getUsername());
-        assertEquals(result.getAvatar().getKey(), expectedAvatarResponse.getKey());
-        assertEquals(result.getAvatar().getUrl(), expectedAvatarResponse.getUrl());
+        assertEquals(result.getAvatar().key(), expectedAvatarResponse.key());
+        assertEquals(result.getAvatar().url(), expectedAvatarResponse.url());
     }
 
     @Test

@@ -1,34 +1,35 @@
 package org.musicservice.demo.integration.controller.rest.music;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.repository.music.ArtistRepository;
 import org.musicservice.demo.repository.music.GenreRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
+import org.musicservice.demo.support.fixture.integration.ArtistTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponseStructure;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class ArtistControllerIT extends AbstractIntegrationTest {
+@Import(ArtistTestFixture.class)
+public class ArtistControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,19 +38,25 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private ArtistRepository artistRepository;
+    private ArtistTestFixture artistFixture;
     @Autowired
     private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE genre, artist RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE artist RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
     void shouldReturnValidArtistResponseAndStatusIsOk() throws Exception{
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-        Artist artist = artistRepository.save(MusicFactoryIT.artist(genre));
+        Artist artist = artistFixture.createArtist(genre);
 
         MvcResult result = mockMvc.perform(get("/api/artist/{id}", artist.getId()))
                 .andExpect(status().isOk())
@@ -67,14 +74,8 @@ public class ArtistControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnStatusIsNotFoundAndValidApiErrorResponse_WhenArtistIdInvalid() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/artist/{id}", 234326L))
-                .andExpect(status().isNotFound())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists())
-                .andReturn();
+        RequestBuilder requestBuilder = get("/api/artist/{id}", 234326L);
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder), status().isNotFound());
 
         String jsonResult = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(jsonResult, ApiErrorResponse.class);

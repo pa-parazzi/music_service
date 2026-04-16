@@ -28,15 +28,13 @@ import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 import org.musicservice.demo.security.verificationToken.MailService;
 import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
 import org.musicservice.demo.storage.s3.YandexStorageProperties;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
 import org.musicservice.demo.support.factory.it.cookie.CookieDataFactoryIT;
 import org.musicservice.demo.support.factory.it.multipartFile.MultipartFileFactory;
 import org.musicservice.demo.support.factory.it.refreshToken.RefreshTokenFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.musicservice.demo.support.factory.it.verificationToken.VerificationTokenFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,9 +53,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc(printOnlyOnFailure = false)
-public class AuthenticationControllerIT extends AbstractIntegrationTest {
+public class AuthenticationControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;

@@ -12,16 +12,13 @@ import org.musicservice.demo.repository.image.UserAvatarRepository;
 import org.musicservice.demo.repository.user.UserRepository;
 import org.musicservice.demo.security.dto.TokenSubject;
 import org.musicservice.demo.security.jwt.JwtTokenService;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
 import org.musicservice.demo.support.factory.it.user.UserAvatarFactoryIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -31,9 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc(printOnlyOnFailure = false)
-public class UserControllerIT extends AbstractIntegrationTest {
+public class UserControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,8 +40,6 @@ public class UserControllerIT extends AbstractIntegrationTest {
     private UserRepository userRepository;
     @Autowired
     private UserAvatarRepository userAvatarRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtTokenService jwtTokenService;
 
@@ -81,9 +74,7 @@ public class UserControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
-        String resultJson = result.getResponse().getContentAsString();
-        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
-        assertApiErrorResponse(errorResponse);
+        assertAuthenticationError(result);
     }
 
     @Test
@@ -97,13 +88,15 @@ public class UserControllerIT extends AbstractIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
-        String resultJson = result.getResponse().getContentAsString();
-        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
-        assertApiErrorResponse(errorResponse);
+        assertAuthenticationError(result);
     }
 
-    private void assertApiErrorResponse(ApiErrorResponse errorResponse){
+    private void assertAuthenticationError(MvcResult result) throws Exception{
+        String resultJson = result.getResponse().getContentAsString();
+        ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);
         assertThat(errorResponse.code()).isEqualTo(AuthErrorCode.BAD_AUTHENTICATION_REQUEST.name());
         assertThat(errorResponse.status()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(errorResponse.message()).isNotEmpty();
+        assertThat(errorResponse.timestamp()).isPositive();
     }
 }

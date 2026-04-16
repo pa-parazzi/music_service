@@ -1,6 +1,6 @@
 package org.musicservice.demo.storage.s3;
 
-import org.musicservice.demo.exception.objectStorage.UploadObjectStorageException;
+import org.musicservice.demo.exception.storage.UploadObjectStorageException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;

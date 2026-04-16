@@ -2,6 +2,7 @@ package org.musicservice.demo.integration.controller.rest.music;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,16 +13,13 @@ import org.musicservice.demo.dto.music.genre.GenreResponse;
 import org.musicservice.demo.dto.music.genre.GenresResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
 import org.musicservice.demo.repository.music.GenreRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.factory.it.music.GenreFactoryIT;
-import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
-import org.musicservice.demo.support.fixture.*;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
+import org.musicservice.demo.support.fixture.integration.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,17 +34,15 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsResponse;
 import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
-import static org.musicservice.demo.support.assertions.PageAssertions.page;
-import static org.musicservice.demo.support.assertions.PageAssertions.size;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponseStructure;
+import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsResponse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
 @Import({PageResponseTestFixture.class, SoundTestFixture.class, AlbumTestFixture.class})
-public class GenreControllerIT extends AbstractIntegrationTest {
+public class GenreControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -65,12 +61,19 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanupDb() {
-        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, album_image, sound RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE artist, album, album_image, sound RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
     void shouldReturnValidGenresResponse() throws Exception {
-        List<Genre> genres = genreRepository.saveAll(GenreFactoryIT.genres());
+        List<Genre> genres = genreRepository.findAll();
         List<String> genresName = genres.stream().map(genre -> genre.getName().name()).toList();
         List<String> imagesName = genres.stream().map(Genre::getImageName).toList();
 
@@ -94,8 +97,6 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnValidGenreResponseById() throws Exception {
-        Genre genre = genreRepository.save(MusicFactoryIT.genre());
-
         MvcResult result = mockMvc.perform(get("/api/genre/{id}", genre.getId()))
                 .andExpect(status().isOk())
                 .andExpectAll(
@@ -114,14 +115,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnNotFound_WhenIdIsInvalid() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/genre/{id}", 26732L))
-                .andExpect(status().isNotFound())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists())
-                .andReturn();
+        RequestBuilder requestBuilder = get("/api/genre/{id}", 26732L);
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder), status().isNotFound());
 
         String json = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
@@ -133,22 +128,14 @@ public class GenreControllerIT extends AbstractIntegrationTest {
     void shouldReturnFirstPageOfSoundsCorrectly() throws Exception {
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith);
+        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
         Genre genre = soundAggregate.genre();
 
         RequestBuilder request = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
-        MvcResult firstPageResult = mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].duration").exists(),
-                        jsonPath("$.contentList[*].key").exists(),
-                        jsonPath("$.contentList[*].url").exists(),
-                        jsonPath("$.hasNextPage").exists())
-                .andReturn();
+        MvcResult firstPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(request));
 
-        PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> response = pageResponseFixture
+                .getPageResponse(firstPageResult, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
         List<SoundResponse> soundsResponseList = response.contentList();
@@ -160,7 +147,7 @@ public class GenreControllerIT extends AbstractIntegrationTest {
     void shouldReturnSecondPageSoundsWithIdsGreaterThanFirstPage() throws Exception {
         String titlePrefix = "just dance_";
         String keyNameEndsWith = "key";
-        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(titlePrefix, keyNameEndsWith);
+        SoundAggregate soundAggregate = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith);
         Genre genre = soundAggregate.genre();
 
         RequestBuilder firstPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page, size);
@@ -169,8 +156,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         RequestBuilder secondPageRequest = requestBuilder(tracksByGenreUrl, genre.getId(), page + 1, size);
         MvcResult secondPageResult = mockMvc.perform(secondPageRequest).andExpect(status().isOk()).andReturn();
 
-        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture.getPageResponse(firstPageResult, new TypeReference<>() {});
-        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture.getPageResponse(secondPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture
+                .getPageResponse(firstPageResult, new TypeReference<>() {});
+        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
+                .getPageResponse(secondPageResult, new TypeReference<>() {});
 
         List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
         List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
@@ -182,19 +171,10 @@ public class GenreControllerIT extends AbstractIntegrationTest {
     void shouldReturnFirstPageOfAlbumsCorrectly() throws Exception {
         String titlePrefix = "Black hole";
         String imgKeyNameEndsWith = "album_key";
-        AlbumAggregate albumAggregate = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith);
-        Genre genre = albumAggregate.genre();
+        albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith);
 
         RequestBuilder requestBuilder = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].image").exists(),
-                        jsonPath("$.contentList[*].artist").exists(),
-                        jsonPath("$.hasNextPage").exists())
-                .andReturn();
+        MvcResult result = assertPageResponseOfAlbumsStructure(mockMvc.perform(requestBuilder));
 
         String json = result.getResponse().getContentAsString();
         PageResponse<AlbumResponse> response = objectMapper.readValue(json, new TypeReference<>() {});
@@ -209,8 +189,7 @@ public class GenreControllerIT extends AbstractIntegrationTest {
     void shouldReturnSecondPageAlbumsWithIdsGreaterThanFirstPage() throws Exception {
         String titlePrefix = "Black hole";
         String imgKeyNameEndsWith = "album_key";
-        AlbumAggregate albumAggregate = albumFixture.albumAggregateWithAlbums(titlePrefix, imgKeyNameEndsWith);
-        Genre genre = albumAggregate.genre();
+        albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith);
 
         RequestBuilder firstPageRequest = requestBuilder(albumsByGenreUrl, genre.getId(), page, size);
         MvcResult firstPageResult = mockMvc.perform(firstPageRequest).andExpect(status().isOk()).andReturn();
@@ -236,15 +215,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         int page = -1;
 
         RequestBuilder requestBuilder = requestBuilder(url, 1L, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -255,15 +227,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         int size = 50;
 
         RequestBuilder requestBuilder = requestBuilder(url, 1L, page, size);
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -277,15 +242,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
                 .param("page", page)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -300,15 +258,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
                 .param("page", String.valueOf(page))
                 .param("size", size);
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -319,15 +270,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("size", String.valueOf(size));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -338,15 +282,8 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("page", String.valueOf(page));
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isBadRequest())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists(),
-                        jsonPath("$.fieldsError").exists())
-                .andReturn();
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
+                .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
@@ -364,5 +301,6 @@ public class GenreControllerIT extends AbstractIntegrationTest {
         String json = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(json, ApiErrorResponse.class);
         assertApiErrorResponse(errorResponse, ErrorType.VALIDATION_ERROR, HttpStatus.BAD_REQUEST);
+        assertThat(errorResponse.fieldsError()).isNotEmpty();
     }
 }

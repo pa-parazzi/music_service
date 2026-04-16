@@ -1,25 +1,33 @@
 package org.musicservice.demo.integration.jamendo.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDate;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Getter
-@Setter
-public class MusicResponse {
+public record MusicResponse(
+        String name,
+        Integer duration,
+        String artist_name,
+        String album_name,
+        LocalDate releasedate,
+        String album_image,
+        String audiodownload,
+        Boolean audiodownload_allowed,
+        String mp3Key,
+        String albumImgKey) {
 
-    private String name;
-    private Integer duration;
-    private String artist_name;
-    private String album_name;
-    private LocalDate releasedate;
-    private String album_image;
-    private String audiodownload;
-    private Boolean audiodownload_allowed;
-
-    private String mp3Key;
-    private String albumImgKey;
+    public MusicResponse withKeys(String mp3Key, String albumImgKey){
+        return new MusicResponse(
+                name,
+                duration,
+                artist_name,
+                album_name,
+                releasedate,
+                album_image,
+                audiodownload,
+                audiodownload_allowed,
+                mp3Key,
+                albumImgKey);
+    }
 }

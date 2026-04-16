@@ -64,10 +64,6 @@ public class UserDataFactoryIT {
         return new User(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
     }
 
-    public static UserAvatar userAvatar(User user){
-        return new UserAvatar(user, UUID.randomUUID().toString() + ".jpg");
-    }
-
     private static String encodePassword(PasswordEncoder encoder, String password){
         return encoder.encode(password);
     }

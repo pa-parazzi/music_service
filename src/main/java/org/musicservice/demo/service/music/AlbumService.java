@@ -5,14 +5,13 @@ import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
-import org.musicservice.demo.exception.music.NoSuchMusicResultException;
+import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
-import org.musicservice.demo.repository.likes.AlbumLikeRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
+import org.musicservice.demo.service.likes.AlbumLikeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,34 +23,34 @@ import java.util.List;
 public class AlbumService {
 
     private final AlbumRepository albumRepository;
-    private final AlbumLikeRepository albumLikeRepository;
+    private final AlbumLikeService albumLikeService;
     private final AlbumMapper albumMapper;
-    private final GenreService genreService;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumLikeRepository albumLikeRepository, AlbumMapper albumMapper, GenreService genreService) {
+    public AlbumService(AlbumRepository albumRepository, AlbumLikeService albumLikeService, AlbumMapper albumMapper) {
         this.albumRepository = albumRepository;
-        this.albumLikeRepository = albumLikeRepository;
+        this.albumLikeService = albumLikeService;
         this.albumMapper = albumMapper;
-        this.genreService = genreService;
     }
 
     public PageResponse<AlbumResponse> getAlbumCollectionByUserId(Long userId, int page, int size){
-        Pageable pageable = PageRequest.of(page, size);
-        Page<AlbumLike> albumLikePage = albumLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
-        if(albumLikePage.isEmpty()) throw new NoSuchMusicResultException("У вас нет понравившихся альбомов");
-        List<AlbumResponse> albumListResponse = albumLikePage.stream().map(AlbumLike::getAlbum).map(albumMapper::toAlbumResponse).toList();
-        return new PageResponse<>(albumListResponse, albumLikePage.hasNext());
+        Page<AlbumLike> pageResponse = albumLikeService.findAlbumLikesByUserId(userId, PageRequest.of(page, size));
+        List<AlbumResponse> albumListResponse = pageResponse.getContent()
+                .stream().map(AlbumLike::getAlbum).map(albumMapper::toAlbumResponse).toList();
+        return new PageResponse<>(albumListResponse, pageResponse.hasNext());
     }
 
     public AlbumResponse findByIdWithArtistAndImage(Long id){
-        return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse).orElseThrow(()->new MusicNotFoundException("Album with id: " + id + " not found"));
+        return albumRepository.findByIdWithArtistAndImage(id).map(albumMapper::toAlbumResponse)
+                .orElseThrow(()->new MusicNotFoundException("Album with id: " + id + " not found"));
     }
 
     public PageResponse<AlbumResponse> findAlbumsByGenreIdPaged(Long genreId, int page, int size){
-        genreService.checkExistById(genreId);
-        Page<Album> pageResponse = albumRepository.findByGenreId(genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
-        List<AlbumResponse> albumResponseList = pageResponse.getContent().stream().map(albumMapper::toAlbumResponse).toList();
+        Page<Album> pageResponse = albumRepository.findByGenreId
+                (genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+        List<Album> albums = pageResponse.getContent();
+        if(albums.isEmpty()) throw new NoSuchMusicException("Альбомов по такому жанру не найдено");
+        List<AlbumResponse> albumResponseList = albums.stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
     }
 }

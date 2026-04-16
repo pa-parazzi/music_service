@@ -7,19 +7,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
-import org.musicservice.demo.dto.music.search.SearchMusicResponse;
+import org.musicservice.demo.dto.music.common.PageResponse;
+import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Album;
-import org.musicservice.demo.exception.music.NoSuchMusicResultException;
+import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.entity.music.Sound;
+import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
+import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
+import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.service.search.SearchMusicService;
-import org.musicservice.demo.support.factory.unit.music.AlbumDataFactory;
-import org.musicservice.demo.support.factory.unit.music.ArtistDataFactory;
+import org.musicservice.demo.support.factory.unit.music.MusicDataFactory;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,42 +37,110 @@ public class SearchMusicServiceTest {
     private AlbumRepository albumRepository;
     @Mock
     private AlbumMapper albumMapper;
+    @Mock
+    private SoundRepository soundRepository;
+    @Mock
+    private SoundMapper soundMapper;
 
     @InjectMocks
     private SearchMusicService searchMusicService;
 
+    private final String fragment = "just dance";
+    private final int page = 0;
+    private final int size = 2;
+    private final Pageable pageableWithSortByIdAsc = PageRequest.of
+            (page, size, Sort.by(Sort.Direction.ASC, "id"));
+
     @Test
-    void searchMusicResult_ShouldReturnResultWithArtistAndAlbums(){
-        String fragment = "Black Hole";
-        Album album = AlbumDataFactory.album();
-        AlbumResponse albumResponse = AlbumDataFactory.albumResponse();
-        List<ArtistResponse> artistResponseList = List.of(ArtistDataFactory.artistResponse());
-        List<Album> albumList = List.of(album);
+    void getTracksByTitleStartingWith_ShouldReturnPageResponseOfSounds(){
+        Sound sound1 = new Sound();
+        Sound sound2 = new Sound();
+        Page<Sound> soundsPage = new PageImpl<>(List.of(sound1, sound2), pageableWithSortByIdAsc, 3);
 
-        when(artistRepository.findAllArtistResponseByNameStartingWith(fragment)).thenReturn(artistResponseList);
-        when(albumRepository.findAllByTitleStartingWith(fragment)).thenReturn(albumList);
-        when(albumMapper.toAlbumResponse(album)).thenReturn(albumResponse);
+        SoundResponse soundResponse = MusicDataFactory.soundResponse();
 
-        SearchMusicResponse result = searchMusicService.searchMusicResult(fragment);
+        when(soundRepository.findByTitleStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(soundsPage);
+        when(soundMapper.toResponse(any(Sound.class))).thenReturn(soundResponse);
 
-        assertNotNull(result.artists());
-        assertNotNull(result.albums());
-        verifyNoMoreInteractions(artistRepository, albumRepository, albumMapper);
+        PageResponse<SoundResponse> pageResponse = searchMusicService.getTracksByTitleStartingWith(fragment, page, size);
+        assertPageResponse(pageResponse);
+        assertEquals(soundResponse, pageResponse.contentList().get(0));
+        assertEquals(soundResponse, pageResponse.contentList().get(1));
     }
 
     @Test
-    void searchMusicResult_ShouldReturnNull_WhenFragmentIsEmpty(){
-        String fragment = " ";
+    void getTracksByTitleStartingWith_ShouldThrowNoSuchMusicException_WhenPageContentIsEmpty(){
+        Page<Sound> soundsPage = new PageImpl<>(List.of(), pageableWithSortByIdAsc, 0);
 
-        assertThrows(NoSuchMusicResultException.class, ()-> searchMusicService.searchMusicResult(fragment));
+        when(soundRepository.findByTitleStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(soundsPage);
 
-        verifyNoInteractions(artistRepository, albumRepository, albumMapper);
+        assertThrows(NoSuchMusicException.class, () -> searchMusicService
+                .getTracksByTitleStartingWith(fragment, page, size));
+
+        verify(soundRepository).findByTitleStartingWithIgnoreCase(fragment, pageableWithSortByIdAsc);
+        verifyNoInteractions(soundMapper);
     }
 
     @Test
-    void searchMusicResult_ShouldReturnNull_WhenFragmentIsNull(){
-        assertThrows(NoSuchMusicResultException.class, ()-> searchMusicService.searchMusicResult(null));
+    void getAlbumsByTitleStartingWith_ShouldReturnPageResponseOfAlbums(){
+        Album album1 = new Album();
+        Album album2 = new Album();
+        Page<Album> albumsPage = new PageImpl<>(List.of(album1, album2), pageableWithSortByIdAsc, 3);
 
-        verifyNoInteractions(artistRepository, albumRepository, albumMapper);
+        AlbumResponse albumResponse = MusicDataFactory.albumResponse();
+
+        when(albumRepository.findByTitleStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(albumsPage);
+        when(albumMapper.toAlbumResponse(any(Album.class))).thenReturn(albumResponse);
+
+        PageResponse<AlbumResponse> pageResponse = searchMusicService.getAlbumsByTitleStartingWith(fragment, page, size);
+        assertPageResponse(pageResponse);
+        assertEquals(albumResponse, pageResponse.contentList().get(0));
+        assertEquals(albumResponse, pageResponse.contentList().get(1));
+    }
+
+    @Test
+    void getAlbumsByTitleStartingWith_ShouldThrowNoSuchMusicException_WhenPageContentIsEmpty(){
+        Page<Album> albumsPage = new PageImpl<>(List.of(), pageableWithSortByIdAsc, 0);
+
+        when(albumRepository.findByTitleStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(albumsPage);
+
+        assertThrows(NoSuchMusicException.class, () -> searchMusicService
+                .getAlbumsByTitleStartingWith(fragment, page, size));
+
+        verify(albumRepository).findByTitleStartingWithIgnoreCase(fragment, pageableWithSortByIdAsc);
+        verifyNoInteractions(albumMapper);
+    }
+
+    @Test
+    void getArtistsByNameStartingWith_ShouldReturnPageResponseOfArtists(){
+        Artist artist1 = new Artist();
+        Artist artist2 = new Artist();
+        Page<Artist> artistsPage = new PageImpl<>(List.of(artist1, artist2), pageableWithSortByIdAsc, 3);
+
+        when(artistRepository.findByNameStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(artistsPage);
+
+        PageResponse<ArtistResponse> pageResponse = searchMusicService.getArtistsByNameStartingWith(fragment, page, size);
+        assertPageResponse(pageResponse);
+    }
+
+    @Test
+    void getArtistsByNameStartingWith_ShouldThrowNoSuchMusicException_WhenPageContentIsEmpty(){
+        Page<Artist> artistsPage = new PageImpl<>(List.of(), pageableWithSortByIdAsc, 3);
+
+        when(artistRepository.findByNameStartingWithIgnoreCase
+                (fragment, pageableWithSortByIdAsc)).thenReturn(artistsPage);
+
+        assertThrows(NoSuchMusicException.class, () -> searchMusicService.getArtistsByNameStartingWith(fragment, page, size));
+        verify(artistRepository).findByNameStartingWithIgnoreCase(fragment, pageableWithSortByIdAsc);
+    }
+
+    private <T> void assertPageResponse(PageResponse<T> pageResponse){
+        assertEquals(size, pageResponse.contentList().size());
+        assertTrue(pageResponse.hasNextPage());
     }
 }

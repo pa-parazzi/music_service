@@ -2,6 +2,7 @@ package org.musicservice.demo.support.fixture.jpa;
 
 import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.music.Artist;
+import org.musicservice.demo.support.factory.it.music.MusicFactoryIT;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import static org.musicservice.demo.support.assertions.PageAssertions.totalElements;

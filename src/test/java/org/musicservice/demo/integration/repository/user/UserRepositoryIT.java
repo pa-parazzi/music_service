@@ -3,18 +3,14 @@ package org.musicservice.demo.integration.repository.user;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.entity.user.User;
 import org.musicservice.demo.repository.user.UserRepository;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
+import org.musicservice.demo.support.config.AbstractJpaIT;
 import org.musicservice.demo.support.factory.it.user.UserDataFactoryIT;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class UserRepositoryIT extends AbstractIntegrationTest {
+public class UserRepositoryIT extends AbstractJpaIT {
 
     @Autowired
     private UserRepository repository;
@@ -63,9 +59,6 @@ public class UserRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void getUsernameById_ShouldReturnEmpty_WhenIdIncorrect(){
-        entityManager.persistAndFlush(UserDataFactoryIT.user());
-        entityManager.clear();
-
         assertThat(repository.getUsernameById(2654L)).isEmpty();
     }
 

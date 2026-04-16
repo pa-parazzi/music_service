@@ -1,33 +1,35 @@
 package org.musicservice.demo.integration.controller.rest.music;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
+import org.musicservice.demo.entity.genre.Genre;
+import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.error.ApiErrorResponse;
 import org.musicservice.demo.error.ErrorType;
-import org.musicservice.demo.support.config.AbstractIntegrationTest;
-import org.musicservice.demo.support.fixture.AlbumTestFixture;
+import org.musicservice.demo.repository.music.GenreRepository;
+import org.musicservice.demo.support.config.AbstractSpringBootIT;
+import org.musicservice.demo.support.fixture.integration.AlbumTestFixture;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponse;
+import static org.musicservice.demo.support.assertions.ApiErrorAssertions.assertApiErrorResponseStructure;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc(printOnlyOnFailure = false)
 @Import(AlbumTestFixture.class)
-public class AlbumControllerIT extends AbstractIntegrationTest {
+public class AlbumControllerIT extends AbstractSpringBootIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,15 +39,24 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private AlbumTestFixture albumFixture;
+    @Autowired
+    private GenreRepository genreRepository;
 
     @BeforeEach
     void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE genre, artist, album, album_image RESTART IDENTITY CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE artist, album, album_image RESTART IDENTITY CASCADE");
+    }
+
+    private Genre genre;
+
+    @BeforeAll
+    void getGenre(){
+        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
     void shouldReturnValidAlbumResponse() throws Exception {
-        Album album = albumFixture.albumAggregateWithOneAlbum().albums().getFirst();
+        Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
 
         MvcResult result = mockMvc.perform(get("/api/album/{id}", album.getId()))
                 .andExpect(status().isOk())
@@ -68,14 +79,8 @@ public class AlbumControllerIT extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnApiErrorResponse_WhenAlbumIdInvalid() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/album/{id}", 126L))
-                .andExpect(status().isNotFound())
-                .andExpectAll(
-                        jsonPath("$.code").exists(),
-                        jsonPath("$.message").exists(),
-                        jsonPath("$.status").exists(),
-                        jsonPath("$.timestamp").exists())
-                .andReturn();
+        RequestBuilder requestBuilder = get("/api/album/{id}", 126L);
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder), status().isNotFound());
 
         String resultJson = result.getResponse().getContentAsString();
         ApiErrorResponse errorResponse = objectMapper.readValue(resultJson, ApiErrorResponse.class);

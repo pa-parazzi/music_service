@@ -5,8 +5,11 @@ import org.musicservice.demo.dto.likes.LikeStatusResponse;
 import org.musicservice.demo.entity.likes.AlbumLike;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.repository.likes.AlbumLikeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,12 @@ public class AlbumLikeService {
     @Transactional
     public void delete(Long userId, Long albumId){
         albumLikeRepository.deleteByUserIdAndAlbumId(userId, albumId);
+    }
+
+    public Page<AlbumLike> findAlbumLikesByUserId(Long userId, Pageable pageable){
+        Page<AlbumLike> pageResponse = albumLikeRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, pageable);
+        if(pageResponse.getContent().isEmpty()) throw new NoSuchMusicException("У вас нет понравившихся альбомов");
+        return pageResponse;
     }
 
     public LikeStatusResponse findLikedAlbum(Long userId, Long albumId) {
