@@ -43,14 +43,20 @@ public class UserControllerIT extends AbstractSpringBootIT {
     @Autowired
     private JwtTokenService jwtTokenService;
 
+    private User user;
+
     @BeforeEach
-    void cleanupDb(){
+    void setup(){
+        truncateTables();
+        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+    }
+
+    private void truncateTables(){
         jdbcTemplate.execute("TRUNCATE TABLE users, user_avatar RESTART IDENTITY CASCADE");
     }
 
     @Test
     void shouldReturnValidUserMainResponseAndStatusIsOk() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         UserAvatar userAvatar = userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 
@@ -67,7 +73,6 @@ public class UserControllerIT extends AbstractSpringBootIT {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenIsMissing() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
 
         MvcResult result = mockMvc.perform(get("/api/user/profile"))
@@ -79,7 +84,6 @@ public class UserControllerIT extends AbstractSpringBootIT {
 
     @Test
     void shouldReturnStatusIsUnauthorized_WhenJwtTokenInvalid() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         userAvatarRepository.save(UserAvatarFactoryIT.userAvatar(user));
         String jwtToken = jwtTokenService.generateToken(new TokenSubject(user.getId(), List.of(user.getRole().getAuthority())));
 

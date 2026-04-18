@@ -47,22 +47,28 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
     @Autowired
     private GenreRepository genreRepository;
 
-    @BeforeEach
-    void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, sound_like RESTART IDENTITY CASCADE");
-    }
-
     private Genre genre;
+    private User user;
+
+    @BeforeEach
+    void setup(){
+        truncateTables();
+        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+    }
 
     @BeforeAll
     void getGenre(){
         genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
+    private void truncateTables(){
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image," +
+                " sound, sound_like, album_like RESTART IDENTITY CASCADE");
+    }
+
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrueAndHttpStatusIsOk_WhenSoundLikeExists() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
@@ -92,7 +98,6 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldCreateSoundLikeAndReturnStatusIsCreated() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
 
         mockMvc.perform(post("/api/sound-like/{id}", sound.getId()))
@@ -108,7 +113,6 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldDeleteSoundLikeAndReturnStatusIsNoContent() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 

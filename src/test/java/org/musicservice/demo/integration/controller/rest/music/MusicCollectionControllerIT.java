@@ -74,22 +74,29 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     private AlbumTestFixture albumFixture;
 
     @BeforeEach
-    void cleanupDb(){
+    void setup(){
+        truncateTables();
+        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+    }
+
+    private void truncateTables(){
         jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image," +
                 " sound, sound_like, album_like RESTART IDENTITY CASCADE");
     }
 
+    private static final String albumsCollectionUrl = "/api/collection/albums";
+    private static final String tracksCollectionUrl = "/api/collection/tracks";
+    private User user;
     private Genre genre;
 
     @BeforeAll
     void getGenre(){
-        genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
+        this.genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
     @Test
     @WithMockUserPrincipal
     void shouldReturnFirstPageOfCollectionTracks() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "umbrella";
         String keyNameEndsWith = "key";
         List<Sound> sounds = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).sounds();
@@ -109,7 +116,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnFirstPageTracksWithIdsGreaterThanSecondPage_WhenDefaultOrderDesc() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "umbrella";
         String keyNameEndsWith = "key";
         List<Sound> sounds = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).sounds();
@@ -135,8 +141,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnApiErrorResponseWithStatusIsNoContent_WhenUserDoesNotHaveSoundLikes() throws Exception{
-        userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-
         RequestBuilder requestBuilder = requestBuilder(tracksCollectionUrl, page, size);
         MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isNoContent()).andReturn();
@@ -147,7 +151,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnFirstPageOfCollectionAlbums() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "Tri Face";
         String imgKeyNameEndsWith = "album-key";
         List<Album> albums = albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith).albums();
@@ -167,7 +170,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnFirstPageAlbumsWithIdsGreaterThanSecondPage_WhenDefaultOrderDesc() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         String titlePrefix = "Tri Face";
         String imgKeyNameEndsWith = "album-key";
         List<Album> albums = albumFixture.albumAggregateWithAlbums(genre, titlePrefix, imgKeyNameEndsWith).albums();
@@ -193,8 +195,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnApiErrorResponseWithStatusIsNoContent_WhenUserDoesNotHaveAlbumLikes() throws Exception{
-        userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-
         RequestBuilder requestBuilder = requestBuilder(albumsCollectionUrl, page, size);
         MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isNoContent()).andReturn();
@@ -280,9 +280,6 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
         assertValidationError(result);
     }
-
-    private static final String albumsCollectionUrl = "/api/collection/albums";
-    private static final String tracksCollectionUrl = "/api/collection/tracks";
 
     private RequestBuilder requestBuilder(String url, int page, int size) {
         return get(url)

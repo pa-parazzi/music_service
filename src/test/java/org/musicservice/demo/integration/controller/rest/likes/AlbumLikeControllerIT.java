@@ -47,22 +47,28 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
     @Autowired
     private GenreRepository genreRepository;
 
-    @BeforeEach
-    void cleanupDb(){
-        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, sound, album_like RESTART IDENTITY CASCADE");
-    }
-
     private Genre genre;
+    private User user;
+
+    @BeforeEach
+    void setup(){
+        truncateTables();
+        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+    }
 
     @BeforeAll
     void getGenre(){
         genre = genreRepository.findByName(GenreName.ROCK).orElseThrow();
     }
 
+    private void truncateTables(){
+        jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image," +
+                " sound, sound_like, album_like RESTART IDENTITY CASCADE");
+    }
+
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsTrue_WhenAlbumLikeExists() throws Exception {
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
         albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
@@ -92,7 +98,6 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldCreateAlbumLike() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
 
         mockMvc.perform(post("/api/album-like/{id}", album.getId()))
@@ -108,7 +113,6 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldSuccessDeleteAlbumLike() throws Exception{
-        User user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
         AlbumLike albumLike = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
