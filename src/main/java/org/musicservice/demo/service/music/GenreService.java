@@ -35,7 +35,13 @@ public class GenreService {
     }
 
     public Genre findGenreByName(String genreName){
-        return genreRepository.findByName(GenreName.valueOf(genreName))
+        GenreName genreEnum;
+        try{
+            genreEnum = GenreName.valueOf(genreName);
+        } catch (IllegalArgumentException e){
+            throw new GenreDoesNotExistException("Такой жанр не существует");
+        }
+        return genreRepository.findByName(genreEnum)
                 .orElseThrow(() -> new GenreDoesNotExistException("Такой жанр не существует"));
     }
 }
