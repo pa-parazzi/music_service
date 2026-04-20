@@ -8,11 +8,31 @@ import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.entity.user.User;
+import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class MusicFactoryIT {
+
+    public static List<MusicResponse> musicResponseList(int size){
+        List<MusicResponse> responseList = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            responseList.add(new MusicResponse(
+                    "track_" + i,
+                    250,
+                    "Mr.Kitty",
+                    "Time",
+                    LocalDate.of(2008, 10, 29),
+                    "https://album_" + i,
+                    "https://track_" + i + "_download",
+                    true,
+                    null, null));
+        }
+        return responseList;
+    }
 
     public static Artist artist(Genre genre) {
         return new Artist("Muse", genre);
