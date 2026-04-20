@@ -20,9 +20,9 @@ public class AdminController {
         this.musicImportService = musicImportService;
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<Void> uploadData(@RequestParam ("genreName") String genreName) {
-        musicImportService.uploadData(genreName);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    @PostMapping("/import")
+    public ResponseEntity<Void> importMusicData(@RequestParam ("genreName") String genreName) {
+        musicImportService.importProcess(genreName);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

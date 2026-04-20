@@ -26,7 +26,7 @@ export async function upload() {
         statusDiv.textContent = "Импорт начался...";
 
         try {
-            const response = await apiFetch("/admin/upload?genreName=" + encodeURIComponent(genre), {
+            const response = await apiFetch("/admin/import?genreName=" + encodeURIComponent(genre), {
                 method: "POST"
             });
 

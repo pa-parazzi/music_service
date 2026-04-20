@@ -1,18 +1,14 @@
 package org.musicservice.demo.service.uploadData;
 
-import org.musicservice.demo.dto.metadata.TrackMetadata;
 import org.musicservice.demo.entity.genre.Genre;
-import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.image.AlbumImage;
 import org.musicservice.demo.entity.music.Album;
 import org.musicservice.demo.entity.music.Artist;
 import org.musicservice.demo.entity.music.Sound;
-import org.musicservice.demo.exception.music.GenreDoesNotExistException;
 import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.musicservice.demo.repository.image.AlbumImageRepository;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.repository.music.ArtistRepository;
-import org.musicservice.demo.repository.music.GenreRepository;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,17 +22,14 @@ public class MusicCatalogService {
     private final AlbumRepository albumRepository;
     private final SoundRepository soundRepository;
     private final AlbumImageRepository albumImageRepository;
-    private final GenreRepository genreRepository;
 
     @Autowired
     public MusicCatalogService(ArtistRepository artistRepository, AlbumRepository albumRepository,
-                               SoundRepository soundRepository, AlbumImageRepository albumImageRepository,
-                               GenreRepository genreRepository) {
+                               SoundRepository soundRepository, AlbumImageRepository albumImageRepository) {
         this.artistRepository = artistRepository;
         this.albumRepository = albumRepository;
         this.soundRepository = soundRepository;
         this.albumImageRepository = albumImageRepository;
-        this.genreRepository = genreRepository;
     }
 
     private Artist createOrGetArtist(MusicResponse response, Genre genre) {
@@ -62,21 +55,12 @@ public class MusicCatalogService {
     }
 
     @Transactional
-    public void saveMusicData(MusicResponse response, Genre genre) {
-        if(soundRepository.existsByKey(response.mp3Key())) return;
+    public boolean saveMusicData(MusicResponse response, Genre genre) {
+        if(soundRepository.existsByKey(response.mp3Key())) return false;
         Artist artist = createOrGetArtist(response, genre);
         Album album = createAlbumWithImageOrGet(response, artist, genre);
         createSound(response, artist, album, genre);
-    }
-
-    public Genre findGenreByName(String genreName){
-        return genreRepository.findByName(GenreName.valueOf(genreName))
-                .orElseThrow(() -> new GenreDoesNotExistException("Такой жанр не существует"));
-    }
-
-    public TrackMetadata buildTrackMetadata(MusicResponse response){
-        return new TrackMetadata(response.audiodownload(), response.album_image(),
-                response.mp3Key(), response.albumImgKey());
+        return true;
     }
 
 }
