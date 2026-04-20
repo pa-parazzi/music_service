@@ -20,7 +20,7 @@ export async function loadFoundArtistsByFragment(fragment, container){
     paginationState.isLoading = true;
 
     const response = await getFoundArtistsByFragment(fragment);
-    const artists = response.contentList;
+    const artists = response.content;
 
     paginationState.artists.push(...artists);
     paginationState.hasNext = response.hasNextPage;
@@ -36,7 +36,7 @@ export async function loadFoundAlbumsByFragment(fragment, container){
     paginationState.isLoading = true;
 
     const response = await getFoundAlbumsByFragment(fragment);
-    const albums = response.contentList;
+    const albums = response.content;
 
     paginationState.albums.push(...albums);
     paginationState.hasNext = response.hasNextPage;
@@ -52,7 +52,7 @@ export async function loadFoundTracksByFragment(fragment, container, likedSounds
     paginationState.isLoading = true;
 
     const response = await getFoundTracksByFragment(fragment);
-    const tracks = response.contentList;
+    const tracks = response.content;
     const startIndex = paginationState.tracks.length;
 
     paginationState.tracks.push(...tracks);

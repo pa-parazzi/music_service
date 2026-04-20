@@ -52,13 +52,13 @@ async function initSearchPage(){
         const emptyResultContainer = document.getElementById("empty-result");
 
         const artistsPageResponse = await getFoundArtistsByFragment(fragment);
-        const artists = artistsPageResponse.contentList;
+        const artists = artistsPageResponse.content;
 
         const albumsPageResponse = await getFoundAlbumsByFragment(fragment);
-        const albums = albumsPageResponse.contentList;
+        const albums = albumsPageResponse.content;
 
         const tracksPageResponse = await getFoundTracksByFragment(fragment);
-        const tracks = tracksPageResponse.contentList;
+        const tracks = tracksPageResponse.content;
 
         if((artists.length === 0 && albums.length === 0 && tracks.length === 0)) {
             emptyResultContainer.textContent = "По запросу " + "\"" + fragment + "\""+ " ничего не найдено";

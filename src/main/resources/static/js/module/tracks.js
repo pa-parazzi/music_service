@@ -9,7 +9,7 @@ export async function loadTracksByGenreId(genreId, container, likedSoundsIds){
     paginationState.isLoading = true;
 
     const tracksPageResponse = await getTracksByGenreId(genreId);
-    const tracks = tracksPageResponse.contentList;
+    const tracks = tracksPageResponse.content;
     const startIndex = paginationState.tracks.length;
 
     paginationState.tracks.push(...tracks);

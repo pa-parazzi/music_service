@@ -65,8 +65,8 @@ public class SearchMusicServiceTest {
 
         PageResponse<SoundResponse> pageResponse = searchMusicService.getTracksByTitleStartingWith(fragment, page, size);
         assertPageResponse(pageResponse);
-        assertEquals(soundResponse, pageResponse.contentList().get(0));
-        assertEquals(soundResponse, pageResponse.contentList().get(1));
+        assertEquals(soundResponse, pageResponse.content().get(0));
+        assertEquals(soundResponse, pageResponse.content().get(1));
     }
 
     @Test
@@ -97,8 +97,8 @@ public class SearchMusicServiceTest {
 
         PageResponse<AlbumResponse> pageResponse = searchMusicService.getAlbumsByTitleStartingWith(fragment, page, size);
         assertPageResponse(pageResponse);
-        assertEquals(albumResponse, pageResponse.contentList().get(0));
-        assertEquals(albumResponse, pageResponse.contentList().get(1));
+        assertEquals(albumResponse, pageResponse.content().get(0));
+        assertEquals(albumResponse, pageResponse.content().get(1));
     }
 
     @Test
@@ -140,7 +140,7 @@ public class SearchMusicServiceTest {
     }
 
     private <T> void assertPageResponse(PageResponse<T> pageResponse){
-        assertEquals(size, pageResponse.contentList().size());
+        assertEquals(size, pageResponse.content().size());
         assertTrue(pageResponse.hasNextPage());
     }
 }

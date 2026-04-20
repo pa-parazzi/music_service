@@ -10,7 +10,7 @@ export async function loadAlbumsByGenreId(genreId, container){
     paginationState.isLoading = true;
 
     const response = await getAlbumsByGenreId(genreId);
-    const albums = response.contentList;
+    const albums = response.content;
 
     paginationState.albums.push(...albums);
     paginationState.hasNext = response.hasNextPage;

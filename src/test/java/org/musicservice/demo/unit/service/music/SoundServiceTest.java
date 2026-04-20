@@ -179,9 +179,9 @@ public class SoundServiceTest {
 
     private void assertPageResponseOfSounds(PageResponse<SoundResponse> response,
                                             SoundResponse expectedResponseFromMapper){
-        assertEquals(size, response.contentList().size());
-        assertEquals(expectedResponseFromMapper, response.contentList().get(0));
-        assertEquals(expectedResponseFromMapper, response.contentList().get(1));
+        assertEquals(size, response.content().size());
+        assertEquals(expectedResponseFromMapper, response.content().get(0));
+        assertEquals(expectedResponseFromMapper, response.content().get(1));
         assertTrue(response.hasNextPage());
     }
 }

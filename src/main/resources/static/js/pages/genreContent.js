@@ -45,13 +45,13 @@ async function initGenreDetailsPage(){
         const albumContainer = document.querySelector(`.albums`);
 
         const tracksResponse = await getTracksByGenreId(genreId);
-        const tracks = tracksResponse.contentList;
+        const tracks = tracksResponse.content;
         paginationState.tracks = tracks;
         renderSounds({container: tracksContainer, soundList: tracks, likedSoundsIds: likedSoundsIds});
         initTracksDelegation(tracksContainer, likedSoundsIds, jwt);
 
         const albumsResponse = await getAlbumsByGenreId(genreId);
-        const albums = albumsResponse.contentList;
+        const albums = albumsResponse.content;
         paginationState.albums = albums;
         renderAlbums(albumContainer, albums);
         initPlayAlbumsDelegation(albumContainer);

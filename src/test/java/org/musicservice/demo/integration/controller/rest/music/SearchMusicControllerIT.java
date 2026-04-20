@@ -91,7 +91,7 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
 
         PageResponse<ArtistResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
 
-        List<ArtistResponse> artistResponseList = response.contentList();
+        List<ArtistResponse> artistResponseList = response.content();
         assertThat(artistResponseList).hasSize(size);
         assertThat(artistResponseList).extracting(ArtistResponse::id).isSorted();
         assertThat(artistResponseList).extracting(ArtistResponse::id).allMatch(Objects::nonNull).doesNotHaveDuplicates();
@@ -117,8 +117,8 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         PageResponse<ArtistResponse> secondPageResponse = pageResponseFixture
                 .getPageResponse(secondPageResult, new TypeReference<>(){});
 
-        List<Long> firstPageArtistsIds = firstPageResponse.contentList().stream().map(ArtistResponse::id).toList();
-        List<Long> secondPageArtistsIds = secondPageResponse.contentList().stream().map(ArtistResponse::id).toList();
+        List<Long> firstPageArtistsIds = firstPageResponse.content().stream().map(ArtistResponse::id).toList();
+        List<Long> secondPageArtistsIds = secondPageResponse.content().stream().map(ArtistResponse::id).toList();
 
         assertThat(firstPageArtistsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
         assertThat(secondPageArtistsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
@@ -138,7 +138,7 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         PageResponse<AlbumResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
-        List<AlbumResponse> albumResponseList = response.contentList();
+        List<AlbumResponse> albumResponseList = response.content();
         assertThat(albumResponseList).hasSize(size);
         assertAlbumsResponse(albumResponseList, titlePrefix, imgKeyNameEndsWith);
     }
@@ -160,8 +160,8 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture
                 .getPageResponse(secondPageResult, new TypeReference<>(){});
 
-        List<Long> firstPageAlbumsIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
-        List<Long> secondPageAlbumsIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+        List<Long> firstPageAlbumsIds = firstPageResponse.content().stream().map(AlbumResponse::id).toList();
+        List<Long> secondPageAlbumsIds = secondPageResponse.content().stream().map(AlbumResponse::id).toList();
 
         assertThat(firstPageAlbumsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
         assertThat(secondPageAlbumsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
@@ -181,7 +181,7 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
-        List<SoundResponse> soundResponseList = response.contentList();
+        List<SoundResponse> soundResponseList = response.content();
         assertThat(soundResponseList).hasSize(size);
         assertSoundsResponse(soundResponseList, titlePrefix, keyNameEndsWith);
     }
@@ -203,8 +203,8 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
                 .getPageResponse(secondPageResult, new TypeReference<>(){});
 
-        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
-        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
+        List<Long> firstPageSoundsIds = firstPageResponse.content().stream().map(SoundResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.content().stream().map(SoundResponse::id).toList();
 
         assertThat(firstPageSoundsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();
         assertThat(secondPageSoundsIds).allMatch(Objects::nonNull).doesNotHaveDuplicates();

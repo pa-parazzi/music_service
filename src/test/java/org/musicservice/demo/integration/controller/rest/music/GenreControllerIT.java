@@ -137,7 +137,7 @@ public class GenreControllerIT extends AbstractSpringBootIT {
                 .getPageResponse(firstPageResult, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
-        List<SoundResponse> soundsResponseList = response.contentList();
+        List<SoundResponse> soundsResponseList = response.content();
         assertThat(soundsResponseList).hasSize(size);
         assertSoundsResponse(soundsResponseList, titlePrefix, keyNameEndsWith);
     }
@@ -159,8 +159,8 @@ public class GenreControllerIT extends AbstractSpringBootIT {
         PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
                 .getPageResponse(secondPageResult, new TypeReference<>() {});
 
-        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(SoundResponse::id).toList();
-        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(SoundResponse::id).toList();
+        List<Long> firstPageSoundsIds = firstPageResponse.content().stream().map(SoundResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.content().stream().map(SoundResponse::id).toList();
 
         assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
     }
@@ -178,7 +178,7 @@ public class GenreControllerIT extends AbstractSpringBootIT {
         PageResponse<AlbumResponse> response = objectMapper.readValue(json, new TypeReference<>() {});
         assertThat(response.hasNextPage()).isTrue();
 
-        List<AlbumResponse> albumResponseList = response.contentList();
+        List<AlbumResponse> albumResponseList = response.content();
         assertThat(albumResponseList).hasSize(size);
         assertAlbumsResponse(albumResponseList, titlePrefix, imgKeyNameEndsWith);
     }
@@ -201,8 +201,8 @@ public class GenreControllerIT extends AbstractSpringBootIT {
         PageResponse<AlbumResponse> secondPageResponse = pageResponseFixture
                 .getPageResponse(secondPageResult, new TypeReference<>() {});
 
-        List<Long> firstPageSoundsIds = firstPageResponse.contentList().stream().map(AlbumResponse::id).toList();
-        List<Long> secondPageSoundsIds = secondPageResponse.contentList().stream().map(AlbumResponse::id).toList();
+        List<Long> firstPageSoundsIds = firstPageResponse.content().stream().map(AlbumResponse::id).toList();
+        List<Long> secondPageSoundsIds = secondPageResponse.content().stream().map(AlbumResponse::id).toList();
 
         assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
     }
