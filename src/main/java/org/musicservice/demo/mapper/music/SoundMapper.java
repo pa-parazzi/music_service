@@ -2,7 +2,6 @@ package org.musicservice.demo.mapper.music;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.musicservice.demo.dto.music.sound.SoundPageProjection;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.entity.music.Sound;
