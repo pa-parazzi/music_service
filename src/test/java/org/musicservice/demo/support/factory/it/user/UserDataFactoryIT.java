@@ -2,7 +2,6 @@ package org.musicservice.demo.support.factory.it.user;
 
 import org.musicservice.demo.dto.user.LoginRequest;
 import org.musicservice.demo.dto.user.RegistrationRequest;
-import org.musicservice.demo.entity.image.UserAvatar;
 import org.musicservice.demo.entity.user.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -30,7 +29,8 @@ public class UserDataFactoryIT {
     }
 
     public static User userWithEnabledAccount(){
-        User user = new User(UUID.randomUUID().toString(), "encoded password", UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
+        User user = new User(UUID.randomUUID().toString()
+                , "encoded password", UUID.randomUUID().toString() + "@gmail.com", DATE_OF_BIRTH);
         user.setEnabled(true);
         return user;
     }
