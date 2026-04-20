@@ -1,5 +1,6 @@
 package org.musicservice.demo.service.user;
 
+import org.musicservice.demo.dto.image.ImageResponse;
 import org.musicservice.demo.dto.user.RegistrationRequest;
 import org.musicservice.demo.dto.user.UserMainResponse;
 import org.musicservice.demo.entity.image.UserAvatar;
@@ -38,11 +39,10 @@ public class UserService {
     }
 
     public UserMainResponse mainResponse(Long userId){
-        UserMainResponse userResponse = new UserMainResponse();
-        userResponse.setUsername(getUsernameById(userId));
+        String username = getUsernameById(userId);
         UserAvatar userAvatar = userAvatarRepository.findByUserId(userId);
-        userResponse.setAvatar(imageMapper.toImageResponse(userAvatar));
-        return userResponse;
+        ImageResponse imageResponse = imageMapper.toImageResponse(userAvatar);
+        return new UserMainResponse(username, imageResponse);
     }
 
     public String getUsernameById(Long userId){

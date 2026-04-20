@@ -67,8 +67,8 @@ public class UserControllerIT extends AbstractSpringBootIT {
 
         String resultJson = result.getResponse().getContentAsString();
         UserMainResponse response = objectMapper.readValue(resultJson, UserMainResponse.class);
-        assertThat(response.getUsername()).isEqualTo(user.getUsername());
-        assertThat(response.getAvatar().key()).isEqualTo(userAvatar.getKey());
+        assertThat(response.username()).isEqualTo(user.getUsername());
+        assertThat(response.avatar().key()).isEqualTo(userAvatar.getKey());
     }
 
     @Test

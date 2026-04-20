@@ -73,9 +73,9 @@ public class UserServiceTest {
         when(imageMapper.toImageResponse(userAvatar)).thenReturn(expectedAvatarResponse);
 
         UserMainResponse result = userService.mainResponse(userId);
-        assertEquals(username, result.getUsername());
-        assertEquals(result.getAvatar().key(), expectedAvatarResponse.key());
-        assertEquals(result.getAvatar().url(), expectedAvatarResponse.url());
+        assertEquals(username, result.username());
+        assertEquals(result.avatar().key(), expectedAvatarResponse.key());
+        assertEquals(result.avatar().url(), expectedAvatarResponse.url());
     }
 
     @Test
