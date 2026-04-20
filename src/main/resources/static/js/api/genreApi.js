@@ -22,14 +22,16 @@ export async function getGenreById(id){
 }
 
 export async function getTracksByGenreId(genreId){
-    const tracksResponse = await apiFetch(`/api/genre/${genreId}/tracks?page=${paginationState.currentPage}&size=${paginationState.size}`, {
+    const tracksResponse = await apiFetch
+    (`/api/genre/${genreId}/tracks?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
     return await tracksResponse.json();
 }
 
 export async function getAlbumsByGenreId(genreId){
-    const albumsResponse = await apiFetch(`/api/genre/${genreId}/albums?page=${paginationState.currentPage}&size=${paginationState.size}`, {
+    const albumsResponse = await apiFetch
+    (`/api/genre/${genreId}/albums?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
     return await albumsResponse.json();
