@@ -8,6 +8,8 @@ import org.musicservice.demo.dto.music.sound.SoundResponse;
 import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MusicDataFactory {
 
@@ -26,6 +28,14 @@ public class MusicDataFactory {
     public static SoundResponse soundResponse(){
         return new SoundResponse(1L, "After Dark", 270,
                 "after_dark.mp3","http:/cloud_after_dark.com");
+    }
+
+    public static List<MusicResponse> musicResponseList(int size){
+        List<MusicResponse> musicResponseList = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            musicResponseList.add(musicResponse());
+        }
+        return musicResponseList;
     }
 
     public static MusicResponse musicResponse(){

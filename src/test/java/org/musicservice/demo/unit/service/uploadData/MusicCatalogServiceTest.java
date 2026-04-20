@@ -20,6 +20,8 @@ import org.musicservice.demo.support.factory.unit.music.MusicDataFactory;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -39,22 +41,20 @@ public class MusicCatalogServiceTest {
     private MusicCatalogService musicCatalogService;
 
     @Test
-    void saveMusicData_ShouldCreateAllRecords(){
+    void saveMusicData_ShouldReturnTrueAndSaveAllRecords_WhenSoundIsNotExists(){
         Genre genre = new Genre();
-        Artist artist = new Artist();
-        Album album = new Album();
-        AlbumImage albumImage = new AlbumImage();
         MusicResponse musicResponse = MusicDataFactory.musicResponse();
 
         when(soundRepository.existsByKey(musicResponse.mp3Key())).thenReturn(false);
         when(artistRepository.findByName(musicResponse.artist_name())).thenReturn(Optional.empty());
-        when(artistRepository.save(any(Artist.class))).thenReturn(artist);
+        when(artistRepository.save(any(Artist.class))).thenReturn(new Artist());
         when(albumRepository.findByTitle(musicResponse.album_name())).thenReturn(Optional.empty());
-        when(albumRepository.save(any(Album.class))).thenReturn(album);
-        when(albumImageRepository.save(any(AlbumImage.class))).thenReturn(albumImage);
+        when(albumRepository.save(any(Album.class))).thenReturn(new Album());
+        when(albumImageRepository.save(any(AlbumImage.class))).thenReturn(new AlbumImage());
 
-        musicCatalogService.saveMusicData(musicResponse, genre);
+        boolean saveStatus = musicCatalogService.saveMusicData(musicResponse, genre);
 
+        assertTrue(saveStatus);
         verify(soundRepository).existsByKey(musicResponse.mp3Key());
         verify(artistRepository).findByName(musicResponse.artist_name());
         verify(artistRepository).save(any(Artist.class));
@@ -65,14 +65,15 @@ public class MusicCatalogServiceTest {
     }
 
     @Test
-    void saveMusicData_ShouldReturnEarly_WhenSoundIsExists(){
+    void saveMusicData_ShouldReturnFalse_WhenSoundIsAlreadyExists(){
         Genre genre = new Genre();
         MusicResponse musicResponse = MusicDataFactory.musicResponse();
 
         when(soundRepository.existsByKey(musicResponse.mp3Key())).thenReturn(true);
 
-        musicCatalogService.saveMusicData(musicResponse, genre);
+        boolean saveStatus = musicCatalogService.saveMusicData(musicResponse, genre);
 
+        assertFalse(saveStatus);
         verifyNoInteractions(artistRepository);
         verifyNoInteractions(albumRepository);
         verifyNoInteractions(albumImageRepository);
