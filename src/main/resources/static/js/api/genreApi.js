@@ -21,18 +21,18 @@ export async function getGenreById(id){
     return  await response.json();
 }
 
-export async function getTracksByGenreId(genreId){
-    const tracksResponse = await apiFetch
+export async function getSoundsByGenreIdPaged(genreId){
+    const pageResponse = await apiFetch
     (`/api/genre/${genreId}/tracks?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
-    return await tracksResponse.json();
+    return await pageResponse.json();
 }
 
-export async function getAlbumsByGenreId(genreId){
-    const albumsResponse = await apiFetch
+export async function getAlbumsByGenreIdPaged(genreId){
+    const pageResponse = await apiFetch
     (`/api/genre/${genreId}/albums?page=${paginationState.currentPage}&size=${paginationState.size}`, {
         method: "GET"
     });
-    return await albumsResponse.json();
+    return await pageResponse.json();
 }

@@ -15,7 +15,7 @@ export async function getSoundLikes(jwt){
     return await likedSoundsIdsResponses.json();
 }
 
-export async function getSoundLikeStatusResponseBySoundId(soundId){
+export async function getSoundLikeStatusBySoundId(soundId){
     const likeStatusResponse = await apiFetch(`/api/sound-like/is-liked/${soundId}`);
     return await likeStatusResponse.json();
 }
