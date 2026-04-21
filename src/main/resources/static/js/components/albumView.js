@@ -5,7 +5,7 @@ export function renderAlbum(albumContainer, album){
     <div class="album-page">
         <div class="album-header">
         <div class="album-cover">
-            <img id="album-image" alt="${escapeHtml(album.title)}" class="album-image" src="${album.albumImage.url}">
+            <img id="album-image" alt="${escapeHtml(album.title)}" class="album-image" src="${album.image.url}">
         </div>
         <div class="album-info">
             <div class="album-details">
@@ -16,7 +16,7 @@ export function renderAlbum(albumContainer, album){
             </div>
             <div class="functionalities-of-album">
                 <button class="play-album-btn" id="play-album-btn" aria-label="Play album"
-                data-album-id="${album.albumId}">▶</button>
+                data-album-id="${album.id}">▶</button>
                 <button class="album-like-btn" id="album-like-btn"></button>
             </div>
         </div>

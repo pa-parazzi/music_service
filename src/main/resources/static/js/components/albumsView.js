@@ -4,14 +4,14 @@ export function renderAlbums(container, albums){
     const html = albums.map((album) => `
      <div class="album-card">
          <div class="cover-wrapper">
-             <a href="/album/${album.albumId}" class="album-card-link">
-             <img src="${album.albumImage.url}" alt="${escapeHtml(album.title)}" class="album-cover">
+             <a href="/album/${album.id}" class="album-card-link">
+             <img src="${album.image.url}" alt="${escapeHtml(album.title)}" class="album-cover">
              </a>
              <button class="play-album-btn" aria-label="Play ${escapeHtml(album.title)}" 
-             data-album-id="${album.albumId}">▶</button>
+             data-album-id="${album.id}">▶</button>
         </div>
         <div class="album-meta">
-             <a href="/album/${album.albumId}" class="album-title-link">
+             <a href="/album/${album.id}" class="album-title-link">
              <div class="album-title">${escapeHtml(album.title)}</div>
              </a>
              <a href="/artist/${album.artist.id}" class="artist-name-link">

@@ -28,7 +28,7 @@ export function renderSoundDetails(container, sound, trackDuration, artist, albu
                    <h3>Из альбома</h3>
                    <div class="cover-wrapper">
                    <a href="/album/${album.id}" class="album-card-link">
-                     <img src="${album.albumImageUrl}" alt="${escapeHtml(album.title)}" class="album-cover">
+                     <img src="${album.image.url}" alt="${escapeHtml(album.title)}" class="album-cover">
                    </a>
                 </div>
                 <div class="album-meta">
