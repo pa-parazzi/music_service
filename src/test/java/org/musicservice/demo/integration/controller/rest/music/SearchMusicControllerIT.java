@@ -84,8 +84,8 @@ public class SearchMusicControllerIT extends AbstractSpringBootIT {
         MvcResult result = mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
                 .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].name").exists(),
+                        jsonPath("$.content[*].id").exists(),
+                        jsonPath("$.content[*].name").exists(),
                         jsonPath("$.hasNextPage").exists())
                 .andReturn();
 

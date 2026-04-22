@@ -3,7 +3,6 @@ package org.musicservice.demo.support.assertions;
 import org.springframework.data.domain.Page;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -49,10 +48,10 @@ public class PageAssertions {
         return resultActions
                 .andExpect(status().isOk())
                 .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].image").exists(),
-                        jsonPath("$.contentList[*].artist").exists(),
+                        jsonPath("$.content[*].id").exists(),
+                        jsonPath("$.content[*].title").exists(),
+                        jsonPath("$.content[*].image").exists(),
+                        jsonPath("$.content[*].artist").exists(),
                         jsonPath("$.hasNextPage").exists())
                 .andReturn();
     }
@@ -61,11 +60,11 @@ public class PageAssertions {
         return resultActions
                 .andExpect(status().isOk())
                 .andExpectAll(
-                        jsonPath("$.contentList[*].id").exists(),
-                        jsonPath("$.contentList[*].title").exists(),
-                        jsonPath("$.contentList[*].duration").exists(),
-                        jsonPath("$.contentList[*].key").exists(),
-                        jsonPath("$.contentList[*].url").exists(),
+                        jsonPath("$.content[*].id").exists(),
+                        jsonPath("$.content[*].title").exists(),
+                        jsonPath("$.content[*].duration").exists(),
+                        jsonPath("$.content[*].key").exists(),
+                        jsonPath("$.content[*].url").exists(),
                         jsonPath("$.hasNextPage").exists())
                 .andReturn();
     }
