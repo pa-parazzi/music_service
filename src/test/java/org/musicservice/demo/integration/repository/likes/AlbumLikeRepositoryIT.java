@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.AlbumAssertions.assertAlbumsWithArtistAndImage;
+import static org.musicservice.demo.support.assertions.AlbumLikeAssertions.assertAlbumLikeWithAlbum;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithAlbums;
 import static org.musicservice.demo.support.fixture.jpa.AlbumJpaFixture.albumAggregateWithOneAlbum;
@@ -105,10 +106,13 @@ public class AlbumLikeRepositoryIT extends AbstractJpaIT {
         entityManager.clear();
 
         Page<AlbumLike> albumLikePage = repository.findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page, size));
-        List<AlbumLike> albumLikeList = albumLikePage.getContent();
-        List<Album> likedAlbums = albumLikeList.stream().map(AlbumLike::getAlbum).toList();
+        List<AlbumLike> albumLikes = albumLikePage.getContent();
 
-        assertAlbumLikesOrderByCreatedAtDesc(albumLikeList);
+        assertAlbumLikeWithAlbum(albumLikes);
+
+        List<Album> likedAlbums = albumLikes.stream().map(AlbumLike::getAlbum).toList();
+
+        assertAlbumLikesOrderByCreatedAtDesc(albumLikes);
         assertAlbumsWithArtistAndImage(likedAlbums, titleAlbumPrefix);
         assertFirstPage(albumLikePage);
     }
@@ -125,10 +129,13 @@ public class AlbumLikeRepositoryIT extends AbstractJpaIT {
         entityManager.clear();
 
         Page<AlbumLike> albumLikePage = repository.findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page + 1, size));
-        List<AlbumLike> albumLikeList = albumLikePage.getContent();
-        List<Album> likedAlbums = albumLikeList.stream().map(AlbumLike::getAlbum).toList();
+        List<AlbumLike> albumLikes = albumLikePage.getContent();
 
-        assertAlbumLikesOrderByCreatedAtDesc(albumLikeList);
+        assertAlbumLikeWithAlbum(albumLikes);
+
+        List<Album> likedAlbums = albumLikes.stream().map(AlbumLike::getAlbum).toList();
+
+        assertAlbumLikesOrderByCreatedAtDesc(albumLikes);
         assertAlbumsWithArtistAndImage(likedAlbums, titleAlbumPrefix);
         assertSecondPage(albumLikePage);
     }
@@ -145,10 +152,13 @@ public class AlbumLikeRepositoryIT extends AbstractJpaIT {
         entityManager.clear();
 
         Page<AlbumLike> albumLikePage = repository.findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page + 2, size));
-        List<AlbumLike> albumLikeList = albumLikePage.getContent();
-        List<Album> likedAlbums = albumLikeList.stream().map(AlbumLike::getAlbum).toList();
+        List<AlbumLike> albumLikes = albumLikePage.getContent();
 
-        assertAlbumLikesOrderByCreatedAtDesc(albumLikeList);
+        assertAlbumLikeWithAlbum(albumLikes);
+
+        List<Album> likedAlbums = albumLikes.stream().map(AlbumLike::getAlbum).toList();
+
+        assertAlbumLikesOrderByCreatedAtDesc(albumLikes);
         assertAlbumsWithArtistAndImage(likedAlbums, titleAlbumPrefix);
         assertLastPage(albumLikePage);
     }

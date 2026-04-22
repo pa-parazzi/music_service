@@ -22,6 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.musicservice.demo.support.assertions.PageAssertions.*;
 import static org.musicservice.demo.support.assertions.SoundAssertions.assertSoundsWithoutRelations;
+import static org.musicservice.demo.support.assertions.SoundLikeAssertions.assertSoundLikesWithSounds;
 import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithOneSound;
 import static org.musicservice.demo.support.fixture.jpa.SoundJpaFixture.soundAggregateWithSounds;
 import static org.musicservice.demo.support.fixture.jpa.SoundLikeJpaFixture.createSoundLikes;
@@ -109,12 +110,17 @@ public class SoundLikeRepositoryIT extends AbstractJpaIT {
         Page<SoundLike> soundLikePage = repository
                 .findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page, size));
         List<SoundLike> soundLikes = soundLikePage.getContent();
+
+        assertSoundLikesWithSounds(soundLikes);
+
         List<Sound> soundsBySoundLikes = soundLikes.stream().map(SoundLike::getSound).toList();
 
         assertFirstPage(soundLikePage);
         assertSoundLikesOrderByCreatedAtDesc(soundLikes);
         assertSoundsWithoutRelations(soundsBySoundLikes, soundTitlePrefix, endKeyName);
     }
+
+
 
     @Test
     void findByUserIdOrderByCreatedAtDescIdDesc_ShouldReturnsSecondPageCorrectly() {
@@ -131,6 +137,9 @@ public class SoundLikeRepositoryIT extends AbstractJpaIT {
         Page<SoundLike> soundLikePage = repository
                 .findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page + 1, size));
         List<SoundLike> soundLikes = soundLikePage.getContent();
+
+        assertSoundLikesWithSounds(soundLikes);
+
         List<Sound> soundsBySoundLikes = soundLikes.stream().map(SoundLike::getSound).toList();
 
         assertSecondPage(soundLikePage);
@@ -153,6 +162,9 @@ public class SoundLikeRepositoryIT extends AbstractJpaIT {
         Page<SoundLike> soundLikePage = repository
                 .findByUserIdOrderByCreatedAtDescIdDesc(user.getId(), PageRequest.of(page + 2, size));
         List<SoundLike> soundLikes = soundLikePage.getContent();
+
+        assertSoundLikesWithSounds(soundLikes);
+
         List<Sound> soundsBySoundLikes = soundLikes.stream().map(SoundLike::getSound).toList();
 
         assertLastPage(soundLikePage);
