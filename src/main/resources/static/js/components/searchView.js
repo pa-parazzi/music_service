@@ -17,6 +17,7 @@ export function renderSearchArtistsExtendedResult(container){
             <div class="extended-search-result">
                  <h2 class="search-title" id="search-title"></h2>
                  <div class="artists"></div>
+                 <div id="scroll-anchor"></div>
             </div>`;
 }
 
@@ -25,6 +26,7 @@ export function renderSearchAlbumsExtendedResult(container){
             <div class="extended-search-result">
                  <h2 class="search-title" id="search-title"></h2>
                  <div class="albums"></div>
+                 <div id="scroll-anchor"></div>
             </div>`;
 }
 
@@ -33,5 +35,6 @@ export function renderSearchTracksExtendedResult(container){
             <div class="extended-search-result">
                  <h2 class="search-title" id="search-title"></h2>
                  <div class="tracks"></div>
+                 <div id="scroll-anchor"></div>
             </div>`;
 }
