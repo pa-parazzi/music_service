@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.dto.music.sound.SoundsResponse;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
@@ -74,32 +75,32 @@ public class SoundServiceTest {
     }
 
     @Test
-    void getSoundsByAlbumIdPaged_ShouldReturnPageResponseOfSounds(){
+    void getSoundsByAlbumId_ShouldReturnPageResponseOfSounds(){
         Long albumId = 1L;
         Sound sound1 = new Sound();
         Sound sound2 = new Sound();
-        Page<Sound> soundsPage = new PageImpl<>(List.of(sound1, sound2), pageableWithSortByIdAsc, 3);
+        List<Sound> sounds = List.of(sound1, sound2);
         SoundResponse soundResponse = MusicDataFactory.soundResponse();
 
-        when(soundRepository.findByAlbumId(albumId, pageableWithSortByIdAsc)).thenReturn(soundsPage);
+        when(soundRepository.findAllByAlbumId(albumId)).thenReturn(sounds);
         when(soundMapper.toResponse(any(Sound.class))).thenReturn(soundResponse);
 
-        PageResponse<SoundResponse> pageResponse = soundService.getSoundsByAlbumIdPaged(albumId, page, size);
-        assertPageResponseOfSounds(pageResponse, soundResponse);
-        verify(soundRepository).findByAlbumId(albumId, pageableWithSortByIdAsc);
+        SoundsResponse soundsResponse = soundService.getSoundsByAlbumId(albumId);
+        assertEquals(soundsResponse.sounds().size(), sounds.size());
+        verify(soundRepository).findAllByAlbumId(albumId);
         verify(soundMapper).toResponse(sound1);
         verify(soundMapper).toResponse(sound2);
     }
 
     @Test
-    void getSoundsByAlbumIdPaged_ShouldThrowMusicNotFoundException_WhenPageContentIsEmpty(){
+    void getSoundsByAlbumId_ShouldThrowMusicNotFoundException_WhenResultIsEmpty(){
         Long albumId = 1L;
-        Page<Sound> soundsPage = new PageImpl<>(List.of(), pageableWithSortByIdAsc, 0);
+        List<Sound> sounds = List.of();
 
-        when(soundRepository.findByAlbumId(albumId, pageableWithSortByIdAsc)).thenReturn(soundsPage);
+        when(soundRepository.findAllByAlbumId(albumId)).thenReturn(sounds);
 
-        assertThrows(MusicNotFoundException.class, () -> soundService.getSoundsByAlbumIdPaged(albumId, page, size));
-        verify(soundRepository).findByAlbumId(albumId, pageableWithSortByIdAsc);
+        assertThrows(MusicNotFoundException.class, () -> soundService.getSoundsByAlbumId(albumId));
+        verify(soundRepository).findAllByAlbumId(albumId);
         verifyNoInteractions(soundMapper);
     }
 
