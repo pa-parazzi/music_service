@@ -194,7 +194,7 @@ public class SoundRepositoryIT extends AbstractJpaIT {
     }
 
     @Test
-    void findByAlbumId_ShouldReturnsFirstPageCorrectly(){
+    void findAllByAlbumId_ShouldReturnsCorrectlySounds(){
         Genre genre = findGenre();
         String soundTitlePrefix = "poker face";
         String endKeyName = "key";
@@ -203,56 +203,14 @@ public class SoundRepositoryIT extends AbstractJpaIT {
         entityManager.flush();
         entityManager.clear();
 
-        Page<Sound> soundPage = repository
-                .findByAlbumId(album.getId(), PageRequest.of(page, size));
-        List<Sound> sounds = soundPage.getContent();
+        List<Sound> sounds = repository.findAllByAlbumId(album.getId());
 
         assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
-        assertFirstPage(soundPage);
     }
 
     @Test
-    void findByAlbumId_ShouldReturnsSecondPageCorrectly(){
-        Genre genre = findGenre();
-        String soundTitlePrefix = "poker face";
-        String endKeyName = "key";
-        Album album = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).album();
-
-        entityManager.flush();
-        entityManager.clear();
-
-        Page<Sound> soundPage = repository
-                .findByAlbumId(album.getId(), PageRequest.of(page + 1, size));
-        List<Sound> sounds = soundPage.getContent();
-
-        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
-        assertSecondPage(soundPage);
-    }
-
-    @Test
-    void findByAlbumId_ShouldReturnsLastPageCorrectly(){
-        Genre genre = findGenre();
-        String soundTitlePrefix = "poker face";
-        String endKeyName = "key";
-        Album album = soundAggregateWithSounds(genre, entityManager, soundTitlePrefix, endKeyName).album();
-
-        entityManager.flush();
-        entityManager.clear();
-
-        Page<Sound> soundPage = repository
-                .findByAlbumId(album.getId(), PageRequest.of(page + 2, size));
-        List<Sound> sounds = soundPage.getContent();
-
-        assertSoundsWithoutRelations(sounds, soundTitlePrefix, endKeyName);
-        assertLastPage(soundPage);
-    }
-
-    @Test
-    void findByAlbumId_ShouldReturnsEmpty_WhenAlbumIdIsInvalid(){
-        Page<Sound> soundPage = repository
-                .findByAlbumId(79129L, PageRequest.of(page, size));
-
-        assertEmptyPage(soundPage);
+    void findAllByAlbumId_ShouldReturnsEmpty_WhenAlbumIdIsInvalid(){
+        assertThat(repository.findAllByAlbumId(79129L)).isEmpty();
     }
 
     @Test
