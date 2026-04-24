@@ -1,8 +1,7 @@
 import {renderSounds} from "../components/soundsView.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {renderArtists} from "../components/artistsView.js";
-import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundTracksByFragment} from "../api/searchApi.js";
-import {paginationState} from "../store/PaginationState.js";
+import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundSoundsByFragment} from "../api/searchApi.js";
 import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 
 export function initSearchForm(searchForm){
@@ -52,7 +51,7 @@ export async function loadFoundSoundsByFragment(fragment, container, likedSounds
     if(paginationStateOfSounds.isLoading || !paginationStateOfSounds.hasNext) return;
     paginationStateOfSounds.isLoading = true;
 
-    const response = await getFoundTracksByFragment(fragment);
+    const response = await getFoundSoundsByFragment(fragment);
     const tracks = response.content;
     const startIndex = paginationStateOfSounds.sounds.length;
 

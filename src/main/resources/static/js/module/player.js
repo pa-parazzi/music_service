@@ -1,7 +1,7 @@
 import {playerState} from "../store/playerState.js";
 import {formatTime} from "../utils/util.js";
 
-export function playTracks(index){
+export function playTrack(index){
     const track = playerState.soundList[index];
     if (!player.src || !player.src.includes(track.url)) {
         player.src = track.url;
@@ -12,7 +12,7 @@ export function playTracks(index){
 
 export function setTrack(index){
     playerState.currentTrackIndex = index;
-    playTracks(index);
+    playTrack(index);
     document.dispatchEvent(new CustomEvent('trackChanged', {
         detail: {
             index

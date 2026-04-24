@@ -1,7 +1,7 @@
 import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {playerState} from "../store/playerState.js";
-import {getSoundListByAlbumId} from "../api/soundApi.js";
+import {getSoundsByAlbumId} from "../api/soundApi.js";
 import {setTrack, togglePlayer} from "./player.js";
 
 export function loadAlbumsPaged(pageResponse, container){
@@ -34,7 +34,7 @@ export function initPlayAlbumButton(albumId, playAlbumBtn){
 }
 
 export function initPlayAlbumsDelegation(container){
-    const albumTracksCache = new Map();
+    const albumSoundsCache = new Map();
     container.addEventListener('click', async (e) => {
         const playAlbumBtn = e.target.closest('.play-album-btn');
         if (!playAlbumBtn) return;
@@ -48,11 +48,11 @@ export function initPlayAlbumsDelegation(container){
             playerState.currentAlbumId = albumId;
             playerState.currentTrackIndex = 0;
             // загружаем если ещё не загружали
-            if (!albumTracksCache.has(albumId)) {
-                const tracks = await getSoundListByAlbumId(albumId);
-                albumTracksCache.set(albumId, tracks);
+            if (!albumSoundsCache.has(albumId)) {
+                const soundsResponse = await getSoundsByAlbumId(albumId);
+                albumSoundsCache.set(albumId, soundsResponse.sounds);
             }
-            playerState.soundList = albumTracksCache.get(albumId);
+            playerState.soundList = albumSoundsCache.get(albumId);
             setTrack(playerState.currentTrackIndex);
             return;
         }

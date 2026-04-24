@@ -1,5 +1,5 @@
 import {apiFetch} from "../user/api.js";
-import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
 
 export async function getGenres(){
     const response = await apiFetch('/api/genre', {

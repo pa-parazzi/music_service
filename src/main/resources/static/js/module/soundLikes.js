@@ -1,5 +1,5 @@
 export async function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId){
-    if (likeSoundStatus.status === true) {
+    if (likeSoundStatus.likeStatus === true) {
         likeBtn.classList.add("liked");
     }
     likeBtn.addEventListener('click', async (e) => {

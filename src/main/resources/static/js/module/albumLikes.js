@@ -1,8 +1,7 @@
-export async function initAlbumLikes(albumId, statusLikedAlbum, albumLikeBtn, jwt){
-    if (statusLikedAlbum.status === true) {
+export async function initAlbumLikeBtn(albumId, statusLikedAlbum, albumLikeBtn, jwt){
+    if (statusLikedAlbum.likeStatus === true) {
         albumLikeBtn.classList.add("liked");
     }
-
     albumLikeBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (albumLikeBtn.classList.contains("liked")) {

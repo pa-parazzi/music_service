@@ -3,19 +3,13 @@ import {renderSounds} from "../components/soundsView.js";
 import {playerState} from "../store/playerState.js";
 import {setTrack, togglePlayer} from "./player.js";
 
-export async function loadTracksByGenreId(genreId, container, likedSoundsIds){
-    if(paginationState.isLoading || !paginationState.hasNext) return;
-    paginationState.isLoading = true;
+export function loadSoundsPaged(pageResponse, container, likedSoundsIds){
     if(paginationStateOfSounds.isLoading || !paginationStateOfSounds.hasNext) return;
     paginationStateOfSounds.isLoading = true;
 
-    const tracksPageResponse = await getTracksByGenreId(genreId);
-    const tracks = tracksPageResponse.content;
-    const startIndex = paginationState.tracks.length;
+    const sounds = pageResponse.content;
     const startIndex = paginationStateOfSounds.sounds.length;
 
-    paginationState.tracks.push(...tracks);
-    paginationState.hasNext = tracksPageResponse.hasNextPage;
     paginationStateOfSounds.sounds.push(...sounds);
     paginationStateOfSounds.hasNext = pageResponse.hasNextPage;
 
@@ -44,7 +38,7 @@ export function initPlaySoundButton(soundId, sound, playSoundBtn){
     });
 }
 
-export function initTracksDelegation(container, likedSoundsIds = new Set(), jwt, albumId){
+export function initSoundsDelegation(container, likedSoundsIds = new Set(), jwt, albumId){
     container.addEventListener('click', async (e) => {
         const likeBtn = e.target.closest('.like-btn');
         if (likeBtn && container.contains(likeBtn)) {

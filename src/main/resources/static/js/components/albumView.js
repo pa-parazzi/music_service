@@ -1,6 +1,6 @@
 import {escapeHtml} from "../utils/util.js";
 
-export function renderAlbum(albumContainer, album){
+export function renderAlbumPage(albumContainer, album){
     albumContainer.innerHTML = `
     <div class="album-page">
         <div class="album-header">

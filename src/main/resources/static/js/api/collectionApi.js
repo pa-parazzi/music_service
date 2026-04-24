@@ -1,4 +1,4 @@
-import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
 
 export async function pageResponseOfAlbumCollection(jwt){
     const pageResponse = await fetch

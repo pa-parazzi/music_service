@@ -1,4 +1,4 @@
-import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 
 export async function getFoundSoundsByFragment(fragment){
     const response = await fetch

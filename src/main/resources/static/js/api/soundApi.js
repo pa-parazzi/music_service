@@ -1,4 +1,4 @@
-import {paginationStateOfSounds} from "../store/PaginationState.js";
+import {paginationStateOfSounds} from "../store/paginationState.js";
 
 export async function getSoundsByAlbumId(id){
     const soundsResponse = await fetch(`/api/sound/album/${id}`);
