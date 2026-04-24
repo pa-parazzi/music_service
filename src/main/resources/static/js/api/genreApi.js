@@ -1,5 +1,5 @@
 import {apiFetch} from "../user/api.js";
-import {paginationState} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/PaginationState.js";
 
 export async function getGenres(){
     const response = await apiFetch('/api/genre', {
@@ -23,7 +23,7 @@ export async function getGenreById(id){
 
 export async function getSoundsByGenreIdPaged(genreId){
     const pageResponse = await apiFetch
-    (`/api/genre/${genreId}/tracks?page=${paginationState.currentPage}&size=${paginationState.size}`, {
+    (`/api/genre/${genreId}/tracks?page=${paginationStateOfSounds.currentPage}&size=${paginationStateOfSounds.size}`, {
         method: "GET"
     });
     return await pageResponse.json();
@@ -31,7 +31,7 @@ export async function getSoundsByGenreIdPaged(genreId){
 
 export async function getAlbumsByGenreIdPaged(genreId){
     const pageResponse = await apiFetch
-    (`/api/genre/${genreId}/albums?page=${paginationState.currentPage}&size=${paginationState.size}`, {
+    (`/api/genre/${genreId}/albums?page=${paginationStateOfAlbums.currentPage}&size=${paginationStateOfAlbums.size}`, {
         method: "GET"
     });
     return await pageResponse.json();

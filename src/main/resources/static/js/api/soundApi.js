@@ -1,14 +1,13 @@
-import {paginationState} from "../store/PaginationState.js";
+import {paginationStateOfSounds} from "../store/PaginationState.js";
 
-export async function getSoundListByAlbumIdPaged(id){
-    const pageResponse = await fetch
-    (`/api/sound/album/${id}?page=${paginationState.currentPage}&size=${paginationState.size}`);
-    return await pageResponse.json();
+export async function getSoundsByAlbumId(id){
+    const soundsResponse = await fetch(`/api/sound/album/${id}`);
+    return await soundsResponse.json();
 }
 
-export async function getSoundListByArtistIdPaged(id){
+export async function getSoundsByArtistIdPaged(id){
     const pageResponse = await fetch
-    (`/api/sound/artist/${id}?page=${paginationState.currentPage}&size=${paginationState.size}`);
+    (`/api/sound/artist/${id}?page=${paginationStateOfSounds.currentPage}&size=${paginationStateOfSounds.size}`);
     return await pageResponse.json();
 }
 
