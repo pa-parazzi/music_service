@@ -28,6 +28,7 @@ export function renderTracksContainerForGenre(container, genreName){
          <h2 class="genre-name-header">${genreName}</h2>
          <div class="tracks-container">
              <div class="tracks"></div>
+             <div id="scroll-anchor"></div>
          </div>
       </div>
     `;
@@ -39,6 +40,7 @@ export function renderAlbumsContainerForGenre(container, genreName){
           <h2 class="genre-name-header">${genreName}</h2>
           <div class="albums-container">
               <div class="albums"></div>
+              <div id="scroll-anchor"></div>
           </div>
        </div>
     `;
