@@ -1,5 +1,4 @@
-import {paginationState} from "../store/PaginationState.js";
-import {getTracksByGenreId} from "../api/genreApi.js";
+import {paginationStateOfSounds} from "../store/paginationState.js";
 import {renderSounds} from "../components/soundsView.js";
 import {playerState} from "../store/playerState.js";
 import {setTrack, togglePlayer} from "./player.js";
@@ -7,18 +6,28 @@ import {setTrack, togglePlayer} from "./player.js";
 export async function loadTracksByGenreId(genreId, container, likedSoundsIds){
     if(paginationState.isLoading || !paginationState.hasNext) return;
     paginationState.isLoading = true;
+    if(paginationStateOfSounds.isLoading || !paginationStateOfSounds.hasNext) return;
+    paginationStateOfSounds.isLoading = true;
 
     const tracksPageResponse = await getTracksByGenreId(genreId);
     const tracks = tracksPageResponse.content;
     const startIndex = paginationState.tracks.length;
+    const startIndex = paginationStateOfSounds.sounds.length;
 
     paginationState.tracks.push(...tracks);
     paginationState.hasNext = tracksPageResponse.hasNextPage;
+    paginationStateOfSounds.sounds.push(...sounds);
+    paginationStateOfSounds.hasNext = pageResponse.hasNextPage;
 
-    renderSounds({container: container, soundList: tracks, startIndex: startIndex, likedSoundsIds: likedSoundsIds});
+    renderSounds({
+        container: container,
+        soundList: sounds,
+        startIndex: startIndex,
+        likedSoundsIds: likedSoundsIds
+    });
 
-    paginationState.currentPage++;
-    paginationState.isLoading = false;
+    paginationStateOfSounds.currentPage++;
+    paginationStateOfSounds.isLoading = false;
 }
 
 export function initPlaySoundButton(soundId, sound, playSoundBtn){
@@ -67,7 +76,7 @@ export function initTracksDelegation(container, likedSoundsIds = new Set(), jwt,
         if (!trackEl) return;
         const index = Number(trackEl.dataset.index);
         if(albumId) playerState.currentAlbumId = albumId;
-        playerState.soundList = paginationState.tracks;
+        playerState.soundList = paginationStateOfSounds.sounds;
         setTrack(index);
     });
     document.addEventListener('trackChanged', (e) => {

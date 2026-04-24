@@ -3,6 +3,7 @@ import {renderAlbums} from "../components/albumsView.js";
 import {renderArtists} from "../components/artistsView.js";
 import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundTracksByFragment} from "../api/searchApi.js";
 import {paginationState} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 
 export function initSearchForm(searchForm){
     searchForm.addEventListener("submit", (e) => {
@@ -16,52 +17,52 @@ export function initSearchForm(searchForm){
 }
 
 export async function loadFoundArtistsByFragment(fragment, container){
-    if(paginationState.isLoading || !paginationState.hasNext) return;
-    paginationState.isLoading = true;
+    if(paginationStateOfArtists.isLoading || !paginationStateOfArtists.hasNext) return;
+    paginationStateOfArtists.isLoading = true;
 
     const response = await getFoundArtistsByFragment(fragment);
     const artists = response.content;
 
-    paginationState.artists.push(...artists);
-    paginationState.hasNext = response.hasNextPage;
+    paginationStateOfArtists.artists.push(...artists);
+    paginationStateOfArtists.hasNext = response.hasNextPage;
 
     renderArtists(container, artists);
 
-    paginationState.currentPage++;
-    paginationState.isLoading = false;
+    paginationStateOfArtists.currentPage++;
+    paginationStateOfArtists.isLoading = false;
 }
 
 export async function loadFoundAlbumsByFragment(fragment, container){
-    if(paginationState.isLoading || !paginationState.hasNext) return;
-    paginationState.isLoading = true;
+    if(paginationStateOfAlbums.isLoading || !paginationStateOfAlbums.hasNext) return;
+    paginationStateOfAlbums.isLoading = true;
 
     const response = await getFoundAlbumsByFragment(fragment);
     const albums = response.content;
 
-    paginationState.albums.push(...albums);
-    paginationState.hasNext = response.hasNextPage;
+    paginationStateOfAlbums.albums.push(...albums);
+    paginationStateOfAlbums.hasNext = response.hasNextPage;
 
     renderAlbums(container, albums);
 
-    paginationState.currentPage++;
-    paginationState.isLoading = false;
+    paginationStateOfAlbums.currentPage++;
+    paginationStateOfAlbums.isLoading = false;
 }
 
-export async function loadFoundTracksByFragment(fragment, container, likedSoundsIds){
-    if(paginationState.isLoading || !paginationState.hasNext) return;
-    paginationState.isLoading = true;
+export async function loadFoundSoundsByFragment(fragment, container, likedSoundsIds){
+    if(paginationStateOfSounds.isLoading || !paginationStateOfSounds.hasNext) return;
+    paginationStateOfSounds.isLoading = true;
 
     const response = await getFoundTracksByFragment(fragment);
     const tracks = response.content;
-    const startIndex = paginationState.tracks.length;
+    const startIndex = paginationStateOfSounds.sounds.length;
 
-    paginationState.tracks.push(...tracks);
-    paginationState.hasNext = response.hasNextPage;
+    paginationStateOfSounds.sounds.push(...tracks);
+    paginationStateOfSounds.hasNext = response.hasNextPage;
 
     renderSounds({container: container, soundList: tracks, startIndex: startIndex, likedSoundsIds: likedSoundsIds});
 
-    paginationState.currentPage++;
-    paginationState.isLoading = false;
+    paginationStateOfSounds.currentPage++;
+    paginationStateOfSounds.isLoading = false;
 }
 
 export function getFragmentFromUrl(){

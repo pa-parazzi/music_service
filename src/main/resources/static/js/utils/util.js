@@ -1,4 +1,4 @@
-import {paginationState} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 
 export function escapeHtml(str = '') {
     return String(str)
@@ -32,10 +32,21 @@ export function initInfiniteScroll({ loadFn, hasNextFn, isLoadingFn, anchor }) {
 }
 
 export function resetPaginationState(){
-    paginationState.currentPage = 0;
-    paginationState.isLoading = false;
-    paginationState.hasNext = true;
-    paginationState.artists = [];
-    paginationState.albums = [];
-    paginationState.tracks = [];
+    paginationStateOfAlbums.currentPage = 0;
+    paginationStateOfAlbums.size = 6;
+    paginationStateOfAlbums.isLoading = false;
+    paginationStateOfAlbums.hasNext = true;
+    paginationStateOfAlbums.albums = [];
+
+    paginationStateOfSounds.currentPage = 0;
+    paginationStateOfSounds.size = 6;
+    paginationStateOfSounds.isLoading = false;
+    paginationStateOfSounds.hasNext = true;
+    paginationStateOfSounds.sounds = [];
+
+    paginationStateOfArtists.currentPage = 0;
+    paginationStateOfArtists.size = 6;
+    paginationStateOfArtists.isLoading = false;
+    paginationStateOfArtists.hasNext = true;
+    paginationStateOfArtists.artists = [];
 }

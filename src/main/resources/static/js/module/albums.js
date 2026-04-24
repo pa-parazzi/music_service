@@ -1,24 +1,22 @@
-import {paginationState} from "../store/PaginationState.js";
-import {getAlbumsByGenreId} from "../api/genreApi.js";
+import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {playerState} from "../store/playerState.js";
 import {getSoundListByAlbumId} from "../api/soundApi.js";
 import {setTrack, togglePlayer} from "./player.js";
 
-export async function loadAlbumsByGenreId(genreId, container){
-    if(paginationState.isLoading || !paginationState.hasNext) return;
-    paginationState.isLoading = true;
+export function loadAlbumsPaged(pageResponse, container){
+    if(paginationStateOfAlbums.isLoading || !paginationStateOfAlbums.hasNext) return;
+    paginationStateOfAlbums.isLoading = true;
 
-    const response = await getAlbumsByGenreId(genreId);
-    const albums = response.content;
+    const albums = pageResponse.content;
 
-    paginationState.albums.push(...albums);
-    paginationState.hasNext = response.hasNextPage;
+    paginationStateOfAlbums.albums.push(...albums);
+    paginationStateOfAlbums.hasNext = pageResponse.hasNextPage;
 
     renderAlbums(container, albums);
 
-    paginationState.currentPage++;
-    paginationState.isLoading = false;
+    paginationStateOfAlbums.currentPage++;
+    paginationStateOfAlbums.isLoading = false;
 }
 
 export function initPlayAlbumButton(albumId, playAlbumBtn){
@@ -26,7 +24,7 @@ export function initPlayAlbumButton(albumId, playAlbumBtn){
     playAlbumBtn.addEventListener("click", () => {
         if(playerState.currentAlbumId !== albumId){
             playerState.currentAlbumId = albumId;
-            playerState.soundList = paginationState.tracks;
+            playerState.soundList = paginationStateOfSounds.sounds;
             playerState.currentTrackIndex = 0;
             setTrack(playerState.currentTrackIndex);
             return;
