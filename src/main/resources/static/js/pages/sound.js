@@ -3,11 +3,11 @@ import {getToken} from "../user/auth.js";
 import {initSidebar} from "../module/sidebar.js";
 import {getSoundById} from "../api/soundApi.js";
 import {renderSoundDetails} from "../components/soundView.js";
-import {getSoundLikeStatusResponseBySoundId} from "../api/soundLikesApi.js";
+import {getSoundLikeStatusBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {initPlaySoundButton} from "../module/tracks.js";
+import {initPlaySoundButton} from "../module/sounds.js";
 import {playerState} from "../store/playerState.js";
 
 async function initSoundPage(){
@@ -32,7 +32,7 @@ async function initSoundPage(){
     initPlaySoundButton(soundId, sound, playSoundBtn);
 
     const likeBtn = document.querySelector('.like-btn');
-    const likeSoundStatus = await getSoundLikeStatusResponseBySoundId(soundId);
+    const likeSoundStatus = await getSoundLikeStatusBySoundId(jwt, soundId);
     await initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId);
 }
 

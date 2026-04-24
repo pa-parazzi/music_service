@@ -7,14 +7,14 @@ import {
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
 import {renderAlbums} from "../components/albumsView.js";
-import {getAlbumsByGenreId, getGenreById, getTracksByGenreId} from "../api/genreApi.js";
+import {getAlbumsByGenreIdPaged, getGenreById, getSoundsByGenreIdPaged} from "../api/genreApi.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
-import {paginationState} from "../store/PaginationState.js";
-import {initPlayAlbumsDelegation, loadAlbumsByGenreId} from "../module/albums.js";
-import {initTracksDelegation, loadTracksByGenreId} from "../module/tracks.js";
+import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
+import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
+import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {renderSounds} from "../components/soundsView.js";
 import {getToken} from "../user/auth.js";
-import {getSoundLikes} from "../api/soundLikesApi.js";
+import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 
 async function initGenreDetailsPage(){
     initPlayer();
@@ -25,8 +25,6 @@ async function initGenreDetailsPage(){
 
     const genrePageContainer = document.getElementById("genre-page");
 
-    const scrollAnchor = document.getElementById("scroll-anchor");
-
     const path = window.location.pathname.split('/');
 
     const genreId = path[2];
@@ -36,23 +34,31 @@ async function initGenreDetailsPage(){
     const genreName = genreResponse.name;
 
     if(!type){
-        const soundLikes = await getSoundLikes(jwt);
-        const likedSoundsIds = new Set(soundLikes.ids);
+        resetPaginationState();
+
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
 
         renderGeneralGenreContent(genrePageContainer, genreId);
 
         const tracksContainer = document.querySelector(`.tracks`);
         const albumContainer = document.querySelector(`.albums`);
 
-        const tracksResponse = await getTracksByGenreId(genreId);
-        const tracks = tracksResponse.content;
-        paginationState.tracks = tracks;
-        renderSounds({container: tracksContainer, soundList: tracks, likedSoundsIds: likedSoundsIds});
-        initTracksDelegation(tracksContainer, likedSoundsIds, jwt);
+        const pageResponse = await getSoundsByGenreIdPaged(genreId);
+        const sounds = pageResponse.content;
+        paginationStateOfSounds.sounds = sounds;
 
-        const albumsResponse = await getAlbumsByGenreId(genreId);
+        renderSounds({
+            container: tracksContainer,
+            soundList: sounds,
+            likedSoundsIds: likedSoundsIds
+        });
+
+        initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
+
+        const albumsResponse = await getAlbumsByGenreIdPaged(genreId);
         const albums = albumsResponse.content;
-        paginationState.albums = albums;
+        paginationStateOfAlbums.albums = albums;
         renderAlbums(albumContainer, albums);
         initPlayAlbumsDelegation(albumContainer);
 
@@ -61,36 +67,51 @@ async function initGenreDetailsPage(){
 
     if(type==='tracks'){
         resetPaginationState();
+        paginationStateOfSounds.size = 10;
+
         renderTracksContainerForGenre(genrePageContainer, genreName);
+
+        const scrollAnchor = document.getElementById("scroll-anchor");
         const tracksInnerContainer = document.querySelector('.tracks');
-        // первый запрос
-        const soundLikes = await getSoundLikes(jwt);
-        const likedSoundIds = new Set(soundLikes.ids);
-        await loadTracksByGenreId(genreId, tracksInnerContainer, likedSoundIds);
-        initTracksDelegation(tracksInnerContainer, likedSoundIds, jwt);
-        // scroll
+
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+
+        const pageResponse = await getSoundsByGenreIdPaged(genreId);
+
+        loadSoundsPaged(pageResponse, tracksInnerContainer, likedSoundsIds);
+        initSoundsDelegation(tracksInnerContainer, likedSoundsIds, jwt);
+
         initInfiniteScroll({
             loadFn: async () => {
-                await loadTracksByGenreId(genreId, tracksInnerContainer, likedSoundIds);
+                const pageResponse = await getSoundsByGenreIdPaged(genreId);
+                loadSoundsPaged(pageResponse, tracksInnerContainer, likedSoundsIds);
             },
-            hasNextFn: () => paginationState.hasNext,
-            isLoadingFn: () => paginationState.isLoading,
+            hasNextFn: () => paginationStateOfSounds.hasNext,
+            isLoadingFn: () => paginationStateOfSounds.isLoading,
             anchor: scrollAnchor
         });
+
     } else if(type === 'albums'){
         resetPaginationState();
+        paginationStateOfAlbums.size = 10;
+
         renderAlbumsContainerForGenre(genrePageContainer, genreName);
+        const scrollAnchor = document.getElementById("scroll-anchor");
         const albumsInnerContainer = document.querySelector('.albums');
-        // первый запрос
-        await loadAlbumsByGenreId(genreId, albumsInnerContainer);
+
+        const pageResponse = await getAlbumsByGenreIdPaged(genreId);
+
+        loadAlbumsPaged(pageResponse, albumsInnerContainer);
         initPlayAlbumsDelegation(albumsInnerContainer);
-        // scroll
+
         initInfiniteScroll({
             loadFn: async () => {
-                await loadAlbumsByGenreId(genreId, albumsInnerContainer);
+                const pageResponse = await getAlbumsByGenreIdPaged(genreId);
+                loadAlbumsPaged(pageResponse, albumsInnerContainer);
             },
-            hasNextFn: () => paginationState.hasNext,
-            isLoadingFn: () => paginationState.isLoading,
+            hasNextFn: () => paginationStateOfAlbums.hasNext,
+            isLoadingFn: () => paginationStateOfAlbums.isLoading,
             anchor: scrollAnchor
         });
     }

@@ -5,15 +5,15 @@ import {
     initSearchForm,
     loadFoundAlbumsByFragment,
     loadFoundArtistsByFragment,
-    loadFoundTracksByFragment
+    loadFoundSoundsByFragment
 } from "../module/search.js";
-import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundTracksByFragment} from "../api/searchApi.js";
+import {getFoundAlbumsByFragment, getFoundArtistsByFragment, getFoundSoundsByFragment} from "../api/searchApi.js";
 import {initPlayer} from "../module/player.js";
-import {getSoundLikes} from "../api/soundLikesApi.js";
+import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {getToken} from "../user/auth.js";
-import {initTracksDelegation} from "../module/tracks.js";
+import {initSoundsDelegation} from "../module/sounds.js";
 import {initPlayAlbumsDelegation} from "../module/albums.js";
-import {paginationState} from "../store/PaginationState.js";
+import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 import {renderArtists} from "../components/artistsView.js";
 import {renderAlbums} from "../components/albumsView.js";
 import {renderSounds} from "../components/soundsView.js";
@@ -31,8 +31,6 @@ async function initSearchPage(){
 
     const searchForm = document.getElementById("search-form");
     initSearchForm(searchForm);
-
-    const scrollAnchor = document.getElementById("scroll-anchor");
 
     const searchContainer = document.getElementById("search");
 
@@ -57,10 +55,10 @@ async function initSearchPage(){
         const albumsPageResponse = await getFoundAlbumsByFragment(fragment);
         const albums = albumsPageResponse.content;
 
-        const tracksPageResponse = await getFoundTracksByFragment(fragment);
-        const tracks = tracksPageResponse.content;
+        const soundsPageResponse = await getFoundSoundsByFragment(fragment);
+        const sounds = soundsPageResponse.content;
 
-        if((artists.length === 0 && albums.length === 0 && tracks.length === 0)) {
+        if((artists.length === 0 && albums.length === 0 && sounds.length === 0)) {
             emptyResultContainer.textContent = "По запросу " + "\"" + fragment + "\""+ " ничего не найдено";
             return;
         }
@@ -73,17 +71,21 @@ async function initSearchPage(){
         initPlayAlbumsDelegation(albumsContainer);
 
         tracksTitle.innerHTML = `<a href="/search/${fragment}/tracks" class="title-link">Треки</a>`;
-        paginationState.tracks = tracks;
-        const likedSounds = await getSoundLikes(jwt);
-        const likedSoundsIds = new Set(likedSounds.ids);
-        renderSounds({container: tracksContainer, soundList: tracks, likedSoundsIds: likedSoundsIds});
-        initTracksDelegation(tracksContainer, likedSoundsIds, jwt);
+        paginationStateOfSounds.sounds = sounds;
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+        renderSounds({container: tracksContainer, soundList: sounds, likedSoundsIds: likedSoundsIds});
+        initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
         return;
     }
 
     if(type === 'artists'){
         resetPaginationState();
+        paginationStateOfArtists.size = 12;
+
         renderSearchArtistsExtendedResult(searchContainer);
+
+        const scrollAnchor = document.getElementById("scroll-anchor");
 
         const title = document.getElementById("search-title");
         title.textContent = "Исполнители по запросу " + "\"" + fragment + "\"";
@@ -96,13 +98,17 @@ async function initSearchPage(){
             loadFn: async () => {
                 await loadFoundArtistsByFragment(fragment, artistsInnerContainer);
             },
-            hasNextFn: () => paginationState.hasNext,
-            isLoadingFn: () => paginationState.isLoading,
+            hasNextFn: () => paginationStateOfArtists.hasNext,
+            isLoadingFn: () => paginationStateOfArtists.isLoading,
             anchor: scrollAnchor
         });
     } else if (type === 'albums'){
         resetPaginationState();
+        paginationStateOfAlbums.size = 10;
+
         renderSearchAlbumsExtendedResult(searchContainer);
+
+        const scrollAnchor = document.getElementById("scroll-anchor");
 
         const title = document.getElementById("search-title");
         title.textContent = "Альбомы по запросу " + "\"" + fragment + "\"";
@@ -116,30 +122,35 @@ async function initSearchPage(){
             loadFn: async () => {
                 await loadFoundAlbumsByFragment(fragment, albumsInnerContainer);
             },
-            hasNextFn: () => paginationState.hasNext,
-            isLoadingFn: () => paginationState.isLoading,
+            hasNextFn: () => paginationStateOfAlbums.hasNext,
+            isLoadingFn: () => paginationStateOfAlbums.isLoading,
             anchor: scrollAnchor
         });
     } else if (type === 'tracks'){
         resetPaginationState();
+        paginationStateOfSounds.size = 10;
+
         renderSearchTracksExtendedResult(searchContainer);
+
+        const scrollAnchor = document.getElementById("scroll-anchor");
 
         const title = document.getElementById("search-title");
         title.textContent = "Треки по запросу " + "\"" + fragment + "\"";
 
         const tracksInnerContainer = document.querySelector(".tracks");
 
-        const likedSounds = await getSoundLikes(jwt);
-        const likedSoundsIds = new Set(likedSounds.ids);
-        await loadFoundTracksByFragment(fragment, tracksInnerContainer, likedSoundsIds);
-        initTracksDelegation(tracksInnerContainer, likedSoundsIds, jwt);
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+
+        await loadFoundSoundsByFragment(fragment, tracksInnerContainer, likedSoundsIds);
+        initSoundsDelegation(tracksInnerContainer, likedSoundsIds, jwt);
 
         initInfiniteScroll({
             loadFn: async () => {
-                await loadFoundTracksByFragment(fragment, tracksInnerContainer, likedSoundsIds);
+                await loadFoundSoundsByFragment(fragment, tracksInnerContainer, likedSoundsIds);
             },
-            hasNextFn: () => paginationState.hasNext,
-            isLoadingFn: () => paginationState.isLoading,
+            hasNextFn: () => paginationStateOfSounds.hasNext,
+            isLoadingFn: () => paginationStateOfSounds.isLoading,
             anchor: scrollAnchor
         });
     }
