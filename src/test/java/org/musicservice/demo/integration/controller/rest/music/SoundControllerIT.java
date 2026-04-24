@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.dto.music.sound.SoundsResponse;
 import org.musicservice.demo.entity.genre.Genre;
 import org.musicservice.demo.entity.genre.GenreName;
 import org.musicservice.demo.entity.music.Album;
@@ -109,49 +108,31 @@ public class SoundControllerIT extends AbstractSpringBootIT {
     }
 
     @Test
-    void shouldReturnFirstPageOfSoundsByAlbumIdCorrectly() throws Exception{
+    void shouldReturnSoundsResponseByAlbumIdCorrectly() throws Exception{
         String titlePrefix = "bad romance";
         String keyNameEndsWith = "sound_key";
         Album album = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).album();
 
-        RequestBuilder requestBuilder = createRequest(album.getId(), soundsByAlbumIdUrl, page, size);
-        MvcResult result = assertPageResponseOfSoundsStructure(mockMvc.perform(requestBuilder));
+        MvcResult result = mockMvc.perform(get("/api/sound/album/{id}", album.getId()))
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.sounds[*].id").exists(),
+                        jsonPath("$.sounds[*].title").exists(),
+                        jsonPath("$.sounds[*].duration").exists(),
+                        jsonPath("$.sounds[*].key").exists(),
+                        jsonPath("$.sounds[*].url").exists())
+                .andReturn();
 
-        PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>(){});
-        assertThat(response.hasNextPage()).isTrue();
+        String json = result.getResponse().getContentAsString();
+        SoundsResponse soundsResponse = objectMapper.readValue(json, SoundsResponse.class);
 
-        List<SoundResponse> soundResponseList = response.content();
-        assertThat(soundResponseList).hasSize(size);
-        assertSoundsResponse(soundResponseList, titlePrefix, keyNameEndsWith);
-    }
-
-    @Test
-    void shouldReturnFirstPageSoundsByAlbumIdWithIdsGreaterThanSecondPage() throws Exception{
-        String titlePrefix = "bad romance";
-        String keyNameEndsWith = "sound_key";
-        Album album = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).album();
-
-        RequestBuilder firstPageRequest = createRequest(album.getId(), soundsByAlbumIdUrl, page, size);
-        MvcResult firstPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(firstPageRequest));
-
-        RequestBuilder secondPageRequest = createRequest(album.getId(), soundsByAlbumIdUrl, page + 1, size);
-        MvcResult secondPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(secondPageRequest));
-
-        PageResponse<SoundResponse> firstPageResponse = pageResponseFixture
-                .getPageResponse(firstPageResult, new TypeReference<>(){});
-        PageResponse<SoundResponse> secondPageResponse = pageResponseFixture
-                .getPageResponse(secondPageResult, new TypeReference<>(){});
-
-        List<Long> firstPageSoundsIds = firstPageResponse.content().stream().map(SoundResponse::id).toList();
-        List<Long> secondPageSoundsIds = secondPageResponse.content().stream().map(SoundResponse::id).toList();
-
-        assertThat(Collections.max(firstPageSoundsIds)).isLessThan(Collections.min(secondPageSoundsIds));
+        assertSoundsResponse(soundsResponse.sounds(), titlePrefix, keyNameEndsWith);
     }
 
     @Test
     void shouldReturnApiErrorResponse_WhenAlbumIdIsInvalid() throws Exception {
-        RequestBuilder requestBuilder = createRequest(982310L, soundsByAlbumIdUrl, page, size);
-        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder), status().isNotFound());
+        MvcResult result = assertApiErrorResponseStructure(mockMvc.perform
+                (get("/api/sound/album/{id}", 982310L)), status().isNotFound());
 
         assertApiErrorWhenMusicNotFound(result);
     }
@@ -162,7 +143,7 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         String keyNameEndsWith = "sound_key";
         Artist artist = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).artist();
 
-        RequestBuilder requestBuilder = createRequest(artist.getId(), soundsByArtistIdUrl, page, size);
+        RequestBuilder requestBuilder = createRequest(artist.getId(), "/api/sound/artist/{id}", page, size);
         MvcResult result = assertPageResponseOfSoundsStructure(mockMvc.perform(requestBuilder));
 
         PageResponse<SoundResponse> response = pageResponseFixture.getPageResponse(result, new TypeReference<>(){});
@@ -179,10 +160,12 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         String keyNameEndsWith = "sound_key";
         Artist artist = soundFixture.soundAggregateWithSounds(genre, titlePrefix, keyNameEndsWith).artist();
 
-        RequestBuilder firstPageRequest = createRequest(artist.getId(), soundsByArtistIdUrl, page, size);
+        RequestBuilder firstPageRequest = createRequest
+                (artist.getId(), "/api/sound/artist/{id}", page, size);
         MvcResult firstPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(firstPageRequest));
 
-        RequestBuilder secondPageRequest = createRequest(artist.getId(), soundsByArtistIdUrl, page + 1, size);
+        RequestBuilder secondPageRequest = createRequest
+                (artist.getId(), "/api/sound/artist/{id}", page + 1, size);
         MvcResult secondPageResult = assertPageResponseOfSoundsStructure(mockMvc.perform(secondPageRequest));
 
         PageResponse<SoundResponse> firstPageResponse = pageResponseFixture
@@ -198,42 +181,39 @@ public class SoundControllerIT extends AbstractSpringBootIT {
 
     @Test
     void shouldReturnApiErrorResponse_WhenArtistIdIsInvalid() throws Exception {
-        RequestBuilder requestBuilder = createRequest(982310L, soundsByArtistIdUrl, page, size);
+        RequestBuilder requestBuilder = createRequest(982310L, "/api/sound/artist/{id}", page, size);
         MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder), status().isNotFound());
 
         assertApiErrorWhenMusicNotFound(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnValidationError_WhenIncorrectPageValue(String url) throws Exception {
+    @Test
+    void shouldReturnValidationError_WhenIncorrectPageValue() throws Exception {
         int page = -1;
 
-        RequestBuilder requestBuilder = createRequest(1L, url, page, size);
+        RequestBuilder requestBuilder = createRequest(1L, "/api/sound/artist/{id}", page, size);
         MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
                 .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnBadRequest_WhenIncorrectSizeValue(String url) throws Exception {
+    @Test
+    void shouldReturnBadRequest_WhenIncorrectSizeValue() throws Exception {
         int size = 81;
 
-        RequestBuilder requestBuilder = createRequest(1L, url, page, size);
+        RequestBuilder requestBuilder = createRequest(1L, "/api/sound/artist/{id}", page, size);
         MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
                 .andExpect(jsonPath("$.fieldsError").exists()), status().isBadRequest());
 
         assertValidationError(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch(String url) throws Exception {
+    @Test
+    void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch() throws Exception {
         String page = "some page";
 
-        RequestBuilder requestBuilder = get(url, 1L)
+        RequestBuilder requestBuilder = get("/api/sound/artist/{id}", 1L)
                 .param("page", page)
                 .param("size", String.valueOf(size));
 
@@ -243,12 +223,11 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         assertValidationError(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch(String url) throws Exception {
+    @Test
+    void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch() throws Exception {
         String size = "forty";
 
-        RequestBuilder requestBuilder = get(url, 1L)
+        RequestBuilder requestBuilder = get("/api/sound/artist/{id}", 1L)
                 .param("page", String.valueOf(page))
                 .param("size", size);
 
@@ -258,10 +237,9 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         assertValidationError(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnBadRequest_WhenPageParamIsMissing(String url) throws Exception {
-        RequestBuilder requestBuilder = get(url, 1L)
+    @Test
+    void shouldReturnBadRequest_WhenPageParamIsMissing() throws Exception {
+        RequestBuilder requestBuilder = get("/api/sound/artist/{id}", 1L)
                 .param("size", String.valueOf(size));
 
         MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
@@ -270,10 +248,9 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         assertValidationError(result);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {soundsByAlbumIdUrl, soundsByArtistIdUrl})
-    void shouldReturnBadRequest_WhenSizeParamIsMissing(String url) throws Exception {
-        RequestBuilder requestBuilder = get(url, 1L)
+    @Test
+    void shouldReturnBadRequest_WhenSizeParamIsMissing() throws Exception {
+        RequestBuilder requestBuilder = get("/api/sound/artist/{id}", 1L)
                 .param("page", String.valueOf(page));
 
         MvcResult result = assertApiErrorResponseStructure(mockMvc.perform(requestBuilder)
@@ -281,9 +258,6 @@ public class SoundControllerIT extends AbstractSpringBootIT {
 
         assertValidationError(result);
     }
-
-    private final String soundsByAlbumIdUrl = "/api/sound/album/{id}";
-    private final String soundsByArtistIdUrl = "/api/sound/artist/{id}";
 
     private RequestBuilder createRequest(Long id, String url, int page, int size){
         return get(url, id)
