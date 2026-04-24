@@ -1,12 +1,12 @@
-import {getSoundLikes} from "../api/soundLikesApi.js";
+import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {initSidebar} from "../module/sidebar.js";
 import {getToken} from "../user/auth.js";
-import {getSoundCollection} from "../api/soundCollectionApi.js";
-import {renderSounds} from "../components/soundsView.js";
+import {pageResponseOfSoundCollection} from "../api/collectionApi.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {initTracksDelegation} from "../module/tracks.js";
-import {paginationState} from "../store/PaginationState.js";
+import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
+import {paginationStateOfSounds} from "../store/paginationState.js";
+import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 
 export async function initTrackCollectionPage(){
     initPlayer();
@@ -16,16 +16,28 @@ export async function initTrackCollectionPage(){
     initSearchForm(searchForm);
 
     const trackCollection = document.getElementById("track-collection");
+    const scrollAnchor = document.getElementById("scroll-anchor");
 
-    const likedSounds = await getSoundLikes(jwt);
-    const likedSoundIds = new Set(likedSounds.ids);
+    resetPaginationState();
+    paginationStateOfSounds.size = 10;
 
-    const collectionData = await getSoundCollection(likedSounds);
-    const soundList = collectionData.soundList;
+    const likedSoundsResponse = await getLikedSoundsIds(jwt);
+    const likedSoundsIds = new Set(likedSoundsResponse.ids);
 
-    renderSounds({container: trackCollection, soundList: soundList, likedSoundsIds: likedSoundIds});
-    paginationState.tracks = soundList;
-    initTracksDelegation(trackCollection, likedSoundIds, jwt);
+    const pageResponse = await pageResponseOfSoundCollection(jwt);
+
+    loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
+    initSoundsDelegation(trackCollection, likedSoundsIds, jwt);
+
+    initInfiniteScroll({
+        loadFn: async () => {
+            const pageResponse = await pageResponseOfSoundCollection(jwt);
+            loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
+        },
+        hasNextFn: () => paginationStateOfSounds.hasNext,
+        isLoadingFn: () => paginationStateOfSounds.isLoading,
+        anchor: scrollAnchor
+    });
 }
 document.addEventListener("componentsLoaded", async () => {
     initSidebar();

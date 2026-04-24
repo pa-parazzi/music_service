@@ -1,13 +1,13 @@
-import {getSoundLikes} from "../api/soundLikesApi.js";
+import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {initSidebar} from "../module/sidebar.js";
 import {getArtistById} from "../api/artistApi.js";
-import {getSoundListByArtistId} from "../api/soundApi.js";
+import {getSoundsByArtistIdPaged} from "../api/soundApi.js";
 import {getToken} from "../user/auth.js";
-import {renderSounds} from "../components/soundsView.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
-import {initTracksDelegation} from "../module/tracks.js";
-import {paginationState} from "../store/PaginationState.js";
+import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
+import {paginationStateOfSounds} from "../store/paginationState.js";
+import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 
 async function initArtistPage() {
     initPlayer();
@@ -23,14 +23,28 @@ async function initArtistPage() {
     artistName.textContent = artist.name;
 
     const tracksContainer = document.getElementById('tracklist');
+    const scrollAnchor = document.getElementById("scroll-anchor");
 
-    const soundList = await getSoundListByArtistId(id);
-    const likedSounds = await getSoundLikes(jwt);
-    const likedSoundsIds = new Set(likedSounds.ids);
+    resetPaginationState();
+    paginationStateOfSounds.size = 10;
 
-    renderSounds({container: tracksContainer, soundList: soundList, likedSoundsIds: likedSoundsIds});
-    paginationState.tracks = soundList;
-    initTracksDelegation(tracksContainer, likedSoundsIds, jwt);
+    const likedSoundsResponse = await getLikedSoundsIds(jwt);
+    const likedSoundsIds = new Set(likedSoundsResponse.ids);
+
+    const pageResponse = await getSoundsByArtistIdPaged(id);
+
+    loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
+    initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
+
+    initInfiniteScroll({
+        loadFn: async () => {
+            const pageResponse = await getSoundsByArtistIdPaged(id);
+            loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
+        },
+        hasNextFn: () => paginationStateOfSounds.hasNext,
+        isLoadingFn: () => paginationStateOfSounds.isLoading,
+        anchor: scrollAnchor
+    });
 }
 
 document.addEventListener("componentsLoaded", async () => {

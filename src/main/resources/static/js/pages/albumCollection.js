@@ -1,11 +1,11 @@
 import {initPlayer} from "../module/player.js";
-import {renderAlbums} from "../components/albumsView.js";
 import {getToken} from "../user/auth.js";
 import {initSidebar} from "../module/sidebar.js";
-import {getAlbumLikes} from "../api/albumLikesApi.js";
-import {getAlbumCollection} from "../api/albumCollectionApi.js";
+import {pageResponseOfAlbumCollection} from "../api/collectionApi.js";
 import {initSearchForm} from "../module/search.js";
-import {initPlayAlbumsDelegation} from "../module/albums.js";
+import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
+import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
+import {paginationStateOfAlbums} from "../store/paginationState.js";
 
 export async function initAlbumCollectionPage(){
     initPlayer();
@@ -16,13 +16,23 @@ export async function initAlbumCollectionPage(){
     const jwt = getToken();
 
     const albumCollectionContainer = document.getElementById('album-collection');
+    const scrollAnchor = document.getElementById("scroll-anchor");
 
-
-    const albumData = await getAlbumCollection(jwt);
-    const albums = albumData.albums;
-
-    renderAlbums(albumCollectionContainer, albums);
+    resetPaginationState();
+    paginationStateOfAlbums.size = 10;
+    const pageResponse = await pageResponseOfAlbumCollection(jwt);
+    loadAlbumsPaged(pageResponse, albumCollectionContainer);
     initPlayAlbumsDelegation(albumCollectionContainer);
+
+    initInfiniteScroll({
+        loadFn: async () => {
+            const pageResponse = await pageResponseOfAlbumCollection(jwt);
+            loadAlbumsPaged(pageResponse, albumCollectionContainer);
+        },
+        hasNextFn: () => paginationStateOfAlbums.hasNext,
+        isLoadingFn: () => paginationStateOfAlbums.isLoading,
+        anchor: scrollAnchor
+    });
 }
 document.addEventListener("componentsLoaded", async () => {
     initSidebar();
