@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.dto.music.sound.SoundsResponse;
 import org.musicservice.demo.service.music.SoundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +30,8 @@ public class SoundController {
     }
 
     @GetMapping("/album/{id}")
-    public ResponseEntity<PageResponse<SoundResponse>> getTracksByAlbum(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "page") @Min(0) int page,
-            @RequestParam(name = "size") @Min(1) @Max(30) int size){
-        return ResponseEntity.ok().body(soundService.getSoundsByAlbumIdPaged(id, page, size));
+    public ResponseEntity<SoundsResponse> getTracksByAlbumPaged(@PathVariable("id") Long id){
+        return ResponseEntity.ok().body(soundService.getSoundsByAlbumId(id));
     }
 
     @GetMapping("/artist/{id}")

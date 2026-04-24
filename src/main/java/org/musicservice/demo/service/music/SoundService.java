@@ -3,10 +3,10 @@ package org.musicservice.demo.service.music;
 import org.musicservice.demo.dto.music.common.PageResponse;
 import org.musicservice.demo.dto.music.sound.SoundPageResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
+import org.musicservice.demo.dto.music.sound.SoundsResponse;
 import org.musicservice.demo.entity.likes.SoundLike;
 import org.musicservice.demo.entity.music.Sound;
 import org.musicservice.demo.exception.music.MusicNotFoundException;
-import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.mapper.music.SoundMapper;
 import org.musicservice.demo.repository.music.SoundRepository;
 import org.musicservice.demo.service.likes.SoundLikeService;
@@ -34,6 +34,13 @@ public class SoundService {
         this.soundMapper = soundMapper;
     }
 
+    public SoundsResponse getSoundsByAlbumId(Long albumId){
+        List<SoundResponse> sounds = soundRepository.findAllByAlbumId(albumId)
+                .stream().map(soundMapper::toResponse).toList();
+        if(sounds.isEmpty()) throw new MusicNotFoundException("Треки не найдены");
+        return new SoundsResponse(sounds);
+    }
+
     private PageResponse<SoundResponse> toPageResponse(Page<Sound> soundsPage){
         List<Sound> sounds = soundsPage.getContent();
         if(sounds.isEmpty()) throw new MusicNotFoundException("Треки не найдены");
@@ -44,12 +51,6 @@ public class SoundService {
     public PageResponse<SoundResponse> getSoundsByArtistIdPaged(Long artistId, int page, int size){
         Page<Sound> soundsPage = soundRepository.findByArtistId
                 (artistId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
-        return toPageResponse(soundsPage);
-    }
-
-    public PageResponse<SoundResponse> getSoundsByAlbumIdPaged(Long albumId, int page, int size){
-        Page<Sound> soundsPage = soundRepository.findByAlbumId
-                (albumId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         return toPageResponse(soundsPage);
     }
 
