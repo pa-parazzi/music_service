@@ -1,7 +1,6 @@
 package org.musicservice.demo.support.factory.unit.music;
 
 import org.musicservice.demo.dto.image.ImageResponse;
-import org.musicservice.demo.dto.metadata.TrackMetadata;
 import org.musicservice.demo.dto.music.album.AlbumResponse;
 import org.musicservice.demo.dto.music.artist.ArtistResponse;
 import org.musicservice.demo.dto.music.sound.SoundResponse;
@@ -75,13 +74,5 @@ public class MusicDataFactory {
                 "audio-download",
                 true,
                 null, null);
-    }
-
-    public static TrackMetadata trackMetadata(){
-        return new TrackMetadata(
-                "https://bad_romance.mp3",
-                "https://gaga.jpg",
-                "bad_romance_key",
-                "gaga-image_key");
     }
 }

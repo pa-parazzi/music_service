@@ -38,5 +38,6 @@ public class SoundAssertions {
         assertThat(response).extracting(SoundResponse::title).allMatch(title -> title.startsWith(titlePrefix));
         assertThat(response).extracting(SoundResponse::duration).isNotEmpty();
         assertThat(response).extracting(SoundResponse::key).allMatch(key -> key.endsWith(keyNameEndsWith));
+        assertThat(response).extracting(SoundResponse::url).allSatisfy(url -> assertThat(url).isNotBlank());
     }
 }
