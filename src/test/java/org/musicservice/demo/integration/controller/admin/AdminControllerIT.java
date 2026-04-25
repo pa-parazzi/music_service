@@ -47,23 +47,41 @@ public class AdminControllerIT extends AbstractSpringBootIT {
     }
 
     private final String genreName = GenreName.BLUES.name();
-    private final int sizeApiContent = 10;
+    private final int sizeApiContent = 100;
+
 
     @Test
     @WithMockUserPrincipal(authority = Authority.ADMIN)
-    void shouldSuccessfulSaveAndWriteAllContent() throws Exception {
+    void shouldSuccessfulSaveAndWriteRecords() throws Exception {
         List<MusicResponse> apiResponseList = MusicFactoryIT.musicResponseList(sizeApiContent);
+        List<String> apiResponseTrackNames = apiResponseList.stream().map(MusicResponse::name).toList();
         when(jamendoClient.tracksPack(genreName)).thenReturn(apiResponseList);
 
         RequestBuilder requestBuilder = post("/admin/import").param("genreName", genreName);
         mockMvc.perform(requestBuilder).andExpect(status().isAccepted());
 
         List<Sound> sounds = soundRepository.findAll();
-        assertThat(sounds.size()).isEqualTo(apiResponseList.size());
 
-        List<String> responseSoundsNames = apiResponseList.stream().map(MusicResponse::name).toList();
-        List<String> soundsNames = sounds.stream().map(Sound::getTitle).toList();
-        assertThat(responseSoundsNames).containsExactlyInAnyOrderElementsOf(soundsNames);
+        assertThat(sounds.size()).isEqualTo(sizeApiContent);
+        assertThat(sounds).extracting(Sound::getTitle).containsExactlyInAnyOrderElementsOf(apiResponseTrackNames);
+
+        verify(trackMetadataWriter, times(sizeApiContent)).write(any(TrackMetadata.class));
+    }
+    @Test
+    @WithMockUserPrincipal(authority = Authority.ADMIN)
+    void shouldSuccessfulSaveAndWriteWithoutDuplicates() throws Exception {
+        List<MusicResponse> apiResponseList = MusicFactoryIT.musicResponseList(sizeApiContent);
+        when(jamendoClient.tracksPack(genreName)).thenReturn(apiResponseList);
+
+        RequestBuilder firstRequestBuilder = post("/admin/import").param("genreName", genreName);
+        mockMvc.perform(firstRequestBuilder).andExpect(status().isAccepted());
+
+        RequestBuilder secondRequestBuilder = post("/admin/import").param("genreName", genreName);
+        mockMvc.perform(secondRequestBuilder).andExpect(status().isAccepted());
+
+        List<Sound> sounds = soundRepository.findAll();
+
+        assertThat(sounds).extracting(Sound::getTitle).doesNotHaveDuplicates();
 
         verify(trackMetadataWriter, times(sizeApiContent)).write(any(TrackMetadata.class));
     }
