@@ -1,6 +1,6 @@
 import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
 
-export async function getFoundSoundsByFragment(fragment){
+export async function getFoundSoundsByFragmentPaged(fragment){
     const response = await fetch
     (`/api/search/${fragment}/tracks?page=${paginationStateOfSounds.currentPage}&size=${paginationStateOfSounds.size}`, {
         method: "GET"
@@ -8,7 +8,7 @@ export async function getFoundSoundsByFragment(fragment){
     return await response.json();
 }
 
-export async function getFoundAlbumsByFragment(fragment){
+export async function getFoundAlbumsByFragmentPaged(fragment){
     const response = await fetch
     (`/api/search/${fragment}/albums?page=${paginationStateOfAlbums.currentPage}&size=${paginationStateOfAlbums.size}`, {
         method: "GET"
@@ -16,7 +16,7 @@ export async function getFoundAlbumsByFragment(fragment){
     return await response.json();
 }
 
-export async function getFoundArtistsByFragment(fragment){
+export async function getFoundArtistsByFragmentPaged(fragment){
     const response = await fetch
     (`/api/search/${fragment}/artists?page=${paginationStateOfArtists.currentPage}&size=${paginationStateOfArtists.size}`, {
         method: "GET"
