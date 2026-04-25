@@ -7,7 +7,7 @@ import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 import {paginationStateOfAlbums} from "../store/paginationState.js";
 
-export async function initAlbumCollectionPage(){
+export async function initAlbumCollectionPage() {
     initPlayer();
 
     const searchForm = document.getElementById("search-form");
@@ -19,12 +19,12 @@ export async function initAlbumCollectionPage(){
     const scrollAnchor = document.getElementById("scroll-anchor");
 
     resetPaginationState();
-    paginationStateOfAlbums.size = 10;
+    paginationStateOfAlbums.size = 14;
     const pageResponse = await pageResponseOfAlbumCollection(jwt);
     loadAlbumsPaged(pageResponse, albumCollectionContainer);
     initPlayAlbumsDelegation(albumCollectionContainer);
 
-    initInfiniteScroll({
+    const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await pageResponseOfAlbumCollection(jwt);
             loadAlbumsPaged(pageResponse, albumCollectionContainer);
@@ -33,7 +33,9 @@ export async function initAlbumCollectionPage(){
         isLoadingFn: () => paginationStateOfAlbums.isLoading,
         anchor: scrollAnchor
     });
+    await infiniteScroll.init();
 }
+
 document.addEventListener("componentsLoaded", async () => {
     initSidebar();
     await initAlbumCollectionPage();

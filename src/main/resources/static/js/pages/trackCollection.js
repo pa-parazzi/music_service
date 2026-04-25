@@ -19,7 +19,7 @@ export async function initTrackCollectionPage(){
     const scrollAnchor = document.getElementById("scroll-anchor");
 
     resetPaginationState();
-    paginationStateOfSounds.size = 10;
+    paginationStateOfSounds.size = 20;
 
     const likedSoundsResponse = await getLikedSoundsIds(jwt);
     const likedSoundsIds = new Set(likedSoundsResponse.ids);
@@ -29,7 +29,7 @@ export async function initTrackCollectionPage(){
     loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
     initSoundsDelegation(trackCollection, likedSoundsIds, jwt);
 
-    initInfiniteScroll({
+    const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await pageResponseOfSoundCollection(jwt);
             loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
@@ -38,6 +38,7 @@ export async function initTrackCollectionPage(){
         isLoadingFn: () => paginationStateOfSounds.isLoading,
         anchor: scrollAnchor
     });
+    await infiniteScroll.init();
 }
 document.addEventListener("componentsLoaded", async () => {
     initSidebar();

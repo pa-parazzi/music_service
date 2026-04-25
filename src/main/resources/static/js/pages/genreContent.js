@@ -67,7 +67,7 @@ async function initGenreDetailsPage(){
 
     if(type==='tracks'){
         resetPaginationState();
-        paginationStateOfSounds.size = 10;
+        paginationStateOfSounds.size = 20;
 
         renderTracksContainerForGenre(genrePageContainer, genreName);
 
@@ -82,7 +82,7 @@ async function initGenreDetailsPage(){
         loadSoundsPaged(pageResponse, tracksInnerContainer, likedSoundsIds);
         initSoundsDelegation(tracksInnerContainer, likedSoundsIds, jwt);
 
-        initInfiniteScroll({
+        const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {
                 const pageResponse = await getSoundsByGenreIdPaged(genreId);
                 loadSoundsPaged(pageResponse, tracksInnerContainer, likedSoundsIds);
@@ -91,10 +91,11 @@ async function initGenreDetailsPage(){
             isLoadingFn: () => paginationStateOfSounds.isLoading,
             anchor: scrollAnchor
         });
+        await infiniteScroll.init();
 
     } else if(type === 'albums'){
         resetPaginationState();
-        paginationStateOfAlbums.size = 10;
+        paginationStateOfAlbums.size = 14;
 
         renderAlbumsContainerForGenre(genrePageContainer, genreName);
         const scrollAnchor = document.getElementById("scroll-anchor");
@@ -105,7 +106,7 @@ async function initGenreDetailsPage(){
         loadAlbumsPaged(pageResponse, albumsInnerContainer);
         initPlayAlbumsDelegation(albumsInnerContainer);
 
-        initInfiniteScroll({
+        const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {
                 const pageResponse = await getAlbumsByGenreIdPaged(genreId);
                 loadAlbumsPaged(pageResponse, albumsInnerContainer);
@@ -114,6 +115,7 @@ async function initGenreDetailsPage(){
             isLoadingFn: () => paginationStateOfAlbums.isLoading,
             anchor: scrollAnchor
         });
+        await infiniteScroll.init();
     }
 }
 

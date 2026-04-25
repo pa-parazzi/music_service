@@ -36,7 +36,7 @@ async function initArtistPage() {
     loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
     initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
 
-    initInfiniteScroll({
+    const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await getSoundsByArtistIdPaged(id);
             loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
@@ -45,6 +45,7 @@ async function initArtistPage() {
         isLoadingFn: () => paginationStateOfSounds.isLoading,
         anchor: scrollAnchor
     });
+    await infiniteScroll.init();
 }
 
 document.addEventListener("componentsLoaded", async () => {
