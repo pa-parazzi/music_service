@@ -56,7 +56,7 @@ public class MusicCatalogService {
 
     @Transactional
     public boolean saveMusicData(MusicResponse response, Genre genre) {
-        if(soundRepository.existsByKey(response.mp3Key())) return false;
+        if(soundRepository.existsByTitle(response.name())) return false;
         Artist artist = createOrGetArtist(response, genre);
         Album album = createAlbumWithImageOrGet(response, artist, genre);
         createSound(response, artist, album, genre);

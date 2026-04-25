@@ -24,5 +24,5 @@ public interface SoundRepository extends JpaRepository<Sound, Long> {
 
     Page<Sound> findByGenreId(Long genreId, Pageable pageable);
 
-    boolean existsByKey(String key);
+    boolean existsByTitle(String name);
 }
