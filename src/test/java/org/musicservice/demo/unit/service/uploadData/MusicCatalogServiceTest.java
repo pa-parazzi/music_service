@@ -45,7 +45,7 @@ public class MusicCatalogServiceTest {
         Genre genre = new Genre();
         MusicResponse musicResponse = MusicDataFactory.musicResponse();
 
-        when(soundRepository.existsByKey(musicResponse.mp3Key())).thenReturn(false);
+        when(soundRepository.existsByTitle(musicResponse.name())).thenReturn(false);
         when(artistRepository.findByName(musicResponse.artist_name())).thenReturn(Optional.empty());
         when(artistRepository.save(any(Artist.class))).thenReturn(new Artist());
         when(albumRepository.findByTitle(musicResponse.album_name())).thenReturn(Optional.empty());
@@ -55,7 +55,7 @@ public class MusicCatalogServiceTest {
         boolean saveStatus = musicCatalogService.saveMusicData(musicResponse, genre);
 
         assertTrue(saveStatus);
-        verify(soundRepository).existsByKey(musicResponse.mp3Key());
+        verify(soundRepository).existsByTitle(musicResponse.name());
         verify(artistRepository).findByName(musicResponse.artist_name());
         verify(artistRepository).save(any(Artist.class));
         verify(albumRepository).findByTitle(musicResponse.album_name());
@@ -69,7 +69,7 @@ public class MusicCatalogServiceTest {
         Genre genre = new Genre();
         MusicResponse musicResponse = MusicDataFactory.musicResponse();
 
-        when(soundRepository.existsByKey(musicResponse.mp3Key())).thenReturn(true);
+        when(soundRepository.existsByTitle(musicResponse.name())).thenReturn(true);
 
         boolean saveStatus = musicCatalogService.saveMusicData(musicResponse, genre);
 
