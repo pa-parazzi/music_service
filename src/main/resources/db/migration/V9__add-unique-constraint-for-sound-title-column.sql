@@ -1,0 +1,1 @@
+ALTER TABLE sound ADD CONSTRAINT sound_title_unique UNIQUE (title);
