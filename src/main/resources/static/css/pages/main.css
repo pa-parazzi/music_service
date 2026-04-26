@@ -1,0 +1,84 @@
+.main-content{
+    margin: 0 100px 120px 100px;
+}
+
+.albums-row-head,
+.genre-row-head {
+    max-width: 1660px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.show-all-btn {
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.show-all-btn:hover {
+    text-decoration: underline;
+}
+
+.albums-row, .genres-row {
+    display: grid;
+    max-width: 100%;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 18px;
+}
+
+.row-title-link {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+}
+
+.row-title-link:hover{
+    text-decoration: underline;
+}
+
+.genre-card{
+    width: 200px;
+    text-align: center;
+}
+
+.genre-cover-wrapper {
+    cursor: default;
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.genre-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: default;
+}
+
+.genre-card-link:hover {
+    transform: scale(1.02);
+    transition: 0.2s;
+}
+
+.genre-cover {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.genre-meta {
+    margin-top: 6px;
+}
+
+.genre-name-link {
+    color: white;
+    text-decoration: none;
+}
+
+.genre-name-link:hover {
+    text-decoration: underline;
+}

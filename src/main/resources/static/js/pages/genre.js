@@ -1,6 +1,6 @@
 import {initSidebar} from "../module/sidebar.js";
 import {getGenres} from "../api/genreApi.js";
-import {renderGenres} from "../components/genresView.js";
+import {renderGenresPage} from "../components/genresView.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
 
@@ -13,7 +13,7 @@ async function initGenrePage(){
 
     const genresJson = await getGenres();
     const genres = genresJson.genres;
-    renderGenres(genresContainer, genres);
+    renderGenresPage(genresContainer, genres);
 }
 
 document.addEventListener("componentsLoaded", async () => {

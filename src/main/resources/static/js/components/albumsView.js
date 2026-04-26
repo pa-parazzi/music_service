@@ -3,7 +3,7 @@ import {escapeHtml} from "../utils/util.js";
 export function renderAlbums(container, albums){
     const html = albums.map((album) => `
      <div class="album-card">
-         <div class="cover-wrapper">
+         <div class="album-cover-wrapper">
              <a href="/album/${album.id}" class="album-card-link">
              <img src="${album.image.url}" alt="${escapeHtml(album.title)}" class="album-cover">
              </a>

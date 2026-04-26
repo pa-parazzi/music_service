@@ -9,16 +9,38 @@
     <link rel="stylesheet" href="/css/layout/search-bar.css">
     <link rel="stylesheet" href="/css/layout/user-info.css">
     <link rel="stylesheet" href="/css/components/auth-button.css">
+    <link rel="stylesheet" href="/css/components/albums.css">
     <link rel="stylesheet" href="/css/layout/audio-player.css">
+    <link rel="stylesheet" href="/css/pages/main.css">
 
 </head>
 <body>
 
 <div data-component="header"></div>
 
-
 <div data-component="sidebar"></div>
 
+<div class="main-content" id="main-content">
+    <section class="album-section" id="album-section">
+        <div class="albums-row-head">
+            <a href="/album/releases" class="row-title-link">
+                <h2>Новые релизы</h2>
+            </a>
+            <a href="/album/releases" class="show-all-btn">Показать все</a>
+        </div>
+        <div class="albums-row"></div>
+    </section>
+
+    <section class="genre-section" id="genre-section">
+        <div class="genre-row-head">
+            <a href="/genre" class="row-title-link">
+                <h2>Жанры</h2>
+            </a>
+            <a href="/genre" class="show-all-btn">Показать все</a>
+        </div>
+        <div class="genres-row"></div>
+    </section>
+</div>
 
 <div data-component="audio-player"></div>
 
