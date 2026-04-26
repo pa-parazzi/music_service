@@ -9,6 +9,7 @@ import org.musicservice.demo.exception.music.NoSuchMusicException;
 import org.musicservice.demo.mapper.music.AlbumMapper;
 import org.musicservice.demo.repository.music.AlbumRepository;
 import org.musicservice.demo.service.likes.AlbumLikeService;
+import org.musicservice.demo.service.time.TimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,12 +26,14 @@ public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumLikeService albumLikeService;
     private final AlbumMapper albumMapper;
+    private final TimeService timeService;
 
     @Autowired
-    public AlbumService(AlbumRepository albumRepository, AlbumLikeService albumLikeService, AlbumMapper albumMapper) {
+    public AlbumService(AlbumRepository albumRepository, AlbumLikeService albumLikeService, AlbumMapper albumMapper, TimeService timeService) {
         this.albumRepository = albumRepository;
         this.albumLikeService = albumLikeService;
         this.albumMapper = albumMapper;
+        this.timeService = timeService;
     }
 
     public PageResponse<AlbumResponse> getAlbumCollectionByUserId(Long userId, int page, int size){
@@ -48,9 +51,24 @@ public class AlbumService {
     public PageResponse<AlbumResponse> findAlbumsByGenreIdPaged(Long genreId, int page, int size){
         Page<Album> pageResponse = albumRepository.findByGenreId
                 (genreId, PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
-        List<Album> albums = pageResponse.getContent();
-        if(albums.isEmpty()) throw new NoSuchMusicException("Альбомов по такому жанру не найдено");
+        List<Album> albums = checkEmptyContent(pageResponse, "Альбомов по такому жанру не найдено");
         List<AlbumResponse> albumResponseList = albums.stream().map(albumMapper::toAlbumResponse).toList();
         return new PageResponse<>(albumResponseList, pageResponse.hasNext());
+    }
+
+    public PageResponse<AlbumResponse> getNewAlbumReleases(int page, int size){
+        Page<Album> pageResponse = albumRepository.findAlbumsOrderByReleaseDateBetween(
+                timeService.timeOfNewAlbumsRelease(),
+                timeService.now(),
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "releaseDate")));
+        List<Album> albums = checkEmptyContent(pageResponse, "Нет новых релизов");
+        List<AlbumResponse> albumResponseList = albums.stream().map(albumMapper::toAlbumResponse).toList();
+        return new PageResponse<>(albumResponseList, pageResponse.hasNext());
+    }
+
+    private List<Album> checkEmptyContent(Page<Album> pageResponse, String message){
+        List<Album> albums = pageResponse.getContent();
+        if(albums.isEmpty()) throw new NoSuchMusicException(message);
+        return albums;
     }
 }

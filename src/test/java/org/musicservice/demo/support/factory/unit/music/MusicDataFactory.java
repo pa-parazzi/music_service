@@ -21,7 +21,7 @@ public class MusicDataFactory {
     }
 
     public static AlbumResponse albumResponse(){
-        return new AlbumResponse(1L, "Time", albumImageResponse(), artistResponse());
+        return new AlbumResponse(1L, "Time", LocalDate.of(2020, 1, 1),albumImageResponse(), artistResponse());
     }
 
     public static SoundResponse soundResponse(){

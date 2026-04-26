@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -23,5 +24,11 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     Page<Album> findByTitleStartingWithIgnoreCase(String prefix, Pageable pageable);
 
     @EntityGraph(attributePaths = {"artist", "image"})
-    Page<Album> findByGenreId(@Param("genreId") Long genreId, Pageable pageable);
+    Page<Album> findByGenreId(Long genreId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"artist", "image"})
+    Page<Album> findAlbumsOrderByReleaseDateBetween
+            (LocalDate releaseDateAfter,
+             LocalDate releaseDateBefore,
+             Pageable pageable);
 }
