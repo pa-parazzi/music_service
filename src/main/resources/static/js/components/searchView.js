@@ -1,40 +1,36 @@
-export function renderSearchGeneralResult(container){
+export function renderSearchResult(container, searchFragment){
     container.innerHTML = `
-    <h2 class="tracks-title" id="tracks-title"></h2>
-    <div class="tracks" id="tracks"></div>
+    <div class="page-section">
+          <section class="sounds-section">
+            <div class="section-heading">
+                <a href="/search/${searchFragment}/tracks" class="title-link">
+                    <h2>Треки</h2>
+                </a>
+                <a href="/search/${searchFragment}/tracks" class="show-all-btn">Показать все</a>
+            </div>
+            <div class="sounds"></div>
+          </section>
+          
+          <section class="albums-section">
+            <div class="section-heading">
+                  <a href="/search/${searchFragment}/albums" class="title-link">
+                     <h2>Альбомы</h2>
+                  </a>
+                <a href="/search/${searchFragment}/albums" class="show-all-btn">Показать все</a>
+            </div>
+            <div class="albums"></div>
+          </section>
+          
+          <section class="artists-section">
+            <div class="section-heading">
+                  <a href="/search/${searchFragment}/artists" class="title-link">
+                     <h2>Исполнители</h2>
+                  </a>
+                <a href="/search/${searchFragment}/artists" class="show-all-btn">Показать все</a>
+            </div>
+            <div class="artists"></div>
+          </section>
+    </div>
 
-    <h2 class="albums-title" id="albums-title"></h2>
-    <div class="albums" id="albums"></div>
-
-    <h2 class="artists-title" id="artists-title"></h2>
-    <div class="artists" id="artists"></div>
-
-    <div class="empty-result" id="empty-result"></div>`;
-}
-
-export function renderSearchArtistsExtendedResult(container){
-    container.innerHTML = `
-            <div class="extended-search-result">
-                 <h2 class="search-title" id="search-title"></h2>
-                 <div class="artists"></div>
-                 <div id="scroll-anchor"></div>
-            </div>`;
-}
-
-export function renderSearchAlbumsExtendedResult(container){
-    container.innerHTML = `
-            <div class="extended-search-result">
-                 <h2 class="search-title" id="search-title"></h2>
-                 <div class="albums"></div>
-                 <div id="scroll-anchor"></div>
-            </div>`;
-}
-
-export function renderSearchTracksExtendedResult(container){
-    container.innerHTML = `
-            <div class="extended-search-result">
-                 <h2 class="search-title" id="search-title"></h2>
-                 <div class="tracks"></div>
-                 <div id="scroll-anchor"></div>
-            </div>`;
+    <div class="not-found"></div>`;
 }
