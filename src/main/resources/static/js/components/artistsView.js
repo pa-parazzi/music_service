@@ -8,3 +8,10 @@ export function renderArtists(container, artists){
     `).join('');
     container.insertAdjacentHTML("beforeend", html);
 }
+
+export function renderArtistsContainer(container){
+    container.innerHTML = `
+             <h2 class="artists-heading"></h2>
+             <div class="artists"></div>
+             <div class="scroll-anchor"></div>`;
+}
