@@ -1,5 +1,5 @@
 import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
-import {renderAlbums} from "../components/albumsView.js";
+import {renderAlbumCards} from "../components/albumsView.js";
 import {playerState} from "../store/playerState.js";
 import {getSoundsByAlbumId} from "../api/soundApi.js";
 import {setTrack, togglePlayer} from "./player.js";
@@ -13,7 +13,7 @@ export function loadAlbumsPaged(pageResponse, container){
     paginationStateOfAlbums.albums.push(...albums);
     paginationStateOfAlbums.hasNext = pageResponse.hasNextPage;
 
-    renderAlbums(container, albums);
+    renderAlbumCards(container, albums);
 
     paginationStateOfAlbums.currentPage++;
     paginationStateOfAlbums.isLoading = false;
@@ -33,10 +33,10 @@ export function initPlayAlbumButton(albumId, playAlbumBtn){
     });
 }
 
-export function initPlayAlbumsDelegation(container){
+export function initPlayAlbumCardsDelegation(container){
     const albumSoundsCache = new Map();
     container.addEventListener('click', async (e) => {
-        const playAlbumBtn = e.target.closest('.play-album-btn');
+        const playAlbumBtn = e.target.closest('.album-card__play-btn');
         if (!playAlbumBtn) return;
         const albumId = Number(playAlbumBtn.dataset.albumId);
         // если это новый альбом
