@@ -31,6 +31,11 @@ public class FrontendController {
         return "forward:/html/pages/album-index.html";
     }
 
+    @GetMapping("/album/releases")
+    public String albumReleases(){
+        return "forward:/html/pages/album-index.html";
+    }
+
     @GetMapping("/artist/{id}")
     public String artist(){
         return "forward:/html/pages/artist-index.html";
