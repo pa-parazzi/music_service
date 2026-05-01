@@ -2,7 +2,7 @@ import {initSearchForm} from "../module/search.js";
 import {initSidebar} from "../module/sidebar.js";
 import {initPlayer} from "../module/player.js";
 import {getNewAlbumReleasesPaged} from "../api/albumApi.js";
-import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
+import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {getGenres} from "../api/genreApi.js";
 import {resetPaginationState} from "../utils/util.js";
 import {paginationStateOfAlbums} from "../store/paginationState.js";
@@ -13,14 +13,14 @@ async function initMainPage(){
     const searchForm = document.getElementById("search-form");
     initSearchForm(searchForm);
 
-    const albumsContainer = document.querySelector(".albums-row");
-    const genresContainer = document.querySelector(".genres-row");
+    const albumsContainer = document.querySelector(".album-rows");
+    const genresContainer = document.querySelector(".genre-rows");
 
     resetPaginationState();
     paginationStateOfAlbums.size = 7;
     const pageResponseOfNewAlbumReleases = await getNewAlbumReleasesPaged();
     loadAlbumsPaged(pageResponseOfNewAlbumReleases, albumsContainer);
-    initPlayAlbumsDelegation(albumsContainer);
+    initPlayAlbumCardsDelegation(albumsContainer);
 
     const genresResponse = await getGenres();
     const genres = genresResponse.genres;

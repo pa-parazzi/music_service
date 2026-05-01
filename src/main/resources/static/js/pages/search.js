@@ -7,20 +7,15 @@ import {
 } from "../api/searchApi.js";
 import {initPlayer} from "../module/player.js";
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {getToken} from "../user/auth.js";
+import {getToken} from "../user/refreshAccessToken.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
-import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
+import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
-import {renderArtists} from "../components/artistsView.js";
-import {renderAlbums} from "../components/albumsView.js";
-import {renderSounds} from "../components/soundsView.js";
+import {renderArtists, renderArtistsContainer} from "../components/artistsView.js";
+import {renderAlbumCards, renderAlbumsContainer} from "../components/albumsView.js";
+import {renderSounds, renderSoundsContainer} from "../components/soundsView.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
-import {
-    renderSearchAlbumsExtendedResult,
-    renderSearchArtistsExtendedResult,
-    renderSearchGeneralResult,
-    renderSearchTracksExtendedResult
-} from "../components/searchView.js";
+import {renderSearchResult} from "../components/searchView.js";
 import {loadArtistsPaged} from "../module/artists.js";
 
 async function initSearchPage(){
@@ -30,23 +25,20 @@ async function initSearchPage(){
     const searchForm = document.getElementById("search-form");
     initSearchForm(searchForm);
 
-    const searchContainer = document.getElementById("search");
+    const mainContainer = document.getElementById("main-container");
 
     const path = window.location.pathname.split('/');
     const fragment = path[2];
     const type = path[3];
 
     if(!type){
-        renderSearchGeneralResult(searchContainer);
-        const artistsTitle = document.getElementById("artists-title");
-        const albumsTitle = document.getElementById("albums-title");
-        const tracksTitle = document.getElementById("tracks-title");
+        renderSearchResult(mainContainer, fragment);
 
-        const artistsContainer = document.getElementById("artists");
-        const albumsContainer = document.getElementById("albums");
-        const tracksContainer = document.getElementById("tracks");
+        const artistsContainer = mainContainer.querySelector(".artists");
+        const albumsContainer = mainContainer.querySelector(".albums");
+        const soundsContainer = mainContainer.querySelector(".sounds");
 
-        const emptyResultContainer = document.getElementById("empty-result");
+        const notFoundContainer = mainContainer.querySelector(".not-found");
 
         const artistsPageResponse = await getFoundArtistsByFragmentPaged(fragment);
         const artists = artistsPageResponse.content;
@@ -60,23 +52,21 @@ async function initSearchPage(){
         if((artistsPageResponse.status === 204) &&
             (albumsPageResponse.status === 204) &&
             (soundsPageResponse.status === 204)) {
-            emptyResultContainer.textContent = "По запросу " + "\"" + fragment + "\""+ " ничего не найдено";
+            notFoundContainer.textContent = "По запросу " + "\"" + fragment + "\""+ " ничего не найдено";
             return;
         }
 
-        artistsTitle.innerHTML = `<a href="/search/${fragment}/artists" class="title-link">Исполнители</a>`;
         renderArtists(artistsContainer, artists);
 
-        albumsTitle.innerHTML = `<a href="/search/${fragment}/albums" class="title-link">Альбомы</a>`;
-        renderAlbums(albumsContainer, albums);
-        initPlayAlbumsDelegation(albumsContainer);
+        renderAlbumCards(albumsContainer, albums);
+        initPlayAlbumCardsDelegation(albumsContainer);
 
-        tracksTitle.innerHTML = `<a href="/search/${fragment}/tracks" class="title-link">Треки</a>`;
-        paginationStateOfSounds.sounds = sounds;
         const likedSoundsResponse = await getLikedSoundsIds(jwt);
         const likedSoundsIds = new Set(likedSoundsResponse.ids);
-        renderSounds({container: tracksContainer, soundList: sounds, likedSoundsIds: likedSoundsIds});
-        initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
+
+        renderSounds({container: soundsContainer, soundList: sounds, likedSoundsIds: likedSoundsIds});
+        paginationStateOfSounds.sounds = sounds;
+        initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
         return;
     }
 
@@ -84,12 +74,12 @@ async function initSearchPage(){
         resetPaginationState();
         paginationStateOfArtists.size = 10;
 
-        renderSearchArtistsExtendedResult(searchContainer);
+        renderArtistsContainer(mainContainer);
 
-        const scrollAnchor = document.getElementById("scroll-anchor");
+        const scrollAnchor = mainContainer.querySelector(".scroll-anchor");
 
-        const title = document.getElementById("search-title");
-        title.textContent = "Исполнители по запросу " + "\"" + fragment + "\"";
+        const artistsHeading = mainContainer.querySelector(".artists-heading");
+        artistsHeading.textContent = "Исполнители по запросу " + "\"" + fragment + "\"";
 
         const artistsContainer = document.querySelector(".artists");
 
@@ -106,23 +96,24 @@ async function initSearchPage(){
             anchor: scrollAnchor
         });
         await infiniteScroll.init();
+
     } else if (type === 'albums'){
         resetPaginationState();
         paginationStateOfAlbums.size = 14;
 
-        renderSearchAlbumsExtendedResult(searchContainer);
+        renderAlbumsContainer(mainContainer);
 
-        const scrollAnchor = document.getElementById("scroll-anchor");
+        const scrollAnchor = mainContainer.querySelector(".scroll-anchor");
 
-        const title = document.getElementById("search-title");
-        title.textContent = "Альбомы по запросу " + "\"" + fragment + "\"";
+        const albumsHeading = mainContainer.querySelector(".album-rows-heading");
+        albumsHeading.textContent = "Альбомы по запросу " + "\"" + fragment + "\"";
 
-        const albumsContainer = document.querySelector(".albums");
+        const albumsContainer = document.querySelector(".album-rows");
 
         const pageResponseOfAlbums = await getFoundAlbumsByFragmentPaged(fragment);
         loadAlbumsPaged(pageResponseOfAlbums, albumsContainer);
 
-        initPlayAlbumsDelegation(albumsContainer);
+        initPlayAlbumCardsDelegation(albumsContainer);
 
         const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {
@@ -134,30 +125,31 @@ async function initSearchPage(){
             anchor: scrollAnchor
         });
         await infiniteScroll.init();
+
     } else if (type === 'tracks'){
         resetPaginationState();
         paginationStateOfSounds.size = 20;
 
-        renderSearchTracksExtendedResult(searchContainer);
+        renderSoundsContainer(mainContainer);
 
-        const scrollAnchor = document.getElementById("scroll-anchor");
+        const scrollAnchor = mainContainer.querySelector(".scroll-anchor");
 
-        const title = document.getElementById("search-title");
-        title.textContent = "Треки по запросу " + "\"" + fragment + "\"";
+        const soundsHeading = mainContainer.querySelector(".sounds-heading");
+        soundsHeading.textContent = "Треки по запросу " + "\"" + fragment + "\"";
 
-        const tracksContainer = document.querySelector(".tracks");
+        const soundsContainer = document.querySelector(".sounds");
 
         const likedSoundsResponse = await getLikedSoundsIds(jwt);
         const likedSoundsIds = new Set(likedSoundsResponse.ids);
 
         const pageResponseOfSounds = await getFoundSoundsByFragmentPaged(fragment);
-        loadSoundsPaged(pageResponseOfSounds, tracksContainer, likedSoundsIds);
-        initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
+        loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
+        initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
 
         const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {
                 const pageResponseOfSounds = await getFoundSoundsByFragmentPaged(fragment);
-                loadSoundsPaged(pageResponseOfSounds, tracksContainer, likedSoundsIds);
+                loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
             },
             hasNextFn: () => paginationStateOfSounds.hasNext,
             isLoadingFn: () => paginationStateOfSounds.isLoading,

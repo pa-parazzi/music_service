@@ -1,9 +1,9 @@
 import {initPlayer} from "../module/player.js";
-import {getToken} from "../user/auth.js";
+import {getToken} from "../user/refreshAccessToken.js";
 import {initSidebar} from "../module/sidebar.js";
 import {pageResponseOfAlbumCollection} from "../api/collectionApi.js";
 import {initSearchForm} from "../module/search.js";
-import {initPlayAlbumsDelegation, loadAlbumsPaged} from "../module/albums.js";
+import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 import {paginationStateOfAlbums} from "../store/paginationState.js";
 
@@ -22,7 +22,7 @@ export async function initAlbumCollectionPage() {
     paginationStateOfAlbums.size = 14;
     const pageResponse = await pageResponseOfAlbumCollection(jwt);
     loadAlbumsPaged(pageResponse, albumCollectionContainer);
-    initPlayAlbumsDelegation(albumCollectionContainer);
+    initPlayAlbumCardsDelegation(albumCollectionContainer);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {

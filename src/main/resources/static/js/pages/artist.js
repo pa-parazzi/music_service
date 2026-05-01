@@ -2,7 +2,7 @@ import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {initSidebar} from "../module/sidebar.js";
 import {getArtistById} from "../api/artistApi.js";
 import {getSoundsByArtistIdPaged} from "../api/soundApi.js";
-import {getToken} from "../user/auth.js";
+import {getToken} from "../user/refreshAccessToken.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
@@ -22,7 +22,7 @@ async function initArtistPage() {
     const artistName = document.getElementById('artist-name');
     artistName.textContent = artist.name;
 
-    const tracksContainer = document.getElementById('tracklist');
+    const soundsContainer = document.getElementById('sounds');
     const scrollAnchor = document.getElementById("scroll-anchor");
 
     resetPaginationState();
@@ -33,13 +33,13 @@ async function initArtistPage() {
 
     const pageResponse = await getSoundsByArtistIdPaged(id);
 
-    loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
-    initSoundsDelegation(tracksContainer, likedSoundsIds, jwt);
+    loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
+    initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await getSoundsByArtistIdPaged(id);
-            loadSoundsPaged(pageResponse, tracksContainer, likedSoundsIds);
+            loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
         },
         hasNextFn: () => paginationStateOfSounds.hasNext,
         isLoadingFn: () => paginationStateOfSounds.isLoading,

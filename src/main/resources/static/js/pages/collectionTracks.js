@@ -1,6 +1,6 @@
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {initSidebar} from "../module/sidebar.js";
-import {getToken} from "../user/auth.js";
+import {getToken} from "../user/refreshAccessToken.js";
 import {pageResponseOfSoundCollection} from "../api/collectionApi.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";

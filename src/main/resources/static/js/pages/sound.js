@@ -1,14 +1,14 @@
 import {formatTime} from "../utils/util.js";
-import {getToken} from "../user/auth.js";
+import {getToken} from "../user/refreshAccessToken.js";
 import {initSidebar} from "../module/sidebar.js";
 import {getSoundById} from "../api/soundApi.js";
-import {renderSoundDetails} from "../components/soundView.js";
 import {getSoundLikeStatusBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
 import {initSearchForm} from "../module/search.js";
 import {initPlayer} from "../module/player.js";
 import {initPlaySoundButton} from "../module/sounds.js";
 import {playerState} from "../store/playerState.js";
+import {renderSoundPage} from "../components/soundsView.js";
 
 async function initSoundPage(){
     initPlayer();
@@ -18,20 +18,20 @@ async function initSoundPage(){
     const jwt = getToken();
     const soundId = window.location.pathname.split('/').pop();
 
-    const soundContainer = document.getElementById("sound");
+    const mainContainer = document.getElementById("main-container");
 
     const sound = await getSoundById(soundId);
     const artist = sound.artist;
     const album = sound.album;
     const trackDuration = formatTime(sound.duration);
 
-    renderSoundDetails(soundContainer, sound, trackDuration, artist, album);
+    renderSoundPage(mainContainer, sound, trackDuration, artist, album);
 
-    const playSoundBtn = document.querySelector('.play-sound-btn');
+    const playSoundBtn = mainContainer.querySelector(".play-sound-btn");
     playerState.currentPlaySoundButton = playSoundBtn;
     initPlaySoundButton(soundId, sound, playSoundBtn);
 
-    const likeBtn = document.querySelector('.like-btn');
+    const likeBtn = mainContainer.querySelector(".like-btn");
     const likeSoundStatus = await getSoundLikeStatusBySoundId(jwt, soundId);
     await initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId);
 }

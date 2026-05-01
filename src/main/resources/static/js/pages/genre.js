@@ -9,7 +9,8 @@ async function initGenrePage(){
     const searchForm = document.getElementById("search-form");
     initSearchForm(searchForm);
 
-    const genresContainer = document.getElementById("genres");
+    const mainContainer = document.getElementById("main-container");
+    const genresContainer = mainContainer.querySelector(".genres");
 
     const genresJson = await getGenres();
     const genres = genresJson.genres;
