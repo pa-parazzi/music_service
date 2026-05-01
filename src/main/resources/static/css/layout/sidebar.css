@@ -2,16 +2,12 @@
     position: fixed;
     top: 0;
     left: 0;
-
     width: 280px;
     height: 100vh;
-
     background: #1e1e1e;
     color: white;
-
     transform: translateX(-100%);
     transition: transform .3s ease;
-
     z-index: 1000;
 }
 
@@ -22,14 +18,10 @@
 .overlay {
     position: fixed;
     inset: 0;
-
     background: rgba(0,0,0,.5);
-
     opacity: 0;
     visibility: hidden;
-
     transition: opacity .3s;
-
     z-index: 900;
 }
 
@@ -42,8 +34,9 @@
 .side-panel-btn {
     width: 98%;
     padding: 15px 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #9f9f9f82;
+    border: 1px solid rgb(0, 0, 0);
+    border-radius: 8px;
     color: #fff;
     font-size: 16px;
     text-align: left;
@@ -51,17 +44,17 @@
 }
 
 .side-panel-btn:hover{
-    background: #aa9f68;
+    background: rgba(214, 214, 214, 0.58);
 }
 
 .side-close-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 45px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 12px;
-    background: rgb(239 239 239 / 6%);
+    background: none;
     color: #ffffff;
     font-size: 24px;
     cursor: pointer;
@@ -82,7 +75,7 @@
 
 /* Кнопки боковой панели */
 .trackCollectionBtn, .albumCollectionBtn, .genresBtn {
-    margin-top: 20px;
+    padding-top: 20px;
     display: flex;
     flex-direction: column;
 }
