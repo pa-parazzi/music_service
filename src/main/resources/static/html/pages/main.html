@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <title>Главная</title>
     <link rel="stylesheet" href="/css/base/body.css">
+    <link rel="stylesheet" href="/css/layout/main-page-layout.css">
+    <link rel="stylesheet" href="/css/layout/content-sections.css">
     <link rel="stylesheet" href="/css/layout/header.css">
     <link rel="stylesheet" href="/css/layout/sidebar.css">
-    <link rel="stylesheet" href="/css/layout/search-bar.css">
+    <link rel="stylesheet" href="/css/layout/search-form.css">
     <link rel="stylesheet" href="/css/layout/user-info.css">
     <link rel="stylesheet" href="/css/components/auth-button.css">
-    <link rel="stylesheet" href="/css/components/albums.css">
+    <link rel="stylesheet" href="/css/components/albums-card-rows.css">
+    <link rel="stylesheet" href="/css/components/genres-card-rows.css">
     <link rel="stylesheet" href="/css/layout/audio-player.css">
-    <link rel="stylesheet" href="/css/pages/main.css">
-
 </head>
 <body>
 
@@ -20,32 +21,32 @@
 
 <div data-component="sidebar"></div>
 
-<div class="main-content" id="main-content">
-    <section class="album-section" id="album-section">
-        <div class="albums-row-head">
-            <a href="/album/releases" class="row-title-link">
+<main class="main-container" id="main-container">
+    <section class="album-releases-section">
+        <div class="section-heading">
+            <a href="/album/releases" class="title-link">
                 <h2>Новые релизы</h2>
             </a>
             <a href="/album/releases" class="show-all-btn">Показать все</a>
         </div>
-        <div class="albums-row"></div>
+        <div class="album-rows"></div>
     </section>
 
-    <section class="genre-section" id="genre-section">
-        <div class="genre-row-head">
-            <a href="/genre" class="row-title-link">
+    <section class="genres-cards-section">
+        <div class="section-heading">
+            <a href="/genre" class="title-link">
                 <h2>Жанры</h2>
             </a>
             <a href="/genre" class="show-all-btn">Показать все</a>
         </div>
-        <div class="genres-row"></div>
+        <div class="genre-rows"></div>
     </section>
-</div>
+</main>
 
 <div data-component="audio-player"></div>
 
 <script src="/js/loader/componentsLoader.js" defer></script>
-<script type="module" src="/js/user/load-profile.js"></script>
+<script type="module" src="/js/user/initUser.js"></script>
 <script type="module" src="/js/pages/main.js"></script>
 
 </body>

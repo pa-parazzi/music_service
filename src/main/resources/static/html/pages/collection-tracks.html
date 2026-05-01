@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Коллекция</title>
     <link rel="stylesheet" href="/css/base/body.css">
+    <link rel="stylesheet" href="/css/layout/main-page-layout.css">
     <link rel="stylesheet" href="/css/layout/header.css">
     <link rel="stylesheet" href="/css/layout/sidebar.css">
-    <link rel="stylesheet" href="/css/layout/search-bar.css">
+    <link rel="stylesheet" href="/css/layout/search-form.css">
     <link rel="stylesheet" href="/css/layout/user-info.css">
     <link rel="stylesheet" href="/css/components/auth-button.css">
     <link rel="stylesheet" href="/css/layout/audio-player.css">
-    <link rel="stylesheet" href="/css/pages/collection-tracks.css">
-    <link rel="stylesheet" href="/css/components/track.css">
+    <link rel="stylesheet" href="/css/components/sounds.css">
 </head>
 
 <body>
@@ -20,17 +20,17 @@
 
 <div data-component="sidebar"></div>
 
-<div class="track-collection-page" id="track-collection-page">
-    <h2 class="track-collection-header" id="track-collection-header">Моя коллекция треков</h2>
-    <div class="track-collection" id="track-collection"></div>
+<main class="main-container" id="main-container">
+    <h2 class="sounds-heading">Моя коллекция треков</h2>
+    <div class="sounds" id="track-collection"></div>
     <div id="scroll-anchor"></div>
-</div>
+</main>
 
 <div data-component="audio-player"></div>
 
 <script src="/js/loader/componentsLoader.js" defer></script>
-<script type="module" src="/js/user/load-profile.js"></script>
-<script type="module" src="/js/pages/trackCollection.js"></script>
+<script type="module" src="/js/user/initUser.js"></script>
+<script type="module" src="/js/pages/collectionTracks.js"></script>
 
 </body>
 </html>

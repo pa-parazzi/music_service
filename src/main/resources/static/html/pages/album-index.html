@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>Альбом</title>
     <link rel="stylesheet" href="/css/base/body.css">
+    <link rel="stylesheet" href="/css/layout/main-page-layout.css">
     <link rel="stylesheet" href="/css/layout/header.css">
     <link rel="stylesheet" href="/css/layout/sidebar.css">
-    <link rel="stylesheet" href="/css/layout/search-bar.css">
+    <link rel="stylesheet" href="/css/layout/search-form.css">
     <link rel="stylesheet" href="/css/layout/user-info.css">
     <link rel="stylesheet" href="/css/components/auth-button.css">
-    <link rel="stylesheet" href="/css/components/track.css">
-    <link rel="stylesheet" href="/css/components/track-list-container.css">
+    <link rel="stylesheet" href="/css/components/sounds.css">
+    <link rel="stylesheet" href="/css/components/albums-card-rows.css">
     <link rel="stylesheet" href="/css/layout/audio-player.css">
     <link rel="stylesheet" href="/css/pages/album.css">
 </head>
@@ -20,12 +21,12 @@
 
 <div data-component="sidebar"></div>
 
-<div class="album-container" id="album-container"></div>
+<main class="main-container" id="main-container"></main>
 
 <div data-component="audio-player"></div>
 
 <script src="/js/loader/componentsLoader.js" defer></script>
-<script type="module" src="/js/user/load-profile.js"></script>
+<script type="module" src="/js/user/initUser.js"></script>
 <script type="module" src="/js/pages/album.js"></script>
 
 </body>
