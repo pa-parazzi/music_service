@@ -81,15 +81,15 @@
 }
 
 /* Кнопки боковой панели */
-.trackCollection, .albumCollection, .genres {
+.trackCollectionBtn, .albumCollectionBtn, .genresBtn {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
 }
 
 /* ссылка-обёртка */
-.trackCollection a,
-.albumCollection a,
-.genres a {
+.trackCollectionBtn a,
+.albumCollectionBtn a,
+.genresBtn a {
     text-decoration: none;
 }

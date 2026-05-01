@@ -1,7 +1,8 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    background: rgb(87, 86, 86);
+    padding: 0;
+    background: rgb(65 65 75 / 97%);
     color: #000000;
     overflow-y: scroll;
 }

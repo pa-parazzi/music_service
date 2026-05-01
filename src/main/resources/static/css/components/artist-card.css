@@ -1,15 +1,42 @@
+.artists-heading {
+    color: white;
+    font-size: 36px;
+    margin: 0;
+    padding: 36px 0 46px 0;
+}
+
 .artist-card {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 8px 16px;
-    border-radius: 12px;
-    background: black;
-    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+
+    padding: 32px 20px;
+    border-radius: 18px;
+
+    background: linear-gradient(145deg, #1c1c1c, #2a2a2a);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    text-align: center;
+    cursor: pointer;
+
+    transition:
+            transform 0.2s ease,
+            box-shadow 0.25s ease,
+            border-color 0.2s ease;
 }
 
 .artist-card:hover {
     background: #333333;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.artist-name-link {
+    text-decoration: none;
+    color: white;
+}
+
+.artist-name-link:hover {
+    text-decoration: underline;
 }

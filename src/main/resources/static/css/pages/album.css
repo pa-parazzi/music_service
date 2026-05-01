@@ -6,7 +6,7 @@
 }
 
 /* Контейнер альбома*/
-.album-header {
+.album-page-header {
     display: flex;
     align-items: flex-start;
     gap: 40px;
@@ -14,7 +14,7 @@
 }
 
 /* Обложка*/
-.album-cover {
+.album-page-cover {
     position: relative;
     width: 250px;
     height: 250px;
@@ -24,7 +24,7 @@
     flex-shrink: 0;
 }
 
-.album-image {
+.album-page-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -33,25 +33,25 @@
 }
 
 /* При наведении на обложку*/
-.album-cover:hover .album-image {
+.album-page-cover:hover .album-page-image {
     transform: scale(1.05);
 }
 
 /* Контейнер справа от обложки*/
-.album-info {
+.album-page-info {
     display: flex;
     flex-direction: column;
 }
 
 /* Контейнер: название и исполнитель */
-.album-details {
+.album-page-details {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
 /* Название альбома */
-.album-title {
+.album-page__title {
     font-size: 2.4em;
     font-weight: 700;
     margin-bottom: 8px;
@@ -59,7 +59,7 @@
 }
 
 /* Исполнитель */
-.artist-name {
+.album-page__artist-name {
     font-size: 25px;
     color: white;
     margin-top: 30px;
@@ -67,13 +67,13 @@
 }
 
 /* Кликабельное имя исполнителя */
-.artist-name-link {
+.album-page__artist-name-link {
     display: block;
     color: white;
     text-decoration: none;
 }
 
-.artist-name-link:hover{
+.album-page__artist-name-link:hover{
     text-decoration: underline;
 }
 
@@ -86,7 +86,7 @@
 }
 
 /* Кнопка play альбома */
-.play-album-btn{
+.album-page__play-btn{
     width: 56px;
     height: 56px;
     font-size: 30px;
@@ -103,7 +103,7 @@
     font-weight: 1000;
 }
 
-.play-album-btn,
+.album-page__play-btn,
 .album-like-btn {
     border-radius: 50%;
     border: none;
@@ -115,7 +115,7 @@
     justify-content: center;
 }
 
-.play-album-btn:hover,
+.album-page__play-btn:hover,
 .album-like-btn:hover{
     transform: scale(1.05);
 }
@@ -127,7 +127,6 @@
 .album-like-btn.liked::before {
     content: "✔";
 }
-
 
 .album-like-btn.liked {
     background: #aa9f68;

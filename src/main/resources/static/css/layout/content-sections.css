@@ -1,0 +1,53 @@
+.page-section {
+    margin-top: 20px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.show-all-btn {
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+}
+
+.title-link {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+}
+
+.show-all-btn:hover,
+.title-link:hover {
+    text-decoration: underline;
+}
+
+.sounds-section {
+    max-width: 800px;
+}
+
+.albums-section {
+    max-width: 1600px;
+    padding-top: 30px;
+}
+
+.albums-section .albums {
+    display: grid;
+    max-width: 100%;
+    grid-template-columns: repeat(6, 200px);
+    gap: 80px;
+}
+
+.artists-section {
+    max-width: 1600px;
+    padding-top: 30px;
+}
+
+.artists {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 32px;
+}

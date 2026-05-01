@@ -1,3 +1,18 @@
+/* Общий контейнер для списка песен */
+.sounds {
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sounds-heading {
+    color: white;
+    font-size: 36px;
+    margin: 0;
+    padding: 36px 0 46px 0;
+}
+
 /* Карточка - трек */
 .track-card {
     display: flex;

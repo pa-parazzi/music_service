@@ -1,0 +1,43 @@
+.genre-rows {
+    display: grid;
+    grid-template-columns: repeat(7, 200px);
+    gap: 53px;
+}
+
+.genre-card{
+    text-align: center;
+}
+
+.genre-card-cover {
+    cursor: default;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.genre-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: default;
+}
+
+.genre-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.genre-card-meta {
+    margin-top: 6px;
+}
+
+.genre-card-name-link {
+    color: white;
+    text-decoration: none;
+}
+
+.genre-card-name-link:hover {
+    text-decoration: underline;
+}

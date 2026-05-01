@@ -1,58 +1,7 @@
-/* Общий контейнер */
-.search {
-    margin: 30px 0 120px 90px;
-}
-
-.title-link {
-    text-decoration: none;
-    color: white;
-    font-size: 24px;
-}
-
-.title-link:hover {
-    text-decoration: underline;
-}
-
-/* Найденные треки */
-.tracks {
-    max-width: 800px;
-}
-
-.albums-title {
-    margin-top: 30px;
-}
-
-/* Найденные альбомы */
-.albums, .artists {
-    max-width: 1300px;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 20px;
-}
-
-.artists-title{
-    margin-top: 35px;
-}
-
-/* Найденные исполнители */
-.artists {
-    max-width: 1300px;
-    padding-top: 30px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 45px;
-}
-
 /* текст "ничего не найдено" */
-.empty-result {
+.not-found {
     display: flex;
     justify-content: center;
     font-size: 1.3em;
     color: #aaa;
-}
-
-.search-title {
-    padding-left: 12px;
-    font-size: 26px;
-    color: white;
 }

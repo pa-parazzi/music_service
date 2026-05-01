@@ -1,15 +1,29 @@
+.album-rows {
+    display: grid;
+    grid-template-columns: repeat(7, 200px);
+    gap: 53px;
+}
+
+.album-rows-heading {
+    color: white;
+    font-size: 36px;
+    margin: 0;
+    padding: 36px 0 46px 0;
+}
+
 .album-card {
-    width: 200px;
     text-align: center;
 }
 
-.album-cover-wrapper {
+.album-card-cover {
     cursor: default;
     position: relative;
-    width: 200px;
-    height: 200px;
     border-radius: 10px;
     overflow: hidden;
+}
+
+.album-card-cover:hover .album-card__play-btn {
+    opacity: 1;
 }
 
 /* кликабельная карточка альбома */
@@ -20,19 +34,14 @@
     cursor: default;
 }
 
-.album-card-link:hover {
-    transform: scale(1.02);
-    transition: 0.2s;
-}
-
-.album-cover {
+.album-card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-.play-album-btn{
+.album-card__play-btn{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -48,24 +57,25 @@
     color: #aa9f68;
     font-size: 24px;
     cursor: pointer;
+    opacity: 0;
 }
 
-.album-meta {
+.album-card-meta {
     margin-top: 6px;
 }
 
-.album-title-link,
-.artist-name-link {
+.album-card__title-link,
+.album-card__artist-name-link {
     color: white;
     text-decoration: none;
 }
 
-.album-title-link:hover,
-.artist-name-link:hover {
+.album-card__title-link:hover,
+.album-card__artist-name-link:hover {
     text-decoration: underline;
 }
 
-.artist-name {
+.album-card__artist-name {
     font-size: 0.9em;
     opacity: 0.8;
 }
