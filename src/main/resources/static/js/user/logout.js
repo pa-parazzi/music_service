@@ -1,5 +1,5 @@
-import {apiFetch} from "./api.js";
-import {clearAuth} from "./auth.js";
+import {apiFetch} from "./userApi.js";
+import {clearAuth} from "./refreshAccessToken.js";
 
 export async function logout() {
     try {

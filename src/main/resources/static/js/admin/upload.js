@@ -1,4 +1,4 @@
-import {apiFetch} from "../user/api.js";
+import {apiFetch} from "../user/userApi.js";
 
 export async function upload() {
     const importBtn = document.getElementById("importBtn");
