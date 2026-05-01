@@ -1,23 +1,55 @@
 import {escapeHtml} from "../utils/util.js";
 
-export function renderAlbums(container, albums){
+export function renderAlbumCards(container, albums){
     const html = albums.map((album) => `
      <div class="album-card">
-         <div class="album-cover-wrapper">
+         <div class="album-card-cover">
              <a href="/album/${album.id}" class="album-card-link">
-             <img src="${album.image.url}" alt="${escapeHtml(album.title)}" class="album-cover">
+             <img src="${album.image.url}" alt="${escapeHtml(album.title)}" class="album-card-image">
              </a>
-             <button class="play-album-btn" aria-label="Play ${escapeHtml(album.title)}" 
+             <button class="album-card__play-btn" aria-label="Play ${escapeHtml(album.title)}" 
              data-album-id="${album.id}">▶</button>
         </div>
-        <div class="album-meta">
-             <a href="/album/${album.id}" class="album-title-link">
-             <div class="album-title">${escapeHtml(album.title)}</div>
+        <div class="album-card-meta">
+             <a href="/album/${album.id}" class="album-card__title-link">
+             <div class="album-card__title">${escapeHtml(album.title)}</div>
              </a>
-             <a href="/artist/${album.artist.id}" class="artist-name-link">
-             <div class="artist-name">${escapeHtml(album.artist.name)}</div>
+             <a href="/artist/${album.artist.id}" class="album-card__artist-name-link">
+             <div class="album-card__artist-name">${escapeHtml(album.artist.name)}</div>
              </a>
         </div>
      </div>`).join('');
     container.insertAdjacentHTML("beforeend", html);
+}
+
+export function renderAlbumPage(albumContainer, album){
+    albumContainer.innerHTML = `
+    <div class="album-page">
+        <div class="album-page-header">
+        <div class="album-page-cover">
+            <img alt="${escapeHtml(album.title)}" class="album-page-image" src="${album.image.url}">
+        </div>
+        <div class="album-page-info">
+            <div class="album-page-details">
+                <div class="album-page__title">${escapeHtml(album.title)}</div>
+                <a href="/artist/${album.artist.id}" class="album-page__artist-name-link">
+                <div class="album-page__artist-name">${escapeHtml(album.artist.name)}</div>
+                </a>
+            </div>
+            <div class="functionalities-of-album">
+                <button class="album-page__play-btn" id="album-page__play-btn" aria-label="Play album"
+                data-album-id="${album.id}">▶</button>
+                <button class="album-like-btn" id="album-like-btn"></button>
+            </div>
+        </div>
+        </div>
+        <div class="sounds" id="sounds"></div>
+    </div>`
+}
+
+export function renderAlbumsContainer(container){
+    container.innerHTML = `
+         <h2 class="album-rows-heading"></h2>
+         <div class="album-rows"></div>
+         <div class="scroll-anchor"></div>`;
 }
