@@ -1,55 +1,42 @@
-#audio-player {
+.audio-player,
+.audio-player * {
+    box-sizing: border-box;
+}
+
+.audio-player {
     position: fixed;
+    height: 100px;
     bottom: 0;
     left: 0;
-    width: 100%;
-
+    right: 0;
     background: #1e1e1e;
-    padding: 8px 20px;
-
+    padding: 12px 0 16px 0;
+    row-gap: 8px;
     display: grid;
-    grid-template-rows: auto auto; /* 2 строки */
-    justify-items: center; /* центруем кнопки */
-    row-gap: 4px; /* расстояние между строками */
-
+    grid-template-rows: auto auto;
     z-index: 2000;
 }
 
-/* Контейнер кнопок */
 .player-controls {
-    grid-row: 1;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 20px;
 }
 
 .player-controls button {
-    font-size: 15px;
-    width: 35px;
-    height: 35px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: 2px solid #fff;
     border-radius: 50%;
     color: #fff;
+    font-size: 14px;
     cursor: pointer;
-    transition: 0.25s;
-}
-
-.player-progress {
-    grid-row: 2; /* низ */
-    justify-self: center;
-    width: 100%;
-    max-width: 600px; /* дорожка — удлиняем */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.player-progress input {
-    width: 100%;
-    max-width: 300px; /* можно менять */
-    accent-color: #fff;
+    transition: 0.2s ease;
 }
 
 .player-controls button:hover {
@@ -57,29 +44,52 @@
     color: #111;
 }
 
-#progress {
-    height: 6px;
-    border-radius: 8px;
-    cursor: pointer;
+.player-progress {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 500px) 1fr;
+    align-items: center;
+    width: 100%;
 }
 
-#volume {
-    cursor: pointer;
+.progress-center {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
 }
 
-.player-progress span {
+.player-progress .current-time,
+.player-progress .duration  {
     font-size: 12px;
     color: #fff;
+    min-width: 40px;
+    text-align: center;
 }
 
-/* Громкость */
-.player-volume {
-    align-self: center;
-    justify-content: center;
+.progress-bar {
+    width: 100%;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #fff;
 }
 
-.player-volume input {
-    height: 5px;
-    width: 100px; /* фиксированная ширина */
+.volume-icon {
+    font-size: 18px;
+}
+
+.volume-wrapper {
+    grid-column: 3;
+    justify-self: center;
+    width: 140px;
+    display: flex;
+    align-items: center;
+}
+
+.volume-bar {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
     accent-color: #fff;
 }
