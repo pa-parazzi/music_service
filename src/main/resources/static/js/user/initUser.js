@@ -3,10 +3,10 @@ import {loadUserProfile} from "./userApi.js";
 import {renderUserProfile} from "./userView.js";
 import {initUserAvatarButton} from "./initAvatarButton.js";
 
-export async function initUser() {
+export async function initUser(headerContainer) {
 
-    const authButtonsContainer = document.getElementById("auth-buttons");
-    const userProfileContainer = document.getElementById("user-profile");
+    const authButtonsContainer = headerContainer.querySelector(".auth-buttons");
+    const userProfileContainer = headerContainer.querySelector(".user-profile");
 
     const user = await loadUserProfile(userProfileContainer, authButtonsContainer);
 
@@ -24,7 +24,3 @@ export async function initUser() {
     logoutBtn.addEventListener("click", logout);
     userProfileContainer.style.display = "block";
 }
-
-document.addEventListener("componentsLoaded", async () => {
-    await initUser();
-});
