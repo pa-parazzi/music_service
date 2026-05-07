@@ -72,7 +72,7 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
         albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
-        MvcResult result = mockMvc.perform(get("/api/album-like/is-liked/{id}", album.getId()))
+        MvcResult result = mockMvc.perform(get("/api/private/album-like/is-liked/{id}", album.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likeStatus").exists())
                 .andReturn();
@@ -85,7 +85,7 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsFalse_WhenAlbumLikeIsNotExists() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/album-like/is-liked/{id}", 256L))
+        MvcResult result = mockMvc.perform(get("/api/private/album-like/is-liked/{id}", 256L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likeStatus").exists())
                 .andReturn();
@@ -100,7 +100,7 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
     void shouldCreateAlbumLike() throws Exception{
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
 
-        mockMvc.perform(post("/api/album-like/{id}", album.getId()))
+        mockMvc.perform(post("/api/private/album-like/{id}", album.getId()))
                 .andExpect(status().isCreated());
 
         assertThat(albumLikeRepository.count()).isEqualTo(1);
@@ -116,7 +116,7 @@ public class AlbumLikeControllerIT extends AbstractSpringBootIT {
         Album album = albumFixture.albumAggregateWithOneAlbum(genre).albums().getFirst();
         AlbumLike albumLike = albumLikeRepository.save(MusicFactoryIT.albumLike(user, album));
 
-        mockMvc.perform(delete("/api/album-like/{id}", album.getId()))
+        mockMvc.perform(delete("/api/private/album-like/{id}", album.getId()))
                 .andExpect(status().isNoContent());
 
         assertThat(albumLikeRepository.findById(albumLike.getId())).isEmpty();

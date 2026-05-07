@@ -34,15 +34,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/html/**","/js/**", "/image/**").permitAll()
+                        .requestMatchers("/api/private/**").authenticated()
                         .requestMatchers("/api/user/**").authenticated()
-                        .requestMatchers("/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
-                        .requestMatchers("/api/**", "/auth/**", "/main", "/search/**", "/album/**", "/artist/**",
-                                "/collection/**", "/genre/**", "/sound/**").permitAll()
-                        .anyRequest().denyAll())
+                        .requestMatchers("/api/admin/**").hasAuthority(Authority.ADMIN.getAuthority())
+                        .requestMatchers("/api/**").permitAll()
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

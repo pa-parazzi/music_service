@@ -2,7 +2,7 @@ import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginat
 
 export async function pageResponseOfAlbumCollection(jwt){
     const pageResponse = await fetch
-    (`/api/collection/albums?page=${paginationStateOfAlbums.currentPage}&size=${paginationStateOfAlbums.size}`, {
+    (`/api/private/collection/albums?page=${paginationStateOfAlbums.currentPage}&size=${paginationStateOfAlbums.size}`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${jwt}`
@@ -13,7 +13,7 @@ export async function pageResponseOfAlbumCollection(jwt){
 
 export async function pageResponseOfSoundCollection(jwt){
     const pageResponse = await fetch
-    (`/api/collection/tracks?page=${paginationStateOfSounds.currentPage}&size=${paginationStateOfSounds.size}`, {
+    (`/api/private/collection/tracks?page=${paginationStateOfSounds.currentPage}&size=${paginationStateOfSounds.size}`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${jwt}`

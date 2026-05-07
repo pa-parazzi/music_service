@@ -72,7 +72,7 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
-        MvcResult result = mockMvc.perform(get("/api/sound-like/is-liked/{id}", sound.getId()))
+        MvcResult result = mockMvc.perform(get("/api/private/sound-like/is-liked/{id}", sound.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likeStatus").exists())
                 .andReturn();
@@ -85,7 +85,7 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
     @Test
     @WithMockUserPrincipal
     void shouldReturnsLikeStatusIsFalseAndHttpStatusIsOk_WhenSoundLikeIsNotExists() throws Exception{
-        MvcResult result = mockMvc.perform(get("/api/sound-like/is-liked/{id}", 256L))
+        MvcResult result = mockMvc.perform(get("/api/private/sound-like/is-liked/{id}", 256L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likeStatus").exists())
                 .andReturn();
@@ -100,7 +100,7 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
     void shouldCreateSoundLikeAndReturnStatusIsCreated() throws Exception{
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
 
-        mockMvc.perform(post("/api/sound-like/{id}", sound.getId()))
+        mockMvc.perform(post("/api/private/sound-like/{id}", sound.getId()))
                 .andExpect(status().isCreated());
 
         assertThat(soundLikeRepository.count()).isEqualTo(1);
@@ -116,7 +116,7 @@ public class SoundLikeControllerIT extends AbstractSpringBootIT {
         Sound sound = soundFixture.soundAggregateWithOneSound(genre).sounds().getFirst();
         SoundLike soundLike = soundLikeRepository.save(MusicFactoryIT.soundLike(user, sound));
 
-        mockMvc.perform(delete("/api/sound-like/{id}", sound.getId()))
+        mockMvc.perform(delete("/api/private/sound-like/{id}", sound.getId()))
                 .andExpect(status().isNoContent());
 
         assertThat(soundLikeRepository.findById(soundLike.getId())).isEmpty();

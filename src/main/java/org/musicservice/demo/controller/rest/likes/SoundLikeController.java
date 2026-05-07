@@ -10,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/sound-like")
+@RequestMapping("/api/private/sound-like")
 public class SoundLikeController {
 
     private final SoundLikeService soundLikeService;

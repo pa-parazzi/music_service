@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/api/collection")
+@RequestMapping("/api/private/collection")
 public class MusicCollectionController {
 
     private final SoundService soundService;

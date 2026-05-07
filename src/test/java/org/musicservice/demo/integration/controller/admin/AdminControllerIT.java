@@ -57,7 +57,7 @@ public class AdminControllerIT extends AbstractSpringBootIT {
         List<String> apiResponseTrackNames = apiResponseList.stream().map(MusicResponse::name).toList();
         when(jamendoClient.tracksPack(genreName)).thenReturn(apiResponseList);
 
-        RequestBuilder requestBuilder = post("/admin/import").param("genreName", genreName);
+        RequestBuilder requestBuilder = post("/api/admin/import").param("genreName", genreName);
         mockMvc.perform(requestBuilder).andExpect(status().isAccepted());
 
         List<Sound> sounds = soundRepository.findAll();
@@ -73,10 +73,10 @@ public class AdminControllerIT extends AbstractSpringBootIT {
         List<MusicResponse> apiResponseList = MusicFactoryIT.musicResponseList(sizeApiContent);
         when(jamendoClient.tracksPack(genreName)).thenReturn(apiResponseList);
 
-        RequestBuilder firstRequestBuilder = post("/admin/import").param("genreName", genreName);
+        RequestBuilder firstRequestBuilder = post("/api/admin/import").param("genreName", genreName);
         mockMvc.perform(firstRequestBuilder).andExpect(status().isAccepted());
 
-        RequestBuilder secondRequestBuilder = post("/admin/import").param("genreName", genreName);
+        RequestBuilder secondRequestBuilder = post("/api/admin/import").param("genreName", genreName);
         mockMvc.perform(secondRequestBuilder).andExpect(status().isAccepted());
 
         List<Sound> sounds = soundRepository.findAll();
@@ -91,7 +91,7 @@ public class AdminControllerIT extends AbstractSpringBootIT {
     void shouldReturnNotFoundStatus_WhenGenreNameIsInvalid() throws Exception {
         String genreName = "incorrect genre name";
 
-        mockMvc.perform(post("/admin/import").param("genreName", genreName))
+        mockMvc.perform(post("/api/admin/import").param("genreName", genreName))
                 .andExpect(status().isNotFound());
 
         assertThat(soundRepository.findAll()).isEmpty();

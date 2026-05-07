@@ -9,7 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/album-like")
+@RequestMapping("/api/private/album-like")
 public class AlbumLikeController {
 
     private final AlbumLikeService albumLikeService;
