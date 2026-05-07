@@ -15,7 +15,7 @@
     transform: translateX(0);
 }
 
-.overlay {
+.side-panel-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,.5);
@@ -25,7 +25,7 @@
     z-index: 900;
 }
 
-.overlay.active {
+.side-panel-overlay.active {
     opacity: 1;
     visibility: visible;
 }
@@ -47,7 +47,7 @@
     background: rgba(214, 214, 214, 0.58);
 }
 
-.side-close-btn {
+.side-panel-close-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -61,11 +61,11 @@
     border: none;
 }
 
-.side-close-btn:hover {
+.side-panel-close-btn:hover {
     transform: scale(1.05);
 }
 
-.side-header {
+.side-panel-header {
     display: flex;
     align-items: center;
     margin-top: 10px;
@@ -74,15 +74,15 @@
 }
 
 /* Кнопки боковой панели */
-.trackCollectionBtn, .albumCollectionBtn, .genresBtn {
+.track-collection-btn, .album-collection-btn, .genres-btn {
     padding-top: 20px;
     display: flex;
     flex-direction: column;
 }
 
 /* ссылка-обёртка */
-.trackCollectionBtn a,
-.albumCollectionBtn a,
-.genresBtn a {
+.track-collection-btn a,
+.album-collection-btn a,
+.genres-btn a {
     text-decoration: none;
 }

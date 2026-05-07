@@ -5,6 +5,12 @@
     padding: 36px 0 46px 0;
 }
 
+.artist-rows {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 32px;
+}
+
 .artist-card {
     display: flex;
     flex-direction: column;

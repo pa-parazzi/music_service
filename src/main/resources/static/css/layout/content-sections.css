@@ -46,7 +46,7 @@
     padding-top: 30px;
 }
 
-.artists {
+.artists-section .artists {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 32px;

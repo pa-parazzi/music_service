@@ -58,11 +58,11 @@ button:hover {
 }
 
 /* Ошибка */
-.errorMessage {
+.error-message {
     color: #b57c81;
 }
 
 /* Успех */
-.successMessage {
+.success-message {
     color: #54775b;
 }

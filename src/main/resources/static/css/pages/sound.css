@@ -11,7 +11,7 @@ h4 {
     padding: 60px 0 10px 0;
 }
 
-.sound-container {
+.sound-page {
     display: flex;
     flex-direction: column;
     gap: 60px;
