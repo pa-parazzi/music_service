@@ -20,28 +20,31 @@ export function formatTime(seconds) {
     return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export function initInfiniteScroll({loadFn, hasNextFn, isLoadingFn, anchor}) {
+export function initInfiniteScroll({ loadFn, hasNextFn, isLoadingFn, anchor }) {
     let observer;
+    let active = true;
 
     function isScrollable() {
         return document.documentElement.scrollHeight > window.innerHeight;
     }
 
     async function loadWhileNotScrollable() {
-        while (hasNextFn() && !isScrollable()) {
+        while (active && hasNextFn() && !isScrollable()) {
             await loadFn();
         }
     }
 
     function initObserver() {
         observer = new IntersectionObserver(async (entries) => {
-            const entry = entries[0];
+            if (!active) return;
 
+            const entry = entries[0];
             if (!entry.isIntersecting) return;
             if (!hasNextFn() || isLoadingFn()) return;
 
             await loadFn();
         });
+
         observer.observe(anchor);
     }
 
@@ -50,9 +53,14 @@ export function initInfiniteScroll({loadFn, hasNextFn, isLoadingFn, anchor}) {
         initObserver();
     }
 
+    function destroy() {
+        active = false;
+        observer?.disconnect();
+    }
+
     return {
         init,
-        destroy: () => observer?.disconnect()
+        destroy
     };
 }
 
