@@ -31,8 +31,8 @@ export function togglePlayer() {
 let player;
 let playBtn;
 
-export function initPlayer(){
-    const elements = getPlayerElements();
+export function initPlayer(audioPlayerRootContainer){
+    const elements = getPlayerElements(audioPlayerRootContainer);
     const {
         nextBtn,
         prevBtn,
@@ -114,15 +114,15 @@ export function initPlayer(){
     });
 }
 
-function getPlayerElements(){
+function getPlayerElements(audioPlayerRootContainer){
     return {
-        player: document.getElementById('player'),
-        playBtn: document.getElementById('play-btn'),
-        nextBtn: document.getElementById('next-btn'),
-        prevBtn: document.getElementById('prev-btn'),
-        progressBar: document.getElementById('progress'),
-        volumeEl: document.getElementById('volume'),
-        durationEl: document.getElementById('duration'),
-        currentTimeEl: document.getElementById('current-time')
+        player: audioPlayerRootContainer.querySelector(".player"),
+        playBtn: audioPlayerRootContainer.querySelector(".play-btn"),
+        nextBtn: audioPlayerRootContainer.querySelector(".next-btn"),
+        prevBtn: audioPlayerRootContainer.querySelector(".prev-btn"),
+        progressBar: audioPlayerRootContainer.querySelector(".progress-bar"),
+        volumeEl: audioPlayerRootContainer.querySelector(".volume-bar"),
+        durationEl: audioPlayerRootContainer.querySelector(".duration"),
+        currentTimeEl: audioPlayerRootContainer.querySelector(".current-time")
     };
 }
