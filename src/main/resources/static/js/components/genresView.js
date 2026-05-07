@@ -53,4 +53,5 @@ export function renderGenreContent(genreContainer, genreId){
             <div class="albums"></div>
           </section>
     </div>`;
+    return genreContainer.querySelector(".page-section");
 }

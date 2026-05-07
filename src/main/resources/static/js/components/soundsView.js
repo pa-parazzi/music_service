@@ -2,7 +2,10 @@ import {escapeHtml, formatTime} from "../utils/util.js";
 
 export function renderSounds({container, soundList, startIndex = 0, likedSoundsIds = new Set()}){
     const html = soundList.map((track, i) => {
-        const isLiked = likedSoundsIds.has(track.id) ? 'liked' : '';
+        let isLiked = false;
+        if(likedSoundsIds) {
+            isLiked = likedSoundsIds.has(track.id) ? 'liked' : '';
+        }
         return `
         <div class="track-card" data-index="${startIndex + i}">
           <div class="track-title">
@@ -19,7 +22,7 @@ export function renderSounds({container, soundList, startIndex = 0, likedSoundsI
     container.insertAdjacentHTML("beforeend", html);
 }
 
-export function renderSoundsContainer(container){
+export function renderSoundsLayout(container){
     container.innerHTML = `
          <h2 class="sounds-heading"></h2>
          <div class="sounds"></div>
@@ -28,7 +31,7 @@ export function renderSoundsContainer(container){
 
 export function renderSoundPage(container, sound, trackDuration, artist, album){
     container.innerHTML = `                     
-            <div class="sound-container">
+            <div class="sound-page">
                <div class="sound-header">
                    <h5 class="sound-label">Трек</h5>
                    <h2 class="sound-title">${escapeHtml(sound.title)}</h2>
@@ -66,4 +69,5 @@ export function renderSoundPage(container, sound, trackDuration, artist, album){
                   </div>
                </div>
             </div>`;
+    return container.querySelector(".sound-page");
 }

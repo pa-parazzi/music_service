@@ -1,4 +1,4 @@
-export function renderSearchResult(container, searchFragment){
+export function renderSearchOverviewLayout(container, searchFragment){
     container.innerHTML = `
     <div class="page-section">
           <section class="sounds-section">

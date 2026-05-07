@@ -22,8 +22,8 @@ export function renderAlbumCards(container, albums){
     container.insertAdjacentHTML("beforeend", html);
 }
 
-export function renderAlbumPage(albumContainer, album){
-    albumContainer.innerHTML = `
+export function renderAlbumPage(container, album){
+    container.innerHTML = `
     <div class="album-page">
         <div class="album-page-header">
         <div class="album-page-cover">
@@ -44,10 +44,11 @@ export function renderAlbumPage(albumContainer, album){
         </div>
         </div>
         <div class="sounds" id="sounds"></div>
-    </div>`
+    </div>`;
+    return container.querySelector(".album-page");
 }
 
-export function renderAlbumsContainer(container){
+export function renderAlbumsLayout(container){
     container.innerHTML = `
          <h2 class="album-rows-heading"></h2>
          <div class="album-rows"></div>

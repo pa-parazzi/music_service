@@ -9,9 +9,16 @@ export function renderArtists(container, artists){
     container.insertAdjacentHTML("beforeend", html);
 }
 
-export function renderArtistsContainer(container){
+export function renderArtistsLayout(container){
     container.innerHTML = `
              <h2 class="artists-heading"></h2>
-             <div class="artists"></div>
+             <div class="artist-rows"></div>
              <div class="scroll-anchor"></div>`;
+}
+
+export function renderArtistPage(container){
+    container.innerHTML = `
+    <p class="artist-name"></p>
+    <div class="sounds"></div>
+    <div class="scroll-anchor"></div>`;
 }
