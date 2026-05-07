@@ -4,8 +4,8 @@ import {playerState} from "../store/playerState.js";
 import {getSoundsByAlbumId} from "../api/soundApi.js";
 import {setTrack, togglePlayer} from "./player.js";
 
-export function loadAlbumsPaged(pageResponse, container){
-    if(paginationStateOfAlbums.isLoading || !paginationStateOfAlbums.hasNext) return;
+export function loadAlbumsPaged(pageResponse, container) {
+    if (paginationStateOfAlbums.isLoading || !paginationStateOfAlbums.hasNext) return;
     paginationStateOfAlbums.isLoading = true;
 
     const albums = pageResponse.content;
@@ -19,10 +19,10 @@ export function loadAlbumsPaged(pageResponse, container){
     paginationStateOfAlbums.isLoading = false;
 }
 
-export function initPlayAlbumButton(albumId, playAlbumBtn){
-    if(!playAlbumBtn) return;
-    playAlbumBtn.addEventListener("click", () => {
-        if(playerState.currentAlbumId !== albumId){
+export function initPlayAlbumButton(albumId, playAlbumBtn) {
+    if (!playAlbumBtn) return;
+    const playAlbumHandler = () => {
+        if (playerState.currentAlbumId !== albumId) {
             playerState.currentAlbumId = albumId;
             playerState.soundList = paginationStateOfSounds.sounds;
             playerState.currentTrackIndex = 0;
@@ -30,12 +30,16 @@ export function initPlayAlbumButton(albumId, playAlbumBtn){
             return;
         }
         togglePlayer();
-    });
+    }
+    playAlbumBtn.addEventListener("click", playAlbumHandler);
+    return function remove(){
+        playAlbumBtn.removeEventListener("click", playAlbumHandler);
+    }
 }
 
-export function initPlayAlbumCardsDelegation(container){
+export function initPlayAlbumCardsDelegation(container) {
     const albumSoundsCache = new Map();
-    container.addEventListener('click', async (e) => {
+    const playAlbumHandler = async (e) => {
         const playAlbumBtn = e.target.closest('.album-card__play-btn');
         if (!playAlbumBtn) return;
         const albumId = Number(playAlbumBtn.dataset.albumId);
@@ -57,5 +61,10 @@ export function initPlayAlbumCardsDelegation(container){
             return;
         }
         togglePlayer();
-    });
+    };
+    container.addEventListener('click', playAlbumHandler);
+
+    return function remove() {
+        container.removeEventListener('click', playAlbumHandler);
+    }
 }

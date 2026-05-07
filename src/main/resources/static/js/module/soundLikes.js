@@ -1,25 +1,21 @@
-export async function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId){
+import {createSoundLike, deleteSoundLike} from "../api/soundLikesApi.js";
+
+export function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId) {
     if (likeSoundStatus.likeStatus === true) {
         likeBtn.classList.add("liked");
     }
-    likeBtn.addEventListener('click', async (e) => {
+    const clickLikeHandler = async (e) => {
         e.stopPropagation();
         if (likeBtn.classList.contains("liked")) {
-            await fetch(`/api/sound-like/${soundId}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${jwt}`
-                }
-            });
+            await deleteSoundLike(jwt, soundId);
             likeBtn.classList.toggle("liked", false);
         } else if (!likeBtn.classList.contains("liked")) {
-            await fetch(`/api/sound-like/${soundId}`, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${jwt}`
-                }
-            });
+            await createSoundLike(jwt, soundId);
             likeBtn.classList.toggle("liked", true);
         }
-    });
+    }
+    likeBtn.addEventListener("click", clickLikeHandler);
+    return function remove(){
+        likeBtn.removeEventListener("click", clickLikeHandler);
+    }
 }
