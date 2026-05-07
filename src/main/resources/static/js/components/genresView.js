@@ -14,6 +14,16 @@ export function renderGenresPage(container, genres){
     `).join('');
 }
 
+export function renderGenrePageContainer(container){
+    container.innerHTML = `<div class="genre-page"></div>`;
+    return container.querySelector(".genre-page");
+}
+
+export function renderGenresContainer(container){
+    container.innerHTML = `<div class="genres"></div>`;
+    return container.querySelector(".genres");
+}
+
 export function renderGenresWithLimit(container, genres, visibleLimit){
     const visibleGenres = genres.slice(0, visibleLimit);
     container.innerHTML = visibleGenres.map((genre) =>`
