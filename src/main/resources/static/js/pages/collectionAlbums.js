@@ -1,42 +1,57 @@
-import {initPlayer} from "../module/player.js";
 import {getToken} from "../user/refreshAccessToken.js";
-import {initSidebar} from "../module/sidebar.js";
 import {pageResponseOfAlbumCollection} from "../api/collectionApi.js";
-import {initSearchForm} from "../module/search.js";
 import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 import {paginationStateOfAlbums} from "../store/paginationState.js";
+import {renderAlbumsLayout} from "../components/albumsView.js";
+import {loadCss, unloadCss} from "../core/resources.js";
+import {renderAuthRequired} from "../components/authRequired.js";
 
 export async function initAlbumCollectionPage() {
-    initPlayer();
 
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
+    document.title = "Коллекции альбомов";
+
+    const appContainer = document.getElementById("app");
 
     const jwt = getToken();
 
-    const albumCollectionContainer = document.getElementById('album-collection');
-    const scrollAnchor = document.getElementById("scroll-anchor");
+    if(!jwt){
+        renderAuthRequired(appContainer);
+        return;
+    }
 
     resetPaginationState();
     paginationStateOfAlbums.size = 14;
+
+    const albumsCardCss = loadCss("/css/components/albums-card-rows.css");
+
+    renderAlbumsLayout(appContainer);
+
+    const albumRowsHeading = appContainer.querySelector(".album-rows-heading");
+    const albumRowsContainer = appContainer.querySelector(".album-rows");
+    const scrollAnchor = appContainer.querySelector(".scroll-anchor");
+
+    albumRowsHeading.textContent = "Моя коллекция альбомов";
+
     const pageResponse = await pageResponseOfAlbumCollection(jwt);
-    loadAlbumsPaged(pageResponse, albumCollectionContainer);
-    initPlayAlbumCardsDelegation(albumCollectionContainer);
+    loadAlbumsPaged(pageResponse, albumRowsContainer);
+    const removePlayAlbumsDelegation = initPlayAlbumCardsDelegation(albumRowsContainer);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await pageResponseOfAlbumCollection(jwt);
-            loadAlbumsPaged(pageResponse, albumCollectionContainer);
+            loadAlbumsPaged(pageResponse, albumRowsContainer);
         },
         hasNextFn: () => paginationStateOfAlbums.hasNext,
         isLoadingFn: () => paginationStateOfAlbums.isLoading,
         anchor: scrollAnchor
     });
     await infiniteScroll.init();
-}
 
-document.addEventListener("componentsLoaded", async () => {
-    initSidebar();
-    await initAlbumCollectionPage();
-});
+    return function cleanUp(){
+        infiniteScroll.destroy();
+        removePlayAlbumsDelegation?.();
+        unloadCss(albumsCardCss);
+        appContainer.innerHTML = "";
+    }
+}
