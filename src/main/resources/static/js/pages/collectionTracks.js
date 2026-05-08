@@ -1,46 +1,60 @@
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {initSidebar} from "../module/sidebar.js";
 import {getToken} from "../user/refreshAccessToken.js";
 import {pageResponseOfSoundCollection} from "../api/collectionApi.js";
-import {initSearchForm} from "../module/search.js";
-import {initPlayer} from "../module/player.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
+import {renderAuthRequired} from "../components/authRequired.js";
+import {renderSoundsLayout} from "../components/soundsView.js";
+import {loadCss, unloadCss} from "../core/resources.js";
 
 export async function initTrackCollectionPage(){
-    initPlayer();
+    document.title = "Коллекции треков";
+
+    const appContainer = document.getElementById("app");
+
     const jwt = getToken();
 
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
-
-    const trackCollection = document.getElementById("track-collection");
-    const scrollAnchor = document.getElementById("scroll-anchor");
+    if(!jwt){
+        renderAuthRequired(appContainer);
+        return;
+    }
 
     resetPaginationState();
     paginationStateOfSounds.size = 20;
+
+    const soundsCss = loadCss("/css/components/sounds.css");
+
+    renderSoundsLayout(appContainer);
+
+    const soundsHeading = appContainer.querySelector(".sounds-heading");
+    const soundsContainer = appContainer.querySelector(".sounds");
+    const scrollAnchor = appContainer.querySelector(".scroll-anchor");
+
+    soundsHeading.textContent = "Моя коллекция треков";
 
     const likedSoundsResponse = await getLikedSoundsIds(jwt);
     const likedSoundsIds = new Set(likedSoundsResponse.ids);
 
     const pageResponse = await pageResponseOfSoundCollection(jwt);
-
-    loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
-    initSoundsDelegation(trackCollection, likedSoundsIds, jwt);
+    loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
             const pageResponse = await pageResponseOfSoundCollection(jwt);
-            loadSoundsPaged(pageResponse, trackCollection, likedSoundsIds);
+            loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
         },
         hasNextFn: () => paginationStateOfSounds.hasNext,
         isLoadingFn: () => paginationStateOfSounds.isLoading,
         anchor: scrollAnchor
     });
     await infiniteScroll.init();
+
+    return function cleanUp(){
+        infiniteScroll.destroy();
+        removeSoundsDelegation?.();
+        unloadCss(soundsCss);
+        appContainer.innerHTML = "";
+    }
 }
-document.addEventListener("componentsLoaded", async () => {
-    initSidebar();
-    await initTrackCollectionPage();
-});
