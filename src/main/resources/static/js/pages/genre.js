@@ -1,23 +1,20 @@
-import {initSidebar} from "../module/sidebar.js";
 import {getGenres} from "../api/genreApi.js";
-import {renderGenresPage} from "../components/genresView.js";
-import {initSearchForm} from "../module/search.js";
-import {initPlayer} from "../module/player.js";
+import {renderGenresContainer, renderGenresPage} from "../components/genresView.js";
+import {loadCss, unloadCss} from "../core/resources.js";
 
-async function initGenrePage(){
-    initPlayer();
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
+export async function initGenrePage(){
+    document.title = "Жанры";
+    const genrePageCss = loadCss("/css/pages/genre.css");
 
-    const mainContainer = document.getElementById("main-container");
-    const genresContainer = mainContainer.querySelector(".genres");
+    const appContainer = document.getElementById("app");
+    const genresContainer = renderGenresContainer(appContainer);
 
     const genresJson = await getGenres();
     const genres = genresJson.genres;
     renderGenresPage(genresContainer, genres);
-}
 
-document.addEventListener("componentsLoaded", async () => {
-    initSidebar();
-    await initGenrePage();
-});
+    return function cleanUp(){
+        unloadCss(genrePageCss);
+        appContainer.innerHTML = "";
+    }
+}
