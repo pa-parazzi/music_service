@@ -1,9 +1,9 @@
-export function initSidebar(){
+export function initSidebar(headerContainer, sideBarRootContainer){
 
-    const sidebar = document.getElementById("sidebar");
-    const openBtn = document.getElementById("sidebar-open");
-    const closeBtn = document.getElementById("sidebar-close");
-    const overlay = document.getElementById("sidebar-overlay");
+    const sidebar = sideBarRootContainer.querySelector(".side-panel");
+    const openBtn = headerContainer.querySelector(".sidebar-open-btn");
+    const closeBtn = sideBarRootContainer.querySelector(".side-panel-close-btn");
+    const overlay = sideBarRootContainer.querySelector(".side-panel-overlay");
 
     function openSidebar(){
         sidebar.classList.add("open");
@@ -17,6 +17,12 @@ export function initSidebar(){
 
     document.addEventListener("keydown", (e) => {
         if(e.key === "Escape"){
+            closeSidebar();
+        }
+    });
+
+    sideBarRootContainer.addEventListener("click", (e) => {
+        if(e.target.closest(".side-panel-btn")){
             closeSidebar();
         }
     });
