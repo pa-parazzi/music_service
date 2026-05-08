@@ -73,21 +73,21 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
     @Autowired
     private AlbumTestFixture albumFixture;
 
-    @BeforeEach
-    void setup(){
-        truncateTables();
-        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
-    }
-
     private void truncateTables(){
         jdbcTemplate.execute("TRUNCATE TABLE users, artist, album, album_image," +
                 " sound, sound_like, album_like RESTART IDENTITY CASCADE");
     }
 
-    private static final String albumsCollectionUrl = "/api/collection/albums";
-    private static final String tracksCollectionUrl = "/api/collection/tracks";
+    private static final String albumsCollectionUrl = "/api/private/collection/albums";
+    private static final String tracksCollectionUrl = "/api/private/collection/tracks";
     private User user;
     private Genre genre;
+
+    @BeforeEach
+    void setup(){
+        truncateTables();
+        this.user = userRepository.save(UserDataFactoryIT.userWithEnabledAccount());
+    }
 
     @BeforeAll
     void getGenre(){
@@ -204,6 +204,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenIncorrectPageValue(String url) throws Exception {
         int page = -1;
 
@@ -216,6 +217,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenIncorrectSizeValue(String url) throws Exception {
         int size = 50;
 
@@ -228,6 +230,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenPageParamIsArgumentTypeMismatch(String url) throws Exception {
         String page = "some page";
 
@@ -243,6 +246,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenSizeParamIsArgumentTypeMismatch(String url) throws Exception {
         int page = 2;
         String size = "fifty";
@@ -259,6 +263,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenPageParamIsMissing(String url) throws Exception {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("size", String.valueOf(size));
@@ -271,6 +276,7 @@ public class MusicCollectionControllerIT extends AbstractSpringBootIT {
 
     @ParameterizedTest
     @ValueSource(strings = {albumsCollectionUrl, tracksCollectionUrl})
+    @WithMockUserPrincipal
     void shouldReturnBadRequest_WhenSizeParamIsMissing(String url) throws Exception {
         RequestBuilder requestBuilder = get(url, 1L)
                 .param("page", String.valueOf(page));
