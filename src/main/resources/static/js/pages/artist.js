@@ -1,54 +1,86 @@
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {initSidebar} from "../module/sidebar.js";
 import {getArtistById} from "../api/artistApi.js";
 import {getSoundsByArtistIdPaged} from "../api/soundApi.js";
 import {getToken} from "../user/refreshAccessToken.js";
-import {initSearchForm} from "../module/search.js";
-import {initPlayer} from "../module/player.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
+import {loadCss, unloadCss} from "../core/resources.js";
+import {renderArtistPage} from "../components/artistsView.js";
 
-async function initArtistPage() {
-    initPlayer();
-
-    const jwt = getToken();
-    const id = window.location.pathname.split('/').pop();
-    const artist = await getArtistById(id);
-
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
-
-    const artistName = document.getElementById('artist-name');
-    artistName.textContent = artist.name;
-
-    const soundsContainer = document.getElementById('sounds');
-    const scrollAnchor = document.getElementById("scroll-anchor");
+export async function initArtistPage({id}) {
+    const soundsCss = loadCss("/css/components/sounds.css");
+    const artistCss = loadCss("/css/pages/artist.css");
 
     resetPaginationState();
     paginationStateOfSounds.size = 10;
 
-    const likedSoundsResponse = await getLikedSoundsIds(jwt);
-    const likedSoundsIds = new Set(likedSoundsResponse.ids);
+    const artistId = Number(id);
+    const artist = await getArtistById(artistId);
 
-    const pageResponse = await getSoundsByArtistIdPaged(id);
+    document.title = "Исполнитель: " + artist.name;
 
-    loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
-    initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+    const appContainer = document.getElementById("app");
+    renderArtistPage(appContainer);
+
+    const artistName = appContainer.querySelector(".artist-name");
+    const soundsContainer = appContainer.querySelector(".sounds");
+    const scrollAnchor = appContainer.querySelector(".scroll-anchor");
+
+    artistName.textContent = artist.name;
+
+    const jwt = getToken();
+
+    if(jwt){
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+
+        const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
+
+        loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
+        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+
+        const infiniteScroll = initInfiniteScroll({
+            loadFn: async () => {
+                const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
+                loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
+            },
+            hasNextFn: () => paginationStateOfSounds.hasNext,
+            isLoadingFn: () => paginationStateOfSounds.isLoading,
+            anchor: scrollAnchor
+        });
+        await infiniteScroll.init();
+
+        return function cleanUp(){
+            infiniteScroll.destroy();
+            removeSoundsDelegation?.();
+            unloadCss(artistCss);
+            unloadCss(soundsCss);
+            appContainer.innerHTML = "";
+        }
+    }
+
+    const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
+
+    loadSoundsPaged(pageResponseOfSounds, soundsContainer);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
-            const pageResponse = await getSoundsByArtistIdPaged(id);
-            loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
+            const pageResponse = await getSoundsByArtistIdPaged(artistId);
+            loadSoundsPaged(pageResponse, soundsContainer);
         },
         hasNextFn: () => paginationStateOfSounds.hasNext,
         isLoadingFn: () => paginationStateOfSounds.isLoading,
         anchor: scrollAnchor
     });
     await infiniteScroll.init();
-}
 
-document.addEventListener("componentsLoaded", async () => {
-    initSidebar();
-    await initArtistPage();
-});
+    return function cleanUp(){
+        infiniteScroll.destroy();
+        removeSoundsDelegation?.();
+        unloadCss(artistCss);
+        unloadCss(soundsCss);
+        appContainer.innerHTML = "";
+    }
+}
