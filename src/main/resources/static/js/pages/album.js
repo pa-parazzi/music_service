@@ -1,95 +1,83 @@
 import {getToken} from "../user/refreshAccessToken.js";
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {initSidebar} from "../module/sidebar.js";
 import {getSoundsByAlbumId} from "../api/soundApi.js";
-import {getAlbumById, getNewAlbumReleasesPaged} from "../api/albumApi.js";
+import {getAlbumById} from "../api/albumApi.js";
 import {getAlbumLike} from "../api/albumLikeApi.js";
 import {initAlbumLikeBtn} from "../module/albumLikes.js";
-import {initSearchForm} from "../module/search.js";
-import {initPlayer} from "../module/player.js";
 import {initSoundsDelegation} from "../module/sounds.js";
-import {initPlayAlbumButton, initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
-import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginationState.js";
+import {initPlayAlbumButton} from "../module/albums.js";
+import {paginationStateOfSounds} from "../store/paginationState.js";
 import {playerState} from "../store/playerState.js";
-import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
+import {resetPaginationState} from "../utils/util.js";
+import {loadCss, unloadCss} from "../core/resources.js";
 import {renderSounds} from "../components/soundsView.js";
-import {router} from "../core/albumRouter.js";
-import {renderAlbumPage, renderAlbumsContainer} from "../components/albumsView.js";
+import {renderAlbumPage} from "../components/albumsView.js";
 
-export async function initAlbumPage(id) {
-    initPlayer();
-    const jwt = getToken();
+export async function initAlbumPage({id}) {
+    const albumCss = loadCss("/css/pages/album.css");
+    const soundsCss = loadCss("/css/components/sounds.css");
 
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
+    const albumId = Number(id);
 
     resetPaginationState();
 
-    const mainContainer = document.getElementById('main-container');
-    const album = await getAlbumById(id);
-    renderAlbumPage(mainContainer, album);
+    const appContainer = document.getElementById("app");
 
-    const playAlbumBtn = document.querySelector(".album-page__play-btn");
+    const album = await getAlbumById(albumId);
+
+    document.title = "Альбом: " + album.title;
+
+    const albumPageContainer = renderAlbumPage(appContainer, album);
+
+    const playAlbumBtn = albumPageContainer.querySelector(".album-page__play-btn");
+    const albumLikeBtn = albumPageContainer.querySelector(".album-like-btn");
+    const soundsContainer = albumPageContainer.querySelector(".sounds");
+
     playerState.currentPlayAlbumButton = playAlbumBtn;
-    initPlayAlbumButton(id, playAlbumBtn);
+    const removePlayAlbumDelegation = initPlayAlbumButton(albumId, playAlbumBtn);
 
-    const albumLikeBtn = document.querySelector(".album-like-btn");
-    const statusLikedAlbum = await getAlbumLike(jwt, id);
-    await initAlbumLikeBtn(id, statusLikedAlbum, albumLikeBtn, jwt);
-
-    const soundsContainer = document.getElementById('sounds');
-
-    const likedSoundsResponse = await getLikedSoundsIds(jwt);
-    const likedSoundsIds = new Set(likedSoundsResponse.ids);
-
-    const soundsResponse = await getSoundsByAlbumId(id);
+    const soundsResponse = await getSoundsByAlbumId(albumId);
     const sounds = soundsResponse.sounds;
     paginationStateOfSounds.sounds = sounds;
+
+    const jwt = getToken();
+
+    if(jwt){
+        const statusLikedAlbum = await getAlbumLike(jwt, albumId);
+        const removeAlbumLikeDelegation = initAlbumLikeBtn(albumId, statusLikedAlbum, albumLikeBtn, jwt);
+
+        const likedSoundsResponse = await getLikedSoundsIds(jwt);
+        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+
+        renderSounds({
+            container: soundsContainer,
+            soundList: sounds,
+            likedSoundsIds: likedSoundsIds
+        });
+
+        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt, albumId);
+
+        return function cleanUp(){
+            removePlayAlbumDelegation?.();
+            removeAlbumLikeDelegation?.();
+            removeSoundsDelegation?.();
+            unloadCss(albumCss);
+            unloadCss(soundsCss);
+            appContainer.innerHTML = "";
+        }
+    }
+
     renderSounds({
         container: soundsContainer,
-        soundList: sounds,
-        likedSoundsIds: likedSoundsIds
+        soundList: sounds
     });
-    initSoundsDelegation(soundsContainer, likedSoundsIds, jwt, id);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, albumId);
+
+    return function cleanUp(){
+        removePlayAlbumDelegation?.();
+        removeSoundsDelegation?.();
+        unloadCss(albumCss);
+        unloadCss(soundsCss);
+        appContainer.innerHTML = "";
+    }
 }
-
-export async function initAlbumReleasesPage(){
-    initPlayer();
-
-    const searchForm = document.getElementById("search-form");
-    initSearchForm(searchForm);
-
-    resetPaginationState();
-    paginationStateOfAlbums.size = 14;
-
-    const mainContainer = document.getElementById('main-container');
-    renderAlbumsContainer(mainContainer);
-
-    const scrollAnchor = mainContainer.querySelector(".scroll-anchor");
-
-    const albumsHeading = mainContainer.querySelector(".album-rows-heading");
-    albumsHeading.textContent = "Новинки этого года";
-
-    const albumsEl = mainContainer.querySelector(".album-rows");
-
-    const pageResponse = await getNewAlbumReleasesPaged();
-    loadAlbumsPaged(pageResponse, albumsEl);
-
-    initPlayAlbumCardsDelegation(albumsEl);
-
-    const infiniteScroll = initInfiniteScroll({
-        loadFn: async () => {
-            const pageResponse = await getNewAlbumReleasesPaged();
-            loadAlbumsPaged(pageResponse, albumsEl);
-        },
-        hasNextFn: () => paginationStateOfAlbums.hasNext,
-        isLoadingFn: () => paginationStateOfAlbums.isLoading,
-        anchor: scrollAnchor
-    });
-    await infiniteScroll.init();
-}
-
-document.addEventListener("componentsLoaded", async () => {
-    initSidebar();
-    await router();
-});
