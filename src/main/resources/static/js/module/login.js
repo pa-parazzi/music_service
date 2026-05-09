@@ -1,4 +1,4 @@
-import {login} from "../api/loginApi.js";
+import {login} from "../auth/login.js";
 import {createFormErrorManager} from "../utils/formErrorManager.js";
 
 export function initLoginForm(

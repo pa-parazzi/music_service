@@ -1,4 +1,4 @@
-import {registration} from "../api/registrationApi.js";
+import {registration} from "../auth/registration.js";
 import {createFormErrorManager} from "../utils/formErrorManager.js";
 
 export function initRegistrationForm(

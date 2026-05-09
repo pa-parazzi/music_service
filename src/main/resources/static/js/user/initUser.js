@@ -1,4 +1,4 @@
-import {logout} from "./logout.js";
+import {logout} from "../auth/logout.js";
 import {loadUserProfile} from "./userApi.js";
 import {renderUserProfile} from "./userView.js";
 import {initUserAvatarButton} from "./initAvatarButton.js";
