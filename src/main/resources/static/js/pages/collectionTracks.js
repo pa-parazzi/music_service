@@ -1,10 +1,8 @@
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {pageResponseOfSoundCollection} from "../api/collectionApi.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
-import {renderAuthRequired} from "../components/authRequired.js";
 import {renderSoundsLayout} from "../components/soundsView.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 
@@ -12,13 +10,6 @@ export async function initTrackCollectionPage(){
     document.title = "Коллекции треков";
 
     const appContainer = document.getElementById("app");
-
-    const jwt = getToken();
-
-    if(!jwt){
-        renderAuthRequired(appContainer);
-        return;
-    }
 
     resetPaginationState();
     paginationStateOfSounds.size = 20;
@@ -33,16 +24,15 @@ export async function initTrackCollectionPage(){
 
     soundsHeading.textContent = "Моя коллекция треков";
 
-    const likedSoundsResponse = await getLikedSoundsIds(jwt);
-    const likedSoundsIds = new Set(likedSoundsResponse.ids);
+    const likedSoundsIds = await getLikedSoundsIds();
 
-    const pageResponse = await pageResponseOfSoundCollection(jwt);
+    const pageResponse = await pageResponseOfSoundCollection();
     loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
-            const pageResponse = await pageResponseOfSoundCollection(jwt);
+            const pageResponse = await pageResponseOfSoundCollection();
             loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
         },
         hasNextFn: () => paginationStateOfSounds.hasNext,

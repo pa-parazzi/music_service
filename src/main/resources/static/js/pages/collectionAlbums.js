@@ -1,24 +1,15 @@
-import {getToken} from "../user/refreshAccessToken.js";
 import {pageResponseOfAlbumCollection} from "../api/collectionApi.js";
 import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
 import {paginationStateOfAlbums} from "../store/paginationState.js";
 import {renderAlbumsLayout} from "../components/albumsView.js";
 import {loadCss, unloadCss} from "../core/resources.js";
-import {renderAuthRequired} from "../components/authRequired.js";
 
 export async function initAlbumCollectionPage() {
 
     document.title = "Коллекции альбомов";
 
     const appContainer = document.getElementById("app");
-
-    const jwt = getToken();
-
-    if(!jwt){
-        renderAuthRequired(appContainer);
-        return;
-    }
 
     resetPaginationState();
     paginationStateOfAlbums.size = 14;
@@ -33,13 +24,14 @@ export async function initAlbumCollectionPage() {
 
     albumRowsHeading.textContent = "Моя коллекция альбомов";
 
-    const pageResponse = await pageResponseOfAlbumCollection(jwt);
+    const pageResponse = await pageResponseOfAlbumCollection();
     loadAlbumsPaged(pageResponse, albumRowsContainer);
+
     const removePlayAlbumsDelegation = initPlayAlbumCardsDelegation(albumRowsContainer);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
-            const pageResponse = await pageResponseOfAlbumCollection(jwt);
+            const pageResponse = await pageResponseOfAlbumCollection();
             loadAlbumsPaged(pageResponse, albumRowsContainer);
         },
         hasNextFn: () => paginationStateOfAlbums.hasNext,

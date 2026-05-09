@@ -1,41 +1,42 @@
-export async function getLikedSoundsIds(jwt){
-    const likedSoundsIdsResponses = await fetch('/api/private/sound-like', {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${jwt}`
-        }
-    });
+import {apiFetch} from "./httpClient.js";
+import {forceLogout} from "../auth/logout.js";
 
-    if(!likedSoundsIdsResponses.ok){
-        return;
+export async function getLikedSoundsIds(){
+    const response = await apiFetch('/api/private/sound-like', {
+        method: "GET"
+    });
+    if(response.status === 401){
+        return new Set();
     }
-    return await likedSoundsIdsResponses.json();
+    const data = await response.json();
+    return new Set(data.ids);
 }
 
-export async function getSoundLikeStatusBySoundId(jwt, soundId){
-    const likeStatusResponse = await fetch(`/api/private/sound-like/is-liked/${soundId}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${jwt}`
-        }
+export async function getSoundLikeStatusBySoundId(soundId){
+    const response = await apiFetch(`/api/private/sound-like/is-liked/${soundId}`, {
+        method: "GET"
     });
-    return await likeStatusResponse.json();
+    if(response.status === 401) {
+        return null;
+    }
+    if(!response.ok) throw new Error("Failed to load sound like status");
+    return await response.json();
 }
 
-export async function deleteSoundLike(jwt, soundId){
-    await fetch(`/api/private/sound-like/${soundId}`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": `Bearer ${jwt}`
-        }
+export async function deleteSoundLike(soundId){
+    const response = await apiFetch(`/api/private/sound-like/${soundId}`, {
+        method: "DELETE"
     });
+    if(response.status === 401){
+        forceLogout();
+    }
 }
 
-export async function createSoundLike(jwt, soundId){
-    await fetch(`/api/private/sound-like/${soundId}`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${jwt}`
-        }
+export async function createSoundLike(soundId){
+    const response = await apiFetch(`/api/private/sound-like/${soundId}`, {
+        method: "POST"
     });
+    if(response.status === 401){
+        forceLogout();
+    }
 }

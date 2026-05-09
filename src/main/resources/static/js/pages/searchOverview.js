@@ -11,7 +11,6 @@ import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {renderSounds} from "../components/soundsView.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
 import {initSoundsDelegation} from "../module/sounds.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 import {resetPaginationState} from "../utils/util.js";
 
@@ -22,8 +21,6 @@ export async function initSearchOverviewPage({fragment}){
     const soundsCss = loadCss("/css/components/sounds.css");
 
     document.title = "Поиск";
-
-    const jwt = getToken();
 
     resetPaginationState();
 
@@ -58,12 +55,11 @@ export async function initSearchOverviewPage({fragment}){
     renderAlbumCards(albumsContainer, albums);
     const removePlayAlbumsDelegation = initPlayAlbumCardsDelegation(albumsContainer);
 
-    const likedSoundsResponse = await getLikedSoundsIds(jwt);
-    const likedSoundsIds = new Set(likedSoundsResponse.ids);
+    const likedSoundsIds = await getLikedSoundsIds();
 
     renderSounds({container: soundsContainer, soundList: sounds, likedSoundsIds: likedSoundsIds});
     paginationStateOfSounds.sounds = sounds;
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
     return function cleanUp(){
         removePlayAlbumsDelegation?.();

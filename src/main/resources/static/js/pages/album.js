@@ -1,4 +1,3 @@
-import {getToken} from "../user/refreshAccessToken.js";
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {getSoundsByAlbumId} from "../api/soundApi.js";
 import {getAlbumById} from "../api/albumApi.js";
@@ -40,41 +39,22 @@ export async function initAlbumPage({id}) {
     const sounds = soundsResponse.sounds;
     paginationStateOfSounds.sounds = sounds;
 
-    const jwt = getToken();
+    const statusLikedAlbum = await getAlbumLike(albumId);
+    const removeAlbumLikeDelegation = initAlbumLikeBtn(albumId, statusLikedAlbum, albumLikeBtn);
 
-    if(jwt){
-        const statusLikedAlbum = await getAlbumLike(jwt, albumId);
-        const removeAlbumLikeDelegation = initAlbumLikeBtn(albumId, statusLikedAlbum, albumLikeBtn, jwt);
-
-        const likedSoundsResponse = await getLikedSoundsIds(jwt);
-        const likedSoundsIds = new Set(likedSoundsResponse.ids);
-
-        renderSounds({
-            container: soundsContainer,
-            soundList: sounds,
-            likedSoundsIds: likedSoundsIds
-        });
-
-        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt, albumId);
-
-        return function cleanUp(){
-            removePlayAlbumDelegation?.();
-            removeAlbumLikeDelegation?.();
-            removeSoundsDelegation?.();
-            unloadCss(albumCss);
-            unloadCss(soundsCss);
-            appContainer.innerHTML = "";
-        }
-    }
+    const likedSoundsIds = await getLikedSoundsIds();
 
     renderSounds({
         container: soundsContainer,
-        soundList: sounds
+        soundList: sounds,
+        likedSoundsIds: likedSoundsIds
     });
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, albumId);
 
-    return function cleanUp(){
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, albumId);
+
+    return function cleanUp() {
         removePlayAlbumDelegation?.();
+        removeAlbumLikeDelegation?.();
         removeSoundsDelegation?.();
         unloadCss(albumCss);
         unloadCss(soundsCss);

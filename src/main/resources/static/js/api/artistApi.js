@@ -1,7 +1,5 @@
 export async function getArtistById(id){
     const response = await fetch(`/api/artist/${id}`);
-    if (!response.ok){
-        throw new Error("Ошибка загрузки исполнителя с id: " + id)
-    }
-    return  await response.json();
+    if(!response.ok) throw new Error("Failed to load artist");
+    return await response.json();
 }

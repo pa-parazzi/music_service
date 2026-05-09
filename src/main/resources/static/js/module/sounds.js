@@ -43,9 +43,9 @@ export function initPlaySoundButton(soundId, sound, playSoundBtn){
     }
 }
 
-export function initSoundsDelegation(container, likedSoundsIds = new Set(), jwt, albumId){
+export function initSoundsDelegation(container, likedSoundsIds = new Set(), albumId){
     const soundLikeHandler =  async (e) => {
-        if(likedSoundsIds && jwt) {
+        if(likedSoundsIds) {
             const likeBtn = e.target.closest('.like-btn');
             if (likeBtn && container.contains(likeBtn)) {
                 e.stopPropagation();
@@ -55,11 +55,11 @@ export function initSoundsDelegation(container, likedSoundsIds = new Set(), jwt,
                     likeBtn.classList.add("liked");
                 }
                 if (likeBtn.classList.contains("liked")) {
-                    await deleteSoundLike(jwt, soundId);
+                    await deleteSoundLike(soundId);
                     likedSoundsIds.delete(soundId);
                     likeBtn.classList.toggle("liked", false);
                 } else if (!likeBtn.classList.contains("liked")){
-                    await createSoundLike(jwt, soundId);
+                    await createSoundLike(soundId);
                     likedSoundsIds.add(soundId);
                     likeBtn.classList.toggle("liked", true);
                 }

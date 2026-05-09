@@ -1,16 +1,16 @@
 import {createSoundLike, deleteSoundLike} from "../api/soundLikesApi.js";
 
-export function initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId) {
-    if (likeSoundStatus.likeStatus === true) {
+export function initSoundLikeBySoundId(likeSoundStatus, likeBtn, soundId) {
+    if (likeSoundStatus && likeSoundStatus.likeStatus === true) {
         likeBtn.classList.add("liked");
     }
     const clickLikeHandler = async (e) => {
         e.stopPropagation();
         if (likeBtn.classList.contains("liked")) {
-            await deleteSoundLike(jwt, soundId);
+            await deleteSoundLike(soundId);
             likeBtn.classList.toggle("liked", false);
         } else if (!likeBtn.classList.contains("liked")) {
-            await createSoundLike(jwt, soundId);
+            await createSoundLike(soundId);
             likeBtn.classList.toggle("liked", true);
         }
     }

@@ -8,7 +8,6 @@ import {initSoundsDelegation} from "../module/sounds.js";
 import {renderAlbumCards} from "../components/albumsView.js";
 import {initPlayAlbumCardsDelegation} from "../module/albums.js";
 import {loadCss, unloadCss} from "../core/resources.js";
-import {getToken} from "../user/refreshAccessToken.js";
 
 export async function initGenreOverviewPage({id}){
     const contentSectionsCss = loadCss("/css/layout/content-sections.css");
@@ -17,7 +16,6 @@ export async function initGenreOverviewPage({id}){
 
     resetPaginationState();
 
-    const jwt = getToken();
     const genreId = Number(id);
 
     document.title = "Жанр";
@@ -30,8 +28,7 @@ export async function initGenreOverviewPage({id}){
     const soundsContainer = pageSectionContainer.querySelector(".sounds");
     const albumContainer = pageSectionContainer.querySelector(".albums");
 
-    const likedSoundsResponse = await getLikedSoundsIds(jwt);
-    const likedSoundsIds = new Set(likedSoundsResponse.ids);
+    const likedSoundsIds = await getLikedSoundsIds();
 
     const pageResponse = await getSoundsByGenreIdPaged(genreId);
     const sounds = pageResponse.content;
@@ -43,7 +40,7 @@ export async function initGenreOverviewPage({id}){
         likedSoundsIds: likedSoundsIds
     });
 
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
     const albumsResponse = await getAlbumsByGenreIdPaged(genreId);
     const albums = albumsResponse.content;

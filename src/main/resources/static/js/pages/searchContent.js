@@ -4,7 +4,6 @@ import {
     getFoundSoundsByFragmentPaged
 } from "../api/searchApi.js";
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {paginationStateOfAlbums, paginationStateOfArtists, paginationStateOfSounds} from "../store/paginationState.js";
@@ -17,8 +16,6 @@ import {loadCss, unloadCss} from "../core/resources.js";
 
 export async function initSearchContentPage({fragment, type}) {
     document.title = "Поиск";
-
-    const jwt = getToken();
 
     resetPaginationState();
 
@@ -119,12 +116,11 @@ export async function initSearchContentPage({fragment, type}) {
 
         soundsHeading.textContent = "Треки по запросу " + "\"" + fragment + "\"";
 
-        const likedSoundsResponse = await getLikedSoundsIds(jwt);
-        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+        const likedSoundsIds = await getLikedSoundsIds();
 
         const pageResponseOfSounds = await getFoundSoundsByFragmentPaged(fragment);
         loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
-        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
         const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {

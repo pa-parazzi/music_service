@@ -1,5 +1,4 @@
 import {formatTime} from "../utils/util.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {getSoundById} from "../api/soundApi.js";
 import {getSoundLikeStatusBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
@@ -11,8 +10,6 @@ import {loadCss, unloadCss} from "../core/resources.js";
 export async function initSoundPage({id}){
     const soundPageCss = loadCss("/css/pages/sound.css");
     const albumsCardCss = loadCss("/css/components/albums-card-rows.css");
-
-    const jwt = getToken();
 
     const soundId = Number(id);
 
@@ -31,8 +28,8 @@ export async function initSoundPage({id}){
     playerState.currentPlaySoundButton = playSoundBtn;
     const removePlaySoundsDelegation = initPlaySoundButton(soundId, sound, playSoundBtn);
 
-    const likeSoundStatus = await getSoundLikeStatusBySoundId(jwt, soundId);
-    const removeSoundLikeDelegation = initSoundLikeBySoundId(jwt, likeSoundStatus, likeBtn, soundId);
+    const likeSoundStatus = await getSoundLikeStatusBySoundId(soundId);
+    const removeSoundLikeDelegation = initSoundLikeBySoundId(likeSoundStatus, likeBtn, soundId);
 
     return function cleanUp(){
         removePlaySoundsDelegation?.();

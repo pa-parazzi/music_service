@@ -1,7 +1,6 @@
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {getArtistById} from "../api/artistApi.js";
 import {getSoundsByArtistIdPaged} from "../api/soundApi.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
 import {initInfiniteScroll, resetPaginationState} from "../utils/util.js";
@@ -29,46 +28,17 @@ export async function initArtistPage({id}) {
 
     artistName.textContent = artist.name;
 
-    const jwt = getToken();
-
-    if(jwt){
-        const likedSoundsResponse = await getLikedSoundsIds(jwt);
-        const likedSoundsIds = new Set(likedSoundsResponse.ids);
-
-        const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
-
-        loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
-        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
-
-        const infiniteScroll = initInfiniteScroll({
-            loadFn: async () => {
-                const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
-                loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
-            },
-            hasNextFn: () => paginationStateOfSounds.hasNext,
-            isLoadingFn: () => paginationStateOfSounds.isLoading,
-            anchor: scrollAnchor
-        });
-        await infiniteScroll.init();
-
-        return function cleanUp(){
-            infiniteScroll.destroy();
-            removeSoundsDelegation?.();
-            unloadCss(artistCss);
-            unloadCss(soundsCss);
-            appContainer.innerHTML = "";
-        }
-    }
+    const likedSoundsIds = await getLikedSoundsIds();
 
     const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
 
-    loadSoundsPaged(pageResponseOfSounds, soundsContainer);
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer);
+    loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
     const infiniteScroll = initInfiniteScroll({
         loadFn: async () => {
-            const pageResponse = await getSoundsByArtistIdPaged(artistId);
-            loadSoundsPaged(pageResponse, soundsContainer);
+            const pageResponseOfSounds = await getSoundsByArtistIdPaged(artistId);
+            loadSoundsPaged(pageResponseOfSounds, soundsContainer, likedSoundsIds);
         },
         hasNextFn: () => paginationStateOfSounds.hasNext,
         isLoadingFn: () => paginationStateOfSounds.isLoading,
@@ -76,7 +46,7 @@ export async function initArtistPage({id}) {
     });
     await infiniteScroll.init();
 
-    return function cleanUp(){
+    return function cleanUp() {
         infiniteScroll.destroy();
         removeSoundsDelegation?.();
         unloadCss(artistCss);

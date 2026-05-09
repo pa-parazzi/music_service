@@ -1,16 +1,16 @@
 import {createAlbumLike, deleteAlbumLike} from "../api/albumLikeApi.js";
 
-export function initAlbumLikeBtn(albumId, statusLikedAlbum, albumLikeBtn, jwt){
-    if (statusLikedAlbum.likeStatus === true) {
+export function initAlbumLikeBtn(albumId, albumLikeStatus, albumLikeBtn){
+    if (albumLikeStatus && albumLikeStatus.likeStatus === true) {
         albumLikeBtn.classList.add("liked");
     }
     const albumLikeHandler = async (e) => {
         e.stopPropagation();
         if (albumLikeBtn.classList.contains("liked")) {
-            await deleteAlbumLike(jwt, albumId);
+            await deleteAlbumLike(albumId);
             albumLikeBtn.classList.toggle("liked", false);
         } else if (!albumLikeBtn.classList.contains("liked")) {
-            await createAlbumLike(jwt, albumId);
+            await createAlbumLike(albumId);
             albumLikeBtn.classList.toggle("liked", true);
         }
     };

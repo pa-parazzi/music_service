@@ -5,14 +5,11 @@ import {paginationStateOfAlbums, paginationStateOfSounds} from "../store/paginat
 import {initPlayAlbumCardsDelegation, loadAlbumsPaged} from "../module/albums.js";
 import {initSoundsDelegation, loadSoundsPaged} from "../module/sounds.js";
 import {renderSoundsLayout} from "../components/soundsView.js";
-import {getToken} from "../user/refreshAccessToken.js";
 import {getLikedSoundsIds} from "../api/soundLikesApi.js";
 import {renderGenrePageContainer} from "../components/genresView.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 
 export async function initGenreContentPage({id, type}) {
-
-    const jwt = getToken();
 
     const appContainer = document.getElementById("app");
     const genrePageContainer = renderGenrePageContainer(appContainer);
@@ -87,13 +84,12 @@ export async function initGenreContentPage({id, type}) {
 
         soundsHeading.textContent = genreName;
 
-        const likedSoundsResponse = await getLikedSoundsIds(jwt);
-        const likedSoundsIds = new Set(likedSoundsResponse.ids);
+        const likedSoundsIds = await getLikedSoundsIds();
 
         const pageResponse = await getSoundsByGenreIdPaged(genreId);
 
         loadSoundsPaged(pageResponse, soundsContainer, likedSoundsIds);
-        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, jwt);
+        const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
         const infiniteScroll = initInfiniteScroll({
             loadFn: async () => {
