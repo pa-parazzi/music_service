@@ -1,5 +1,15 @@
+/* Контейнер для центрирования формы */
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+    padding: 10px;
+}
+
 /* Карточка формы */
-form {
+.login-form,
+.registration-form {
     background: white;
     padding: 20px;
     border-radius: 8px;
@@ -9,23 +19,18 @@ form {
     flex-direction: column;
 }
 
-/* Контейнер для центрирования формы */
-.form-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px); /* всё окно минус высота header */
-    padding: 10px;
-}
-
 /* Подписи */
-label {
+.field-name {
     margin-top: 10px;
     font-weight: bold;
 }
 
 /* Поля */
-input {
+.username,
+.password,
+.email,
+.date-of-birth,
+.avatar {
     padding: 8px;
     margin-top: 5px;
     border: 1px solid #ccc;
@@ -33,7 +38,8 @@ input {
 }
 
 /* Кнопка */
-button {
+.submit-registration-button,
+.submit-login-button {
     margin-top: 15px;
     padding: 10px;
     background: #4CAF50;
@@ -45,7 +51,8 @@ button {
     transition: background 0.2s;
 }
 
-button:hover {
+.submit-registration-button:hover,
+.submit-login-button:hover {
     background: #45a049;
 }
 
