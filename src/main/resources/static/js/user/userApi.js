@@ -1,16 +1,12 @@
 import {apiFetch} from "../api/httpClient.js";
-import {clearAuth} from "../auth/accessTokenStorage.js";
 
-export async function loadUserProfile(userProfileContainer, authButtonsContainer){
+export async function loadUserProfile(){
     const response = await apiFetch('/api/user/profile', {
         method: "GET"
     });
-    if (!response.ok) {
-        clearAuth();
-        userProfileContainer.style.display = "none";
-        authButtonsContainer.style.display = "flex";
-        console.warn("Сессия истекла или токен недействителен");
-        return;
+    if(response.status === 401) {
+        return null;
     }
+    if(!response.ok) throw new Error("Failed to load user profile");
     return await response.json();
 }
