@@ -8,19 +8,30 @@ export async function initUser(headerContainer) {
     const authButtonsContainer = headerContainer.querySelector(".auth-buttons");
     const userProfileContainer = headerContainer.querySelector(".user-profile");
 
-    const user = await loadUserProfile(userProfileContainer, authButtonsContainer);
+    const user = await loadUserProfile();
 
-    if(!user) return;
+    if(!user) {
+        showAuthButtons(authButtonsContainer, userProfileContainer);
+        return;
+    }
 
-    authButtonsContainer.style.display = "none";
-    renderUserProfile(userProfileContainer, user);
+    showUserProfile(authButtonsContainer, userProfileContainer, user);
 
     const avatarBtn = userProfileContainer.querySelector(".avatar-btn");
     const dropDown = userProfileContainer.querySelector(".profile-drop-down");
+    const logoutBtn = userProfileContainer.querySelector(".logout-btn");
 
     initUserAvatarButton(avatarBtn, dropDown);
-
-    const logoutBtn = userProfileContainer.querySelector(".logout-btn");
     logoutBtn.addEventListener("click", logout);
-    userProfileContainer.style.display = "block";
+}
+
+function showUserProfile(authButtonsContainer, userProfileContainer, user){
+    authButtonsContainer.style.display = "none";
+    userProfileContainer.style.display = "flex";
+    renderUserProfile(userProfileContainer, user);
+}
+
+export function showAuthButtons(authButtonsContainer, userProfileContainer){
+    authButtonsContainer.style.display = "flex";
+    userProfileContainer.style.display = "none";
 }
