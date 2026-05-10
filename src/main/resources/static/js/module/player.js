@@ -11,11 +11,15 @@ export function playTrack(index){
 }
 
 export function setTrack(index){
+    const track = playerState.soundList[index];
+    const soundId = track.id;
     playerState.currentTrackIndex = index;
+    playerState.currentSoundId = soundId;
+
     playTrack(index);
     document.dispatchEvent(new CustomEvent('trackChanged', {
         detail: {
-            index
+            soundId: soundId
         }
     }))
 }

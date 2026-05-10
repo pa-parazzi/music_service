@@ -21,6 +21,10 @@ export function loadSoundsPaged(pageResponse, container, likedSoundsIds){
         likedSoundsIds: likedSoundsIds
     });
 
+    if(playerState.currentSoundId){
+        toggleActiveTrack(container, playerState.currentSoundId);
+    }
+
     paginationStateOfSounds.currentPage++;
     paginationStateOfSounds.isLoading = false;
 }
@@ -51,9 +55,6 @@ export function initSoundsDelegation(container, likedSoundsIds = new Set(), albu
                 e.stopPropagation();
 
                 const soundId = Number(likeBtn.dataset.trackId);
-                if (likedSoundsIds.has(soundId)) {
-                    likeBtn.classList.add("liked");
-                }
                 if (likeBtn.classList.contains("liked")) {
                     await deleteSoundLike(soundId);
                     likedSoundsIds.delete(soundId);
@@ -81,8 +82,12 @@ export function initSoundsDelegation(container, likedSoundsIds = new Set(), albu
     };
 
     const trackChangeHandler = (e) => {
-        toggleActiveTrack(container, e.detail.index);
+        toggleActiveTrack(container, e.detail.soundId);
     };
+
+    if(playerState.currentSoundId){
+        toggleActiveTrack(container, playerState.currentSoundId);
+    }
 
     container.addEventListener("click", soundLikeHandler);
     document.addEventListener("trackChanged", trackChangeHandler);
@@ -93,10 +98,7 @@ export function initSoundsDelegation(container, likedSoundsIds = new Set(), albu
     };
 }
 
-function toggleActiveTrack(container, index) {
+function toggleActiveTrack(container, soundId) {
     const allTracks = container.querySelectorAll(".track-card");
-    allTracks.forEach(el => el.classList.remove("active"));
-
-    const current = container.querySelector(`[data-index="${index}"]`);
-    if (current) current.classList.add("active");
+    allTracks.forEach(el => el.classList.toggle("active", Number(el.dataset.trackId) === soundId));
 }

@@ -7,7 +7,7 @@ export function renderSounds({container, soundList, startIndex = 0, likedSoundsI
             isLiked = likedSoundsIds.has(track.id) ? 'liked' : '';
         }
         return `
-        <div class="track-card" data-index="${startIndex + i}">
+        <div class="track-card"  data-index="${startIndex + i}" data-track-id="${track.id}">
           <div class="track-title">
             <span>${startIndex + i + 1}</span>
               <a href="/sound/${track.id}" class="track-title-link">
