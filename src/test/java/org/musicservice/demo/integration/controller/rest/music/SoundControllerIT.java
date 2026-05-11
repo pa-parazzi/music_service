@@ -77,6 +77,7 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         MvcResult result = mockMvc.perform(get("/api/sound/{id}", sound.getId()))
                 .andExpect(status().isOk())
                 .andExpectAll(
+                        jsonPath("$.id").exists(),
                         jsonPath("$.title").exists(),
                         jsonPath("$.duration").exists(),
                         jsonPath("$.key").exists(),
@@ -89,6 +90,7 @@ public class SoundControllerIT extends AbstractSpringBootIT {
         String json = result.getResponse().getContentAsString();
         SoundPageResponse response = objectMapper.readValue(json, SoundPageResponse.class);
 
+        assertThat(response.id()).isEqualTo(sound.getId());
         assertThat(response.title()).isEqualTo(sound.getTitle());
         assertThat(response.duration()).isEqualTo(sound.getDuration());
         assertThat(response.key()).isEqualTo(sound.getKey());
