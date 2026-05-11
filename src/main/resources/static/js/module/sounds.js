@@ -21,33 +21,42 @@ export function loadSoundsPaged(pageResponse, container, likedSoundsIds){
         likedSoundsIds: likedSoundsIds
     });
 
-    if(playerState.currentSoundId){
-        toggleActiveTrack(container, playerState.currentSoundId);
-    }
+    syncSoundsUI(container);
 
     paginationStateOfSounds.currentPage++;
     paginationStateOfSounds.isLoading = false;
 }
 
-export function initPlaySoundButton(soundId, sound, playSoundBtn){
-    if(!playSoundBtn) return;
+export function initPlaySoundButton(soundId, sound, playSoundBtn) {
+    if (!playSoundBtn) return;
+    const sync = () => {
+        const isCurrent = playerState.currentSoundId === soundId;
+        playSoundBtn.textContent =
+            isCurrent && playerState.isPlaying ? "⏸" : "▶";
+    };
     const clickHandler = () => {
-        if(playerState.currentSoundId !== soundId){
-            playerState.currentSoundId = soundId;
+        const isCurrent = playerState.currentSoundId === soundId;
+        if (!isCurrent) {
             playerState.soundList = [sound];
             playerState.currentTrackIndex = 0;
-            setTrack(playerState.currentTrackIndex);
-            return;
+            playerState.currentAlbumId = sound.album?.id ?? null;
+            setTrack(0);
+        } else {
+            togglePlayer();
         }
-        togglePlayer();
-    }
+    };
     playSoundBtn.addEventListener("click", clickHandler);
-    return function remove(){
+    document.addEventListener("playerStateChanged", sync);
+
+    sync();
+
+    return function remove() {
         playSoundBtn.removeEventListener("click", clickHandler);
-    }
+        document.removeEventListener("playerStateChanged", sync);
+    };
 }
 
-export function initSoundsDelegation(container, likedSoundsIds = new Set(), albumId){
+export function initSoundsDelegation(container, likedSoundsIds = new Set()){
     const soundLikeHandler =  async (e) => {
         if(likedSoundsIds) {
             const likeBtn = e.target.closest('.like-btn');
@@ -75,30 +84,31 @@ export function initSoundsDelegation(container, likedSoundsIds = new Set(), albu
         if (!trackEl) return;
 
         const index = Number(trackEl.dataset.index);
-
-        if(albumId) playerState.currentAlbumId = albumId;
         playerState.soundList = paginationStateOfSounds.sounds;
         setTrack(index);
     };
 
-    const trackChangeHandler = (e) => {
-        toggleActiveTrack(container, e.detail.soundId);
-    };
-
-    if(playerState.currentSoundId){
-        toggleActiveTrack(container, playerState.currentSoundId);
-    }
+    const playerStateHandler = () => syncSoundsUI(container);
 
     container.addEventListener("click", soundLikeHandler);
-    document.addEventListener("trackChanged", trackChangeHandler);
+    document.addEventListener("playerStateChanged", playerStateHandler);
+
+    syncSoundsUI(container);
 
     return function remove() {
         container.removeEventListener("click", soundLikeHandler);
-        document.removeEventListener("trackChanged", trackChangeHandler);
+        document.removeEventListener("playerStateChanged", playerStateHandler);
     };
 }
 
-function toggleActiveTrack(container, soundId) {
+function syncSoundsUI(container) {
     const allTracks = container.querySelectorAll(".track-card");
-    allTracks.forEach(el => el.classList.toggle("active", Number(el.dataset.trackId) === soundId));
+
+    allTracks.forEach(el => {
+        const id = Number(el.dataset.trackId);
+        el.classList.toggle(
+            "active",
+            id === playerState.currentSoundId
+        );
+    });
 }

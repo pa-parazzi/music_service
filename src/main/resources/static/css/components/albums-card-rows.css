@@ -26,6 +26,10 @@
     opacity: 1;
 }
 
+.album-card__play-btn.active {
+    opacity: 1;
+}
+
 /* кликабельная карточка альбома */
 .album-card-link {
     display: block;

@@ -15,26 +15,39 @@ export function loadAlbumsPaged(pageResponse, container) {
 
     renderAlbumCards(container, albums);
 
+    syncAlbumsUI(container);
+
     paginationStateOfAlbums.currentPage++;
     paginationStateOfAlbums.isLoading = false;
 }
 
 export function initPlayAlbumButton(albumId, playAlbumBtn) {
     if (!playAlbumBtn) return;
-    const playAlbumHandler = () => {
+    const sync = () => {
+        const isCurrent = playerState.currentAlbumId === albumId;
+        playAlbumBtn.textContent =
+            isCurrent && playerState.isPlaying ? "⏸" : "▶";
+    };
+    const clickHandler = () => {
         if (playerState.currentAlbumId !== albumId) {
             playerState.currentAlbumId = albumId;
-            playerState.soundList = paginationStateOfSounds.sounds;
             playerState.currentTrackIndex = 0;
-            setTrack(playerState.currentTrackIndex);
-            return;
+            playerState.soundList = paginationStateOfSounds.sounds;
+            setTrack(0);
+        } else {
+            togglePlayer();
         }
-        togglePlayer();
-    }
-    playAlbumBtn.addEventListener("click", playAlbumHandler);
+    };
+
+    playAlbumBtn.addEventListener("click", clickHandler);
+    document.addEventListener("playerStateChanged", sync);
+
+    sync();
+
     return function remove(){
-        playAlbumBtn.removeEventListener("click", playAlbumHandler);
-    }
+        playAlbumBtn.removeEventListener("click", clickHandler);
+        document.removeEventListener("playerStateChanged", sync);
+    };
 }
 
 export function initPlayAlbumCardsDelegation(container) {
@@ -45,10 +58,6 @@ export function initPlayAlbumCardsDelegation(container) {
         const albumId = Number(playAlbumBtn.dataset.albumId);
         // если это новый альбом
         if (playerState.currentAlbumId !== albumId) {
-            if (playerState.currentPlayAlbumButton) {
-                playerState.currentPlayAlbumButton.textContent = "▶";
-            }
-            playerState.currentPlayAlbumButton = playAlbumBtn;
             playerState.currentAlbumId = albumId;
             playerState.currentTrackIndex = 0;
             // загружаем если ещё не загружали
@@ -62,9 +71,30 @@ export function initPlayAlbumCardsDelegation(container) {
         }
         togglePlayer();
     };
-    container.addEventListener('click', playAlbumHandler);
+    container.addEventListener("click", playAlbumHandler);
+
+    const playerStateHandler = () => syncAlbumsUI(container);
+
+    document.addEventListener("playerStateChanged", playerStateHandler);
+
+    syncAlbumsUI(container);
 
     return function remove() {
-        container.removeEventListener('click', playAlbumHandler);
+        container.removeEventListener("click", playAlbumHandler);
+        document.removeEventListener("playerStateChanged", playerStateHandler);
     }
+}
+
+function syncAlbumsUI(container) {
+    const buttons = container.querySelectorAll(".album-card__play-btn");
+
+    buttons.forEach(btn => {
+        const id = Number(btn.dataset.albumId);
+        btn.classList.toggle("active", id === playerState.currentAlbumId)
+        if (id === playerState.currentAlbumId) {
+            btn.textContent = playerState.isPlaying ? "⏸" : "▶";
+        } else {
+            btn.textContent = "▶";
+        }
+    });
 }

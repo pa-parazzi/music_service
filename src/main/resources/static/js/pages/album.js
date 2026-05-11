@@ -6,7 +6,6 @@ import {initAlbumLikeBtn} from "../module/albumLikes.js";
 import {initSoundsDelegation} from "../module/sounds.js";
 import {initPlayAlbumButton} from "../module/albums.js";
 import {paginationStateOfSounds} from "../store/paginationState.js";
-import {playerState} from "../store/playerState.js";
 import {resetPaginationState} from "../utils/util.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 import {renderSounds} from "../components/soundsView.js";
@@ -32,7 +31,6 @@ export async function initAlbumPage({id}) {
     const albumLikeBtn = albumPageContainer.querySelector(".album-like-btn");
     const soundsContainer = albumPageContainer.querySelector(".sounds");
 
-    playerState.currentPlayAlbumButton = playAlbumBtn;
     const removePlayAlbumDelegation = initPlayAlbumButton(albumId, playAlbumBtn);
 
     const soundsResponse = await getSoundsByAlbumId(albumId);
@@ -50,7 +48,7 @@ export async function initAlbumPage({id}) {
         likedSoundsIds: likedSoundsIds
     });
 
-    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds, albumId);
+    const removeSoundsDelegation = initSoundsDelegation(soundsContainer, likedSoundsIds);
 
     return function cleanUp() {
         removePlayAlbumDelegation?.();

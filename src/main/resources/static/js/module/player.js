@@ -3,7 +3,7 @@ import {formatTime} from "../utils/util.js";
 
 export function playTrack(index){
     const track = playerState.soundList[index];
-    if (!player.src || !player.src.includes(track.url)) {
+    if (player.src !== track.url) {
         player.src = track.url;
     }
     player.play().catch(() => {});
@@ -12,16 +12,18 @@ export function playTrack(index){
 
 export function setTrack(index){
     const track = playerState.soundList[index];
-    const soundId = track.id;
+    if(!track) return;
     playerState.currentTrackIndex = index;
-    playerState.currentSoundId = soundId;
+    playerState.currentSoundId = track.id;
+    playerState.currentAlbumId = track.albumId;
 
     playTrack(index);
-    document.dispatchEvent(new CustomEvent('trackChanged', {
+    document.dispatchEvent(new CustomEvent("playerStateChanged", {
         detail: {
-            soundId: soundId
+            soundId: playerState.currentSoundId,
+            albumId: playerState.currentAlbumId
         }
-    }))
+    }));
 }
 
 export function togglePlayer() {
@@ -49,6 +51,13 @@ export function initPlayer(audioPlayerRootContainer){
     player = elements.player;
     playBtn = elements.playBtn;
 
+    const playerStateHandler = () => {
+        if(!playBtn) return;
+        playBtn.textContent = playerState.isPlaying ? "⏸" : "▶";
+    }
+
+    document.addEventListener("playerStateChanged", playerStateHandler);
+
     // Play / Pause
     playBtn.addEventListener("click", () => {
         if (!player.src) {
@@ -60,16 +69,14 @@ export function initPlayer(audioPlayerRootContainer){
 
     // Если проигрывается трек - меняем иконки
     player.addEventListener("play", () => {
-        playBtn.textContent = "⏸";
-        if (playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "⏸";
-        if(playerState.currentPlaySoundButton) playerState.currentPlaySoundButton.textContent = "⏸";
+        playerState.isPlaying = true;
+        document.dispatchEvent(new CustomEvent("playerStateChanged"));
     });
 
     // Если пауза - сменили значки
     player.addEventListener("pause", () => {
-        playBtn.textContent = "▶";
-        if (playerState.currentPlayAlbumButton) playerState.currentPlayAlbumButton.textContent = "▶";
-        if(playerState.currentPlaySoundButton) playerState.currentPlaySoundButton.textContent = "▶";
+        playerState.isPlaying = false;
+        document.dispatchEvent(new CustomEvent("playerStateChanged"));
     });
 
     // По окончанию следующий трек

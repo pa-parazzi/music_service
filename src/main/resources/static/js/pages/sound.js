@@ -3,7 +3,6 @@ import {getSoundById} from "../api/soundApi.js";
 import {getSoundLikeStatusBySoundId} from "../api/soundLikesApi.js";
 import {initSoundLikeBySoundId} from "../module/soundLikes.js";
 import {initPlaySoundButton} from "../module/sounds.js";
-import {playerState} from "../store/playerState.js";
 import {renderSoundPage} from "../components/soundsView.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 
@@ -25,7 +24,6 @@ export async function initSoundPage({id}){
     const playSoundBtn = soundPageContainer.querySelector(".play-sound-btn");
     const likeBtn = soundPageContainer.querySelector(".like-btn");
 
-    playerState.currentPlaySoundButton = playSoundBtn;
     const removePlaySoundsDelegation = initPlaySoundButton(soundId, sound, playSoundBtn);
 
     const likeSoundStatus = await getSoundLikeStatusBySoundId(soundId);
