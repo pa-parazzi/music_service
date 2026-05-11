@@ -11,6 +11,7 @@ import org.musicservice.demo.mapper.image.ImageUrlMapper;
 public interface SoundMapper {
 
     @Mapping(target = "url", source = "key", qualifiedByName = "mapMp3Url")
+    @Mapping(target = "albumId", source = "album.id")
     SoundResponse toResponse(Sound sound);
 
     @Mapping(target = "url", source = "key", qualifiedByName = "mapMp3Url")
