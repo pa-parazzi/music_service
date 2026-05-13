@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -17,11 +17,21 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+          cache: maven
 
       - name: Build & Test
-        run: ./gradlew clean test jacocoTestReport
+        run: mvn -B clean verify
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          files: build/reports/jacoco/test/jacocoTestReport.xml
+          name: test-report
+          path: target/surefire-reports/
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
