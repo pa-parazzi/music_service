@@ -6,12 +6,13 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @TestConfiguration(proxyBeanMethods = false)
-public class SpringBootTestContainersConfig {
+public class TestContainersConfig {
 
     @Bean
     @ServiceConnection
-    PostgreSQLContainer<?> postgreSQLContainer(){
+    static PostgreSQLContainer<?> postgreSQLContainer(){
         return new PostgreSQLContainer<>("postgres:15-alpine")
-                .withDatabaseName("MusicService-SpringBootTest");
+                .withDatabaseName("MusicService-SpringBootTest")
+                .withReuse(true);
     }
 }
