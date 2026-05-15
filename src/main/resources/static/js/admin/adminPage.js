@@ -20,9 +20,8 @@ export async function initAdminPage() {
         option.textContent = genre.name;
         genreSelect.appendChild(option);
     });
-    const genreName = genreSelect.value;
 
-    const removeImportBtnDelegation = initImportBtn(importBtn, importStatus, genreName);
+    const removeImportBtnDelegation = initImportBtn(importBtn, importStatus, genreSelect);
 
     return function cleanUp(){
         removeImportBtnDelegation?.();

@@ -1,7 +1,9 @@
 import {importMusicDataByGenre} from "./adminApi.js";
 
-export function initImportBtn(importBtn, importStatus, genreName){
+export function initImportBtn(importBtn, importStatus, genreSelect){
     const clickBtnHandler = async () => {
+        const genreName = genreSelect.value;
+
         importStatus.textContent = "Импорт начался...";
         try {
             const response = await importMusicDataByGenre(genreName);
