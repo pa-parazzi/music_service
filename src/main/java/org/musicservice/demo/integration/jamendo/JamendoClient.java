@@ -4,7 +4,7 @@ import org.musicservice.demo.integration.jamendo.response.JamendoResponse;
 import org.musicservice.demo.integration.jamendo.response.MusicResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,17 +12,17 @@ import java.util.Objects;
 @Service
 public class JamendoClient {
 
-    private final WebClient webClient;
+    private final RestClient restClient;
     private final JamendoProperties jamendoProperties;
 
     @Autowired
-    public JamendoClient(WebClient.Builder builder, JamendoProperties jamendoProperties) {
-        this.webClient = builder.baseUrl("https://api.jamendo.com/v3.0").build();
+    public JamendoClient(RestClient.Builder builder, JamendoProperties jamendoProperties) {
+        this.restClient = builder.baseUrl("https://api.jamendo.com/v3.0").build();
         this.jamendoProperties = jamendoProperties;
     }
 
     public List<MusicResponse> tracksPack(String genreName){
-        return Objects.requireNonNull(webClient.get()
+        JamendoResponse response = restClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/tracks/")
                                 .queryParam("client_id", jamendoProperties.getClientId())
@@ -32,8 +32,7 @@ public class JamendoClient {
                                 .queryParam("tags", genreName)
                                 .build())
                         .retrieve()
-                        .bodyToMono(JamendoResponse.class)
-                        .block())
-                .results();
+                        .body(JamendoResponse.class);
+        return Objects.requireNonNull(response).results();
     }
 }
