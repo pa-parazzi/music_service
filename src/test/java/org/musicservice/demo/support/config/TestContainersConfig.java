@@ -11,8 +11,6 @@ public class TestContainersConfig {
     @Bean
     @ServiceConnection
     static PostgreSQLContainer<?> postgreSQLContainer(){
-        return new PostgreSQLContainer<>("postgres:15-alpine")
-                .withDatabaseName("MusicService-SpringBootTest")
-                .withReuse(true);
+        return new PostgreSQLContainer<>("postgres:15-alpine");
     }
 }
