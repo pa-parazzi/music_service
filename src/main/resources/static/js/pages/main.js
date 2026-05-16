@@ -8,6 +8,7 @@ import {renderMainPageLayout} from "../components/mainView.js";
 import {loadCss, unloadCss} from "../core/resources.js";
 
 export async function initMainPage(){
+    const mainPageCss = loadCss("/css/pages/main.css");
     const albumsCardCss = loadCss("/css/components/albums-card-rows.css");
     const genresCardCss = loadCss("/css/components/genres-card-rows.css");
     const contentSectionsCss = loadCss("/css/layout/content-sections.css");
@@ -32,6 +33,7 @@ export async function initMainPage(){
 
     return function cleanUp(){
         removePlayAlbumsDelegation?.();
+        unloadCss(mainPageCss);
         unloadCss(contentSectionsCss);
         unloadCss(albumsCardCss);
         unloadCss(genresCardCss);
