@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+  flyway:
+    enabled: true
+
+yandex:
+  access-key: test_access_key
+  secret-key: test_secret_key
+  buckets:
+    music: test-music
+    img: test-image
+  region: ru-central1
+  endpoint: https://test.yandexcloud/
+  default-avatar-key: default_avatar_test.jpg
+
+app:
+  metadata-file: /test_tracks.jsonl
