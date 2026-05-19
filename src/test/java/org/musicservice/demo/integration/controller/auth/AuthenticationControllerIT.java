@@ -27,6 +27,7 @@ import org.musicservice.demo.security.refreshToken.RefreshTokenCryptoService;
 import org.musicservice.demo.security.refreshToken.RefreshTokenRepository;
 import org.musicservice.demo.security.verificationToken.MailService;
 import org.musicservice.demo.security.verificationToken.VerificationTokenRepository;
+import org.musicservice.demo.storage.s3.S3UploadImageService;
 import org.musicservice.demo.storage.s3.YandexStorageProperties;
 import org.musicservice.demo.support.config.AbstractSpringBootIT;
 import org.musicservice.demo.support.factory.it.cookie.CookieDataFactoryIT;
@@ -83,6 +84,8 @@ public class AuthenticationControllerIT extends AbstractSpringBootIT {
     private RefreshTokenProperties refreshTokenProperties;
     @MockitoBean
     private MailService mailService;
+    @MockitoBean
+    private S3UploadImageService s3UploadImageService;
 
     private final MediaType contentMultipartForm = MediaType.MULTIPART_FORM_DATA;
 
