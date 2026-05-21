@@ -1,6 +1,6 @@
 [![CI](https://github.com/pa-parazzi/music_service/actions/workflows/ci.yml/badge.svg)](https://github.com/pa-parazzi/music_service/actions/workflows/ci.yml)
 
-# 🎧 **Music service**
+# 🎧 Music service
 
 A web application for music discovery and personal music management.  
 The platform allows users to explore albums, tracks,
@@ -10,69 +10,55 @@ and artists by genre and interact with them through likes and personalized music
 
 ## 📺 Demo
 
----
 ### Album collection
-- Adding a new album to the collection
+Adding a new album to the collection
 
 ![album-collection-demo](docs/gif/demo-album-collection-gif.gif)
 
----
-
 ### Track collection
-- Adding a new track to the collection 
+Adding a new track to the collection 
 
 ![track-collection-demo](docs/gif/demo-track-collection-gif.gif)
 
----
 ### Search
-- Content search with paginated results
+Content search with paginated results
 
-![track-collection-demo](docs/gif/demo-search-gif.gif)
+![search-demo](docs/gif/demo-search-gif.gif)
 
----
 ### Authentication flow
-- Unauthorized users are redirected to the login page when accessing protected collections.
+Unauthorized users are redirected to the login page when accessing protected collections.
 
-![track-collection-demo](docs/gif/demo-user-logout-login-gif.gif)
+![authentication-flow-demo](docs/gif/demo-user-logout-login-gif.gif)
 
 ---
+
 ## 📷 Screenshots
-
----
 
 ### Main page
 
 <img src="/docs/screen/main-page.png">
 
----
-
 ### Album page
 
 <img src="/docs/screen/album-page.png">
-
----
 
 ### Artist page
 
 <img src="/docs/screen/artist-page.png">
 
----
-
 ### Sound page
 
 <img src="/docs/screen/sound-page.png">
-
----
 
 ### Genre page
 
 <img src="docs/screen/genre-page.png">
 
----
+
 ### Login page
 <img src="/docs/screen/login-page.png">
 
----
+
 ### Registration page
 <img src="/docs/screen/registration-page.png">
 
@@ -85,7 +71,7 @@ and artists by genre and interact with them through likes and personalized music
 - Spring Boot 3.5
 - Spring Security
 - Spring Data JPA
-- Spring Validation
+- Spring Boot Validation
 - Spring Mail
 
 ### Frontend
@@ -96,7 +82,7 @@ and artists by genre and interact with them through likes and personalized music
 ### Database
 
 - PostgreSQL
-  - Flyway (schema versioning)
+- Flyway (schema versioning)
 
 ### Storage
 
@@ -121,30 +107,22 @@ and artists by genre and interact with them through likes and personalized music
 
 ## Features
 
----
-
 ### 🔐 Authentication & Authorization
 
 - User registration and login
 - Stateless JWT-based authentication
 - Refresh token stored in HttpOnly Secure Cookie
 - Automatic access token refresh
-- Role-based access control: ```USER```, ```ADMIN```
-
----
+- Role-based access control: `USER`, `ADMIN`
 
 ### 📫 Email Verification
 
 - Account verification via email confirmation
 
---- 
-
 ### 👦 User Interaction
 
 - Like and unlike albums and tracks
 - Personal collections management
-
----
 
 ### 🎼 Music Catalog
 - Infinite scroll with server-side pagination
@@ -153,14 +131,10 @@ and artists by genre and interact with them through likes and personalized music
 - Genre-based filtering
 - Keyword search across artists, albums and tracks
 
----
-
 ### 🎵 Audio Playback
 - Track playback
 - Album playback
 - Client-side state management
-
----
 
 ### 👤 Admin panel
 
@@ -169,7 +143,7 @@ and artists by genre and interact with them through likes and personalized music
 ---
 
 ## 🔨 Architecture
-The application follows a client–server architecture with a Single Page Application frontend 
+The application follows a client-server architecture with a Single Page Application frontend 
 and a stateless REST backend.
 
 ### Backend
@@ -182,9 +156,7 @@ and a stateless REST backend.
 - Custom router implementation
 - Fetch API for REST communication
 
----
-
-### 🏗️ Technological decisions
+### ⚙️️ Technical decisions
 - **JWT-based authentication with refresh token rotation**<br>
 Stateless authentication removes the need for server-side session storage, simplifying horizontal scaling and improving API consistency.
 Short-lived access tokens are used for request authorization, while refresh tokens are stored in an HttpOnly Secure cookie to mitigate XSS exposure.
@@ -195,7 +167,7 @@ Used to store core media assets, including audio tracks (MP3) and album artwork,
 
 
 - **Jamendo API**<br>
-Used as and external content provider for:<br>
+Used as an external content provider for:<br>
   - Full-length MP3 streaming
   - Album artwork
   - Genre-based filtering and metadata retrieval
